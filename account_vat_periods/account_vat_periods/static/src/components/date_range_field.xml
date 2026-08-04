@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="mis_builder.DateRangeField"
+        t-inherit-mode="extension">
+            <xpath expr="//div[contains(@class, 'oe_mis_builder_filter_buttons')]" position="after">
+                <div>
+                    <button t-on-click="refresh" class="btn">
+                        <span class="fa fa-refresh" /> Testi </button>
+                </div>
+            </xpath>
+    </t>
+</templates>

@@ -1,0 +1,38 @@
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">vat_period.res.config.settings.form</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='accounting_reports']" position="after">
+                <block title="VAT Periods" id="vat_period">
+                    <setting id="default_templates">
+                        <div class="row mt16" id="closing_id">
+                            <label for="closing_id" class="col-lg-5" />
+                            <field
+                                name="closing_id"
+                                options="{'no_create_edit': True, 'no_open': True}"
+                            />
+                        </div>
+                        <div class="row mt16" id="mis_report_instance_id">
+                            <label for="mis_report_instance_id" class="col-lg-5" />
+                            <field
+                                name="mis_report_instance_id"
+                                options="{'no_create_edit': True, 'no_open': True}"
+                            />
+                        </div>
+                        <div class="row mt16" id="vat_period_duration">
+                            <label for="vat_period_duration" class="col-lg-5" />
+                            <field
+                                name="vat_period_duration"
+                                options="{'no_create_edit': True, 'no_open': True}"
+                            />
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

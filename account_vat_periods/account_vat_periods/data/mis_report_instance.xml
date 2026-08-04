@@ -1,0 +1,7 @@
+<odoo>
+    <record model="mis.report.instance" id="mis_report_instance_vat">
+        <field name="name">VAT Report</field>
+        <field name="comparison_mode" eval="True"/>
+        <field name="report_id" ref="l10n_fi_mis_templates.report_vat"/>
+    </record>
+</odoo>

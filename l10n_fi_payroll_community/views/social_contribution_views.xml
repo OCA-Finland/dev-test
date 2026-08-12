@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="view_social_contribution_list" model="ir.ui.view">
+        <field name="name">hr.social.contribution.list</field>
+        <field name="model">hr.payroll.social.contribution</field>
+        <field name="arch" type="xml">
+            <list string="Social Contributions">
+
+                <field name="contribution_type"/>
+                <field name="employee_share_percentage" widget="percentage"/>
+                <field name="employer_share_percentage" widget="percentage"/>
+                <field name="age_from"/>
+                <field name="age_until"/>
+                <field name="valid_from"/>
+                <field name="valid_until"/>
+                <field name="source" optional='hide'/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_social_contribution_form" model="ir.ui.view">
+        <field name="name">hr.social.contribution.form</field>
+        <field name="model">hr.payroll.social.contribution</field>
+        <field name="arch" type="xml">
+            <form string="Social Contribution">
+                <sheet>
+                    <group>
+                        <!-- Contribution Rule (laskettu nimi) -->
+                        <field name="name" readonly="1"/>
+                    </group>
+                    <group>
+                        <!-- Contribution Type -->
+                        <field name="contribution_type"/>
+                    </group>
+                    <group>
+                        <field name="employee_share_percentage" widget="percentage"/>
+                        <field name="employer_share_percentage" widget="percentage"/>
+                    </group>
+                    <group>
+                        <!-- Ikärajat (Age From, Age Until) -->
+                        <field name="age_from"/>
+                        <field name="age_until"/>
+                    </group>
+                    <group>
+                        <!-- Voimassaolopäivämäärät -->
+                        <field name="valid_from"/>
+                        <field name="valid_until"/>
+                    </group>
+                    <group>
+                        <!-- Sosiaalimaksun lähde -->
+                        <field name="source"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="action_social_contributions" model="ir.actions.act_window">
+        <field name="name">Social Contributions</field>
+        <field name="res_model">hr.payroll.social.contribution</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+
+</odoo>

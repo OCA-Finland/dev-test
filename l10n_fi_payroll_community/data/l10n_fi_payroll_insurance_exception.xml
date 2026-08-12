@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="exception_1" model="l10n.fi.payroll.insurance.exception">
+            <field name="name">1</field>
+            <field name="code">1</field>
+            <field name="active">1</field>
+        </record>
+        <record id="exception_2" model="l10n.fi.payroll.insurance.exception">
+            <field name="name">2</field>
+            <field name="code">2</field>
+            <field name="active">1</field>
+        </record>
+        <record id="exception_3" model="l10n.fi.payroll.insurance.exception">
+            <field name="name">3</field>
+            <field name="code">3</field>
+            <field name="active">1</field>
+        </record>
+        <record id="exception_4" model="l10n.fi.payroll.insurance.exception">
+            <field name="name">4</field>
+            <field name="code">4</field>
+            <field name="active">1</field>
+        </record>
+        <record id="exception_5" model="l10n.fi.payroll.insurance.exception">
+            <field name="name">5</field>
+            <field name="code">5</field>
+            <field name="active">1</field>
+        </record>
+    </data>
+</odoo>

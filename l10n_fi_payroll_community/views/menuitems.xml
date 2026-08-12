@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="action_hr_payslip_input_type" model="ir.actions.act_window">
+            <field name="name">Payslip Input Type</field>
+            <field name="res_model">hr.payslip.input.type</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem id="menu_hr_social_contributions"
+                  name="Social Contributions"
+                  parent="payroll.payroll_menu_configuration"
+                  action="action_social_contributions"
+                  sequence="10"/>
+
+        <menuitem id="menu_payroll_payslip_input_types"
+                  name="Payslip Input Types"
+                  parent="payroll.payroll_menu_configuration"
+                  action="action_hr_payslip_input_type"
+                  sequence="20"/>
+
+        <menuitem id="menu_hr_taxcard_root"
+                  name="Verokortit"
+                  parent="hr.menu_hr_root"
+                  sequence="50"/>
+
+        <record id="action_hr_taxcards" model="ir.actions.act_window">
+            <field name="name">Verokortit</field>
+            <field name="res_model">hr.taxcards</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <record id="action_income_register_payslips" model="ir.actions.act_window">
+            <field name="name">Payslips</field>
+            <field name="res_model">hr.payslip</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+        </record>
+
+        <record id="action_income_register_batches" model="ir.actions.act_window">
+            <field name="name">Batches</field>
+            <field name="res_model">hr.payslip.run</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+        </record>
+
+        <record id="view_income_register_entry_list" model="ir.ui.view">
+            <field name="name">l10n_fi.income.register.entry.list</field>
+            <field name="model">l10n_fi.income.register.entry</field>
+            <field name="arch" type="xml">
+                <list string="Income Register Reports" create="false" edit="false" delete="false">
+                    <field name="report_type" string="Type" widget="badge"
+                        decoration-info="report_type == 'individual'"
+                        decoration-success="report_type == 'batch'"/>
+                    <field name="date_from" string="Period From"/>
+                    <field name="date_to" string="Period To"/>
+                    <field name="generated_at" string="Generated On"/>
+                    <field name="report"
+                        widget="binary"
+                        filename="filename"
+                        string="IR Report"/>
+                    <field name="filename" column_invisible="1"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="action_income_register_reports_only" model="ir.actions.act_window">
+            <field name="name">Income Register Reports</field>
+            <field name="res_model">l10n_fi.income.register.entry</field>
+            <field name="view_mode">list</field>
+            <field name="view_ids" eval="[(5, 0, 0), (0, 0, {
+                'view_mode': 'list',
+                'view_id': ref('view_income_register_entry_list')
+            })]"/>
+            <field name="domain">[]</field>
+        </record>
+
+        <menuitem id="menu_income_register_root"
+                name="Income Register"
+                parent="payroll.payroll_menu_root"
+                action="action_income_register_reports_only"
+                sequence="60"/>
+
+        <menuitem id="menu_payroll_employees_root"
+                name="Employees"
+                parent="payroll.payroll_menu_root"
+                sequence="60"/>
+
+        <menuitem id="menu_payroll_employees"
+                name="Employees"
+                parent="menu_payroll_employees_root"
+                action="hr.open_view_employee_list_my"
+                sequence="60"/>
+
+        <menuitem id="menu_payroll_employee_contract"
+                name="Contracts"
+                parent="menu_payroll_employees_root"
+                action="hr_contract.action_hr_contract"
+                sequence="700"/>
+    </data>
+
+    <record id="action_bulk_download_ir_reports" model="ir.actions.server">
+        <field name="name">Download</field>
+        <field name="model_id" ref="model_l10n_fi_income_register_entry"/>
+        <field name="binding_model_id" ref="model_l10n_fi_income_register_entry"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+    if records:
+        action = records.action_bulk_download()
+        </field>
+    </record>
+</odoo>

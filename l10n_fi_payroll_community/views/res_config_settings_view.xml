@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="l10n_fi_payroll_defaults">
+            <field name="name">l10n_fi_payroll_defaults</field>
+            <field name="model">res.config.settings</field>
+            <field name="inherit_id" ref="payroll.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//block[@id='require_code_and_category']" position="after">
+                    <block title="Payroll Defaults" id="l10n_fi_payroll_defaults">
+                        <setting name="l10n_fi_default_pension_insurance_type"
+                                 string="Default Pension Insurance Type"
+                                 help="Select the default pension insurance type for the employees.">
+                            <field name="l10n_fi_default_pension_insurance_type"/>
+                        </setting>
+                        <setting name="l10n_fi_default_pension_provider_id"
+                                 string="Default Pension Provider"
+                                 help="Select the default pension provider for the employees.">
+                            <field name="l10n_fi_default_pension_provider_id"/>
+                        </setting>
+                        <setting name="l10n_fi_default_pension_policy_no"
+                                 string="Default Pension Policy Number"
+                                 help="Enter the default pension policy number for the employees.">
+                            <field name="l10n_fi_default_pension_policy_no"/>
+                        </setting>
+                        <setting name="l10n_fi_default_accident_insurance_type"
+                                 string="Default Accident Insurance Type"
+                                 help="Select the default accident insurance type for the employees.">
+                            <field name="l10n_fi_default_accident_insurance_type"/>
+                        </setting>
+                        <setting name="l10n_fi_default_accident_insurance_code"
+                                 string="Default Accident Insurance Code"
+                                 help="Enter the default accident insurance code for the employees.">
+                            <field name="l10n_fi_default_accident_insurance_code"/>
+                        </setting>
+                        <setting name="l10n_fi_default_accident_insurance_policy_no"
+                                 string="Default Accident Insurance Policy Number"
+                                 help="Enter the default accident insurance policy number for the employees.">
+                            <field name="l10n_fi_default_accident_insurance_policy_no"/>
+                        </setting>
+                        
+                        <setting name="l10n_fi_payroll_tk10_code"
+                                 string="Import Occupation Classification Codes (TK10) from register"
+                                 help="If code already exists it it be skipped. New codes will be created. No codes will be removed.">
+                            <button name="l10n_fi_fetch_tk10_data" string="Fetch from Register" type="object"
+                                    class="oe_highlight"/>
+                        </setting>
+                    </block>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

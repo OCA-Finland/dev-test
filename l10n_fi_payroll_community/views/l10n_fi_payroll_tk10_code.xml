@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="l10n_fi_payroll_tk10_code_list">
+            <field name="name">l10n_fi_payroll_tk10_code_list</field>
+            <field name="model">l10n.fi.payroll.tk10.code</field>
+            <field name="arch" type="xml">
+                <list string="TK10 Codes">
+                    <field name="code"/>
+                    <field name="name"/>
+                </list>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="l10n_fi_payroll_tk10_code_search">
+            <field name="name">l10n_fi_payroll_tk10_code_search</field>
+            <field name="model">l10n.fi.payroll.tk10.code</field>
+            <field name="arch" type="xml">
+                <search string="Search TK10 Codes">
+                    <field name="code"/>
+                    <field name="name"/>
+                    <filter name="active" string="Active" domain="[('active', '=', True)]"/>
+                    <filter name="inactive" string="Inactive" domain="[('active', '=', False)]"/>
+                </search>
+            </field>
+        </record>
+    </data>
+</odoo>

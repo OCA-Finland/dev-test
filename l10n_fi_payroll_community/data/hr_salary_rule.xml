@@ -1,0 +1,1070 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data noupdate="0">
+
+        <!-- Finnish salary rules. Ordered by code -->
+
+        <!-- Tuntipalkka -->
+        <record id="hr_payroll.hr_rule_basic" model="hr.salary.rule">
+            <field name="name">Tuntipalkka</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">1</field>
+            <field name="sequence">1</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A11 and inputs.A11.amount)+(inputs.A12 and inputs.A12.amount)+(inputs.A13 and inputs.A13.amount)+(inputs.A14 and inputs.A14.amount)+(inputs.A15 and inputs.A15.amount)+(inputs.A16 and inputs.A16.amount)+(inputs.A17 and inputs.A17.amount)+(inputs.A18 and inputs.A18.amount)+(inputs.A19 and inputs.A19.amount)+(inputs.A191 and inputs.A191.amount)</field>
+        </record>
+
+        <!-- Kuukausipalkka -->
+        <record id="hr_payroll.hr_rule_2" model="hr.salary.rule">
+            <field name="name">Kuukausipalkka</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">2</field>
+            <field name="sequence">1</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = contract.wage</field>
+        </record>
+
+        <!-- Urakka sahatyöt -->
+        <record id="hr_payroll.hr_rule_3" model="hr.salary.rule">
+            <field name="name">Urakka sahatyöt</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">3</field>
+            <field name="sequence">2</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A31 and inputs.A31.amount)+(inputs.A32 and inputs.A32.amount)+(inputs.A33 and inputs.A33.amount)+(inputs.A34 and inputs.A34.amount)+(inputs.A35 and inputs.A35.amount)+(inputs.A36 and inputs.A36.amount)+(inputs.A37 and inputs.A37.amount)+(inputs.A38 and inputs.A38.amount)+(inputs.A39 and inputs.A39.amount)+(inputs.A391 and inputs.A391.amount)</field>
+        </record>
+
+        <!-- Urakka muut -->
+        <record id="hr_payroll.hr_rule_4" model="hr.salary.rule">
+            <field name="name">Urakka muut</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">4</field>
+            <field name="sequence">3</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A41 and inputs.A41.amount)+(inputs.A42 and inputs.A42.amount)+(inputs.A43 and inputs.A43.amount)+(inputs.A44 and inputs.A44.amount)+(inputs.A45 and inputs.A45.amount)+(inputs.A46 and inputs.A46.amount)+(inputs.A47 and inputs.A47.amount)+(inputs.A48 and inputs.A48.amount)+(inputs.A49 and inputs.A49.amount)+(inputs.A491 and inputs.A491.amount)</field>
+        </record>
+
+        <!-- Tuntipalkka sahatyöt -->
+        <record id="hr_payroll.hr_rule_8" model="hr.salary.rule">
+            <field name="name">Tuntipalkka sahatyöt</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">8</field>
+            <field name="sequence">1</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A81 and inputs.A81.amount)+(inputs.A82 and inputs.A82.amount)+(inputs.A83 and inputs.A83.amount)+(inputs.A84 and inputs.A84.amount)+(inputs.A85 and inputs.A85.amount)+(inputs.A86 and inputs.A86.amount)+(inputs.A87 and inputs.A87.amount)+(inputs.A88 and inputs.A88.amount)+(inputs.A89 and inputs.A89.amount)+(inputs.A891 and inputs.A891.amount)</field>
+        </record>
+
+        <!-- Ylityön perusosa -->
+        <record id="hr_payroll.hr_rule_9" model="hr.salary.rule">
+            <field name="name">Ylityön perusosa</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">9</field>
+            <field name="sequence">1</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Ylityölisä 50% -->
+        <record id="hr_payroll.hr_rule_11" model="hr.salary.rule">
+            <field name="name">Ylityölisä 50%</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">11</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Ylityölisä 100% -->
+        <record id="hr_payroll.hr_rule_12" model="hr.salary.rule">
+            <field name="name">Ylityölisä 100%</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">12</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Ylityölisä 150% -->
+        <record id="hr_payroll.hr_rule_13" model="hr.salary.rule">
+            <field name="name">Ylityölisä 150%</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">13</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Ylityölisä 200% -->
+        <record id="hr_payroll.hr_rule_14" model="hr.salary.rule">
+            <field name="name">Ylityölisä 200%</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">14</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Arkipyhäkorvaus -->
+        <record id="hr_payroll.hr_rule_15" model="hr.salary.rule">
+            <field name="name">Arkipyhäkorvaus</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">15</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A151 and inputs.A151.amount)+(inputs.A152 and inputs.A152.amount)+(inputs.A153 and inputs.A153.amount)+(inputs.A154 and inputs.A154.amount)+(inputs.A155 and inputs.A155.amount) </field>
+        </record>
+
+        <!-- Rahapalkka -->
+        <record id="hr_payroll.hr_rule_taxable" model="hr.salary.rule">
+            <field name="name">Rahapalkka</field>
+            <field name="category_id" ref="hr_payroll.GROSS" />
+            <field name="code">Brutto</field>
+            <field name="sequence">20</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = categories.BASIC</field>
+        </record>
+
+        <!-- Ennakonpidätys -->
+        <record id="hr_payroll.hr_rule_enn" model="hr.salary.rule">
+            <field name="name">Ennakonpidätys</field>
+            <field name="category_id" ref="hr_payroll.GROSS" />
+            <field name="code">ENN</field>
+            <field name="sequence">22</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+#(contract.monthly_income_limit/364)*worked_days.WORK100.number_of_days
+rajakk=(contract.monthly_income_limit)
+rajavv=((contract.yearly_income_limit/364)*worked_days.WORK100.number_of_days)
+
+#normaali A, tämä ok, testattu
+if contract.tax_card_type == "A" and categories.Palkka&lt;rajavv:
+ vero=categories.Palkka*(contract.base_tax_percentage/100)
+
+#kortti A ja kuukausitulo ylittaa rajan, tämä ok
+elif contract.tax_card_type == "A" and categories.Palkka>rajavv:
+ vero=(rajavv*(contract.base_tax_percentage/100))+((categories.Palkka-rajavv)*(contract.extra_tax_percentage/100))
+
+#kortti B, vuositulo ei ylitä rajaa
+elif contract.tax_card_type == "B" and rules.vuosipalkka&lt;contract.yearly_income_limit:
+ vero=categories.Palkka*(contract.base_tax_percentage/100)
+
+#kortti B ylittaa vuosirajan
+elif contract.tax_card_type == "B" and rules.vuosipalkka>contract.yearly_income_limit:
+ vero=categories.Palkka*(contract.extra_tax_percentage/100)
+
+else:
+  vero=categories.Palkka*(contract.base_tax_percentage/100)
+result = vero + (inputs.FIX and inputs.FIX.amount)
+            </field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_ennakonpidatykset" />
+        </record>
+
+        <!-- Pekkaskorvaus -->
+        <record id="hr_payroll.hr_rule_27" model="hr.salary.rule">
+            <field name="name">Pekkaskorvaus</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">27</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A271 and inputs.A271.amount)</field>
+        </record>
+
+        <!-- Osapäiväraha -->
+        <record id="hr_payroll.hr_rule_31" model="hr.salary.rule">
+            <field name="name">Osapäiväraha</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">31</field>
+            <field name="sequence">5</field>
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = (inputs.A311 and inputs.A311.amount)+(inputs.A312 and inputs.A312.amount)+(inputs.A313 and inputs.A313.amount)+(inputs.A314 and inputs.A314.amount)+(inputs.A315 and inputs.A315.amount)</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_korvaukset" />
+        </record>
+
+        <!-- Kokopäiväraha -->
+        <record id="hr_payroll.hr_rule_32" model="hr.salary.rule">
+            <field name="name">Kokopäiväraha</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">32</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A321 and inputs.A321.amount)+(inputs.A322 and inputs.A322.amount)+(inputs.A323 and inputs.A323.amount)+(inputs.A324 and inputs.A324.amount)+(inputs.A325 and inputs.A325.amount)</field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_korvaukset" />
+        </record>
+
+        <!-- Ulkomaan päiväraha -->
+        <record id="hr_payroll.hr_rule_33" model="hr.salary.rule">
+            <field name="name">Ulkomaan päiväraha</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">33</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A331 and inputs.A331.amount)+(inputs.A332 and inputs.A332.amount)+(inputs.A333 and inputs.A333.amount)+(inputs.A334 and inputs.A334.amount)+(inputs.A335 and inputs.A335.amount)</field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_korvaukset" />
+        </record>
+
+        <!-- KM-korvaus oma -->
+        <record id="hr_payroll.hr_rule_34" model="hr.salary.rule">
+            <field name="name">KM-korvaus oma</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">34</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A341 and inputs.A341.amount)+(inputs.A342 and inputs.A342.amount)+(inputs.A343 and inputs.A343.amount)+(inputs.A344 and inputs.A344.amount)+(inputs.A345 and inputs.A345.amount)</field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_korvaukset" />
+        </record>
+
+        <!-- Lomakorv. työsuhteen päättyessä -->
+        <!--
+        <record id="hr_payroll.hr_rule_34" model="hr.salary.rule">
+            <field name="name">Lomakorv. työsuhteen päättyessä</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">34</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+        -->
+
+        <!-- Yksityisajot -->
+        <record id="hr_payroll.hr_rule_45" model="hr.salary.rule">
+            <field name="name">Yksityisajot</field>
+            <field name="category_id" ref="hr_payroll.DED" />
+            <field name="code">45</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Ylläpitokorvaus -->
+        <record id="hr_payroll.hr_rule_51" model="hr.salary.rule">
+            <field name="name">Ylläpitokorvaus</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">51</field>
+            <field name="sequence">11</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A511 and inputs.A511.amount)+(inputs.A512 and inputs.A512.amount)+(inputs.A513 and inputs.A513.amount)+(inputs.A514 and inputs.A514.amount)+(inputs.A515 and inputs.A515.amount)</field>
+        </record>
+
+        <!-- Lomaraha -->
+        <record id="hr_payroll.hr_rule_52" model="hr.salary.rule">
+            <field name="name">Lomaraha</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">52</field>
+            <field name="sequence">6</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.ALOMA521 and inputs.ALOMA521.amount)+(inputs.ALOMA522 and inputs.ALOMA522.amount)+(inputs.ALOMA523 and inputs.ALOMA523.amount)+(inputs.ALOMA524 and inputs.ALOMA524.amount)+(inputs.ALOMA525 and inputs.ALOMA525.amount)</field>
+        </record>
+
+        <!-- Lomakorvaus -->
+        <record id="hr_payroll.hr_rule_53" model="hr.salary.rule">
+            <field name="name">Lomakorvaus</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">53</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A531 and inputs.A531.amount)+(inputs.A532 and inputs.A532.amount)+(inputs.A533 and inputs.A533.amount)+(inputs.A534 and inputs.A534.amount)+(inputs.A535 and inputs.A535.amount)</field>
+        </record>
+
+        <!-- Ateriakorvaus -->
+        <record id="hr_payroll.hr_rule_55" model="hr.salary.rule">
+            <field name="name">Ateriakorvaus</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">55</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A551 and inputs.A551.amount)+(inputs.A552 and inputs.A552.amount)+(inputs.A553 and inputs.A553.amount)+(inputs.A554 and inputs.A554.amount)+(inputs.A555 and inputs.A555.amount)</field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_korvaukset" />
+        </record>
+
+        <!-- Puhelinkorvaus -->
+        <record id="hr_payroll.hr_rule_57" model="hr.salary.rule">
+            <field name="name">Puhelinkorvaus</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">57</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A571 and inputs.A571.amount)+(inputs.A572 and inputs.A572.amount)+(inputs.A573 and inputs.A573.amount)+(inputs.A574 and inputs.A574.amount)+(inputs.A575 and inputs.A575.amount)</field>
+        </record>
+
+        <!-- KM-korvaus mopedi -->
+        <record id="hr_payroll.hr_rule_59" model="hr.salary.rule">
+            <field name="name">KM-korvaus mopedi</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">59</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Sahavähennys -->
+        <record id="hr_payroll.hr_rule_61" model="hr.salary.rule">
+            <field name="name">Sahavähennys</field>
+            <field name="category_id" ref="hr_payroll.DED" />
+            <field name="code">61</field>
+            <field name="sequence">4</field>
+            <field name="quantity">-1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A611 and inputs.A611.amount)+(inputs.A612 and inputs.A612.amount)+(inputs.A613 and inputs.A613.amount)+(inputs.A614 and inputs.A614.amount)+(inputs.A615 and inputs.A615.amount)*-1</field>
+        </record>
+
+        <!-- Ulosmittaus -->
+        <record id="hr_payroll.hr_rule_69" model="hr.salary.rule">
+            <field name="name">Ulosmittaus</field>
+            <field name="category_id" ref="hr_payroll.DED" />
+            <field name="code">69</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Jäsenmaksu -->
+        <record id="hr_payroll.hr_rule_99" model="hr.salary.rule">
+            <field name="name">Jäsenmaksu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_jasenmaksut" />
+            <field name="code">99</field>
+            <field name="sequence">22</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (contract.membership_fee/100)*categories.Palkka*-1</field>
+        </record>
+
+        <!-- KM-korvaus lisähenkilö -->
+        <record id="hr_payroll.hr_rule_101" model="hr.salary.rule">
+            <field name="name">KM-korvaus lisähenkilö</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">101</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A1011 and inputs.A1011.amount)+(inputs.A1012 and inputs.A1012.amount)+(inputs.A1013 and inputs.A1013.amount)+(inputs.A1014 and inputs.A1014.amount)+(inputs.A1015 and inputs.A1015.amount)</field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_korvaukset" />
+        </record>
+
+        <!-- Säähaittakorvaus 3% -->
+        <record id="hr_payroll.hr_rule_102" model="hr.salary.rule">
+            <field name="name">Säähaittakorvaus 3%</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">102</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A1021 and inputs.A1021.amount)+(inputs.A1022 and inputs.A1022.amount)+(inputs.A1023 and inputs.A1023.amount)+(inputs.A1024 and inputs.A1024.amount)+(inputs.A1025 and inputs.A1025.amount)</field>
+        </record>
+
+        <!-- Ansiontasaus -->
+        <record id="hr_payroll.hr_rule_103" model="hr.salary.rule">
+            <field name="name">Ansiontasaus</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">103</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A1031 and inputs.A1031.amount)+(inputs.A1032 and inputs.A1032.amount)+(inputs.A1033 and inputs.A1033.amount)+(inputs.A1034 and inputs.A1034.amount)+(inputs.A1035 and inputs.A1035.amount)</field>
+        </record>
+
+        <!-- Sairasajanpalkka -->
+        <record id="hr_payroll.hr_rule_104" model="hr.salary.rule">
+            <field name="name">Sairasajanpalkka</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">104</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A1041 and inputs.A1041.amount)+(inputs.A1042 and inputs.A1042.amount)+(inputs.A1043 and inputs.A1043.amount)+(inputs.A1044 and inputs.A1044.amount)+(inputs.A1045 and inputs.A1045.amount)</field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_sairasajan_palkka" />
+        </record>
+
+        <!-- Vuokra -->
+        <record id="hr_payroll.hr_rule_107" model="hr.salary.rule">
+            <field name="name">Vuokra</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_vahennykset" />
+            <field name="code">107</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.Vuokra1 and inputs.Vuokra1.amount)+(inputs.Vuokra2 and inputs.Vuokra2.amount)+(inputs.Vuokra3 and inputs.Vuokra3.amount)+(inputs.Vuokra4 and inputs.Vuokra4.amount)</field>
+        </record>
+
+        <!-- Sairausajan korvaus -->
+        <record id="hr_payroll.hr_rule_113" model="hr.salary.rule">
+            <field name="name">Sairausajan korvaus</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">113</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_sairasajan_korvaus" />
+        </record>
+
+        <!-- Istumaraha -->
+        <record id="hr_payroll.hr_rule_122" model="hr.salary.rule">
+            <field name="name">Istumaraha</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">122</field>
+            <field name="sequence">10</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.A1221 and inputs.A1221.amount)+(inputs.A1222 and inputs.A1222.amount)+(inputs.A1223 and inputs.A1223.amount)+(inputs.A1224 and inputs.A1224.amount)+(inputs.A1225 and inputs.A1225.amount)</field>
+        </record>
+
+        <!-- Ateriakorvaus -->
+        <record id="hr_payroll.hr_rule_alw001" model="hr.salary.rule">
+            <field name="name">Ateriakorvaus</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">ALW001</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.ALW0011 and inputs.ALW0011.amount)+(inputs.ALW0012 and inputs.ALW0012.amount)+(inputs.ALW0013 and inputs.ALW0013.amount)+(inputs.ALW0014 and inputs.ALW0014.amount)+(inputs.ALW0015 and inputs.ALW0015.amount)</field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_korvaukset" />
+        </record>
+
+        <!-- Kokopäiväraha -->
+        <record id="hr_payroll.hr_rule_alw003" model="hr.salary.rule">
+            <field name="name">Kokopäiväraha</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">ALW003</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.ALW0031 and inputs.ALW0031.amount)+(inputs.ALW0032 and inputs.ALW0032.amount)+(inputs.ALW0033 and inputs.ALW0033.amount)+(inputs.A34 and inputs.ALW0034.amount)+(inputs.ALW0035 and inputs.ALW0035.amount)</field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_korvaukset" />
+        </record>
+
+        <!-- Muu korvaus -->
+        <record id="hr_payroll.hr_rule_alw004" model="hr.salary.rule">
+            <field name="name">Muu korvaus</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">ALW004</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.ALW0041 and inputs.ALW0041.amount)+(inputs.ALW0042 and inputs.ALW0042.amount)+(inputs.ALW0043 and inputs.ALW0043.amount)+(inputs.ALW0044 and inputs.ALW0044.amount)+(inputs.ALW0045 and inputs.ALW0045.amount)</field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_korvaukset" />
+        </record>
+
+        <!-- Muu verovapaa korvaus -->
+        <record id="hr_payroll.hr_rule_alw005" model="hr.salary.rule">
+            <field name="name">Muu verovapaa korvaus</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">ALW005</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute"> result = (inputs.ALW0051 and inputs.ALW0051.amount)+(inputs.ALW0052 and inputs.ALW0052.amount)+(inputs.ALW0053 and inputs.ALW0053.amount)+(inputs.ALW0054 and inputs.ALW0054.amount)+(inputs.ALW0055 and inputs.ALW0055.amount)</field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_korvaukset" />
+        </record>
+
+        <!-- Puolipäiväraha -->
+        <record id="hr_payroll.hr_rule_alw006" model="hr.salary.rule">
+            <field name="name">Puolipäiväraha</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">ALW006</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.ALW0061 and inputs.ALW0061.amount)+(inputs.ALW0062 and inputs.ALW0062.amount)+(inputs.ALW0063 and inputs.ALW0063.amount)+(inputs.ALW0064 and inputs.ALW0064.amount)+(inputs.ALW0065 and inputs.ALW0065.amount)</field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_korvaukset" />
+        </record>
+
+        <!-- Rakennusalan matkakustannusten korvaus -->
+        <record id="hr_payroll.hr_rule_alw007" model="hr.salary.rule">
+            <field name="name">Rakennusalan matkakustannusten korvaus</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">ALW007</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.ALW0071 and inputs.ALW0071.amount)+(inputs.ALW0072 and inputs.ALW0072.amount)+(inputs.ALW0073 and inputs.ALW0073.amount)+(inputs.ALW0074 and inputs.ALW0074.amount)+(inputs.ALW0075 and inputs.ALW0075.amount)</field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_korvaukset" />
+        </record>
+
+        <!-- Työkalukorvaus -->
+        <record id="hr_payroll.hr_rule_alw008" model="hr.salary.rule">
+            <field name="name">Työkalukorvaus</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">ALW008</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.ALW0081 and inputs.ALW0081.amount)+(inputs.ALW0082 and inputs.ALW0082.amount)+(inputs.ALW0083 and inputs.ALW0083.amount)+(inputs.ALW0084 and inputs.ALW0084.amount)+(inputs.ALW0085 and inputs.ALW0085.amount)</field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_korvaukset" />
+        </record>
+
+        <!-- Vuosipalveluslisä -->
+        <record id="hr_payroll.hr_rule_alw010" model="hr.salary.rule">
+            <field name="name">Vuosipalveluslisä</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">ALW010</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.ALW0101 and inputs.ALW0101.amount)</field>
+        </record>
+
+        <!-- Muu ennakko -->
+        <record id="hr_payroll.hr_rule_enn001" model="hr.salary.rule">
+            <field name="name">Muu ennakko</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_ennakkopalkka" />
+            <field name="code">ENN001</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Palkkaennakko -->
+        <record id="hr_payroll.hr_rule_enn002" model="hr.salary.rule">
+            <field name="name">Palkkaennakko</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_vahennykset" />
+            <field name="code">ENN002</field>
+            <field name="sequence">999</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.Ennakko and inputs.Ennakko.amount)</field>
+        </record>
+
+        <!-- Ennakonpidätys -->
+        <record id="hr_payroll.hr_rule_enn2016" model="hr.salary.rule">
+            <field name="name">Ennakonpidätys</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_vuosipalkka" />
+            <field name="code">ENN2016</field>
+            <field name="sequence">1001</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip.sum('ENN','2016-01-01','2016-12-31')+categories.Vero</field>
+        </record>
+
+        <!-- Matkapuhelinetu -->
+        <record id="hr_payroll.hr_rule_etu001" model="hr.salary.rule">
+            <field name="name">Matkapuhelinetu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_luontaisetu" />
+            <field name="code">ETU001</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Asuntoetu -->
+        <record id="hr_payroll.hr_rule_etu002" model="hr.salary.rule">
+            <field name="name">Asuntoetu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_luontaisetu" />
+            <field name="code">ETU002</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Autoetu -->
+        <record id="hr_payroll.hr_rule_etu003" model="hr.salary.rule">
+            <field name="name">Autoetu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_luontaisetu" />
+            <field name="code">ETU003</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Lounassetelietu -->
+        <record id="hr_payroll.hr_rule_etu004" model="hr.salary.rule">
+            <field name="name">Lounassetelietu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_luontaisetu" />
+            <field name="code">ETU004</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Muu luontoisetu -->
+        <record id="hr_payroll.hr_rule_etu005" model="hr.salary.rule">
+            <field name="name">Muu luontoisetu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_luontaisetu" />
+            <field name="code">ETU005</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Puhelinetu -->
+        <record id="hr_payroll.hr_rule_etu006" model="hr.salary.rule">
+            <field name="name">Puhelinetu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_luontaisetu" />
+            <field name="code">ETU006</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Työsuhdematkalippu -->
+        <record id="hr_payroll.hr_rule_etu008" model="hr.salary.rule">
+            <field name="name">Työsuhdematkalippu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_luontaisetu" />
+            <field name="code">ETU007</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Ravintoetu -->
+        <record id="hr_payroll.hr_rule_etu007" model="hr.salary.rule">
+            <field name="name">Ravintoetu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_luontaisetu" />
+            <field name="code">ETU007</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Kilometrikorvaus -->
+        <record id="hr_payroll.hr_rule_km002" model="hr.salary.rule">
+            <field name="name">Kilometrikorvaus</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">KM002</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.KM0021 and inputs.KM0021.amount)+(inputs.KM0022 and inputs.KM0022.amount)+(inputs.KM0023 and inputs.KM0023.amount)+(inputs.KM0024 and inputs.KM0024.amount)</field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_korvaukset" />
+        </record>
+
+        <!-- Lomapalkka -->
+        <record id="hr_payroll.hr_rule_loma511" model="hr.salary.rule">
+            <field name="name">Lomapalkka</field>
+            <field name="category_id" ref="hr_payroll.BASIC" />
+            <field name="code">LOMA511</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.ALOMA5111 and inputs.ALOMA5111.amount)+(inputs.ALOMA5112 and inputs.ALOMA5112.amount)+(inputs.ALOMA5113 and inputs.ALOMA5113.amount)+(inputs.ALOMA5114 and inputs.ALOMA5114.amount)+(inputs.ALOMA5115 and inputs.ALOMA5115.amount)</field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_lomapalkka" />
+        </record>
+
+        <!-- Nettopalkka -->
+        <record id="hr_payroll.hr_rule_net" model="hr.salary.rule">
+            <field name="name">Nettopalkka</field>
+            <field name="category_id" ref="hr_payroll.NET" />
+            <field name="code">NET</field>
+            <field name="sequence">1000</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = categories.BASIC + categories.ALW - categories.Vero - categories.LAK - ((contract.membership_fee/100)*categories.Palkka) - categories.VAH</field>
+        </record>
+
+        <!-- Ennakonpidätyksen alainen palkka -->
+        <record id="hr_payroll.hr_rule_palkka001" model="hr.salary.rule">
+            <field name="name">Ennakonpidätyksen alainen palkka</field>
+            <field name="category_id" ref="hr_payroll.NET" />
+            <field name="code">Palkka001</field>
+            <field name="sequence">21</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = categories.BASIC - categories.DED</field>
+        </record>
+
+        <!-- Ennakonpidätyksen alainen palkka 2016 -->
+        <record id="hr_payroll.hr_rule_palkka2016" model="hr.salary.rule">
+            <field name="name">Ennakonpidätyksen alainen palkka</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_vuosipalkka" />
+            <field name="code">Palkka2016</field>
+            <field name="sequence">1002</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip.sum('Palkka001','2016-01-01','2016-12-31') + categories.Palkka</field>
+        </record>
+
+        <!-- Verottomat korvaukset 2016 -->
+        <record id="hr_payroll.hr_rule_palkkiot2016" model="hr.salary.rule">
+            <field name="name">Verottomat korvaukset</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_vuosipalkka" />
+            <field name="code">Palkkiot2016</field>
+            <field name="sequence">1001</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+KILOMETRIT = payslip.sum('KM002','2016-01-01','2016-12-31')
+ATERIAKORVAUS = payslip.sum('ALW001','2016-01-01','2016-12-31')
+SAIRAUS = payslip.sum('113','2016-01-01','2016-12-31')
+PUHELIN = payslip.sum('57','2016-01-01','2016-12-31')
+YO = payslip.sum('YOP','2016-01-01','2016-12-31')
+Yllapito = payslip.sum('51','2016-01-01','2016-12-31')
+PAIVARAHA = payslip.sum('32','2016-01-01','2016-12-31')
+PALKKIOT = categories.ALW
+
+result = KILOMETRIT+ATERIAKORVAUS+SAIRAUS+PUHELIN+YO+Yllapito+PAIVARAHA+PALKKIOT
+            </field>
+        </record>
+
+        <!-- Päivärahamaksu -->
+        <record id="hr_payroll.hr_rule_sote001" model="hr.salary.rule">
+            <field name="name">Päivärahamaksu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_sote" />
+            <field name="code">SOTE001</field>
+            <field name="sequence">28</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = categories.Palkka* (0.82/100)</field>
+        </record>
+
+        <!-- Päivärahamaksu 2016 -->
+        <record id="hr_payroll.hr_rule_sote2016" model="hr.salary.rule">
+            <field name="name">Päivärahamaksu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_vuosipalkka" />
+            <field name="code">SOTE2016</field>
+            <field name="sequence">1006</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = payslip.sum('SOTE001','2016-01-01','2016-12-31') + categories.SOTE</field>
+        </record>
+
+        <!-- TA ryhmähenkivakuutusmaksu -->
+        <record id="hr_payroll.hr_rule_tam001" model="hr.salary.rule">
+            <field name="name">TA ryhmähenkivakuutusmaksu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_tyonantajamaksu" />
+            <field name="code">TAM001</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- TA sosiaaliturvamaksu -->
+        <record id="hr_payroll.hr_rule_tam002" model="hr.salary.rule">
+            <field name="name">TA sosiaaliturvamaksu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_tyonantajamaksu" />
+            <field name="code">TAM002</field>
+            <field name="sequence">25</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = categories.Palkka* (2.12/100)</field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_sosiaaliturvamaksu" />
+        </record>
+
+        <!-- TA Sosiaaliturvamaksu velka -->
+        <record id="hr_payroll.hr_rule_tam002_2" model="hr.salary.rule">
+            <field name="name">TA sosiaaliturvamaksu velka</field>
+            <field name="parent_rule_id" ref="hr_payroll.hr_rule_tam002" />
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_tyonantajamaksu" />
+            <field name="code">TAM002_2</field>
+            <field name="sequence">25</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute"> result = categories.Palkka* (2.12/100) </field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_sosiaaliturvamaksu" />
+        </record>
+
+        <!-- TA tapaturmavakuutusmaksu -->
+        <record id="hr_payroll.hr_rule_tam003" model="hr.salary.rule">
+            <field name="name">TA tapaturmavakuutusmaksu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_tyonantajamaksu" />
+            <field name="code">TAM003</field>
+            <field name="sequence">25</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">percentage</field>
+            <field name="amount_percentage">1</field>
+            <field name="amount_percentage_base">categories.BASIC</field>
+            <field name="amount_python_compute"></field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_tapaturmavakuutusmaksu" />
+        </record>
+
+        <!-- TA työttömyysvakuutusmaksu -->
+        <record id="hr_payroll.hr_rule_tam004" model="hr.salary.rule">
+            <field name="name">TA työttömyysvakuutusmaksu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_tyonantajamaksu" />
+            <field name="code">TAM004</field>
+            <field name="sequence">25</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = categories.Palkka* (1.00/100)</field>
+        </record>
+
+        <!-- Työnantajan TyEL-maksu -->
+        <record id="hr_payroll.hr_rule_tam006" model="hr.salary.rule">
+            <field name="name">Työnantajan TyEL-maksu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_tyonantajamaksu" />
+            <field name="code">TAM006</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Ay-jäsenmaksu -->
+        <record id="hr_payroll.hr_rule_ttm001" model="hr.salary.rule">
+            <field name="name">Ay-jäsenmaksu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_tyontekijamaksu" />
+            <field name="code">TTM001</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Korko -->
+        <record id="hr_payroll.hr_rule_ttm002" model="hr.salary.rule">
+            <field name="name">Korko</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_tyontekijamaksu" />
+            <field name="code">TTM002</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Lainan lyhennys -->
+        <record id="hr_payroll.hr_rule_ttm003" model="hr.salary.rule">
+            <field name="name">Lainan lyhennys</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_tyontekijamaksu" />
+            <field name="code">TTM003</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Lounasseteleiden maksu -->
+        <record id="hr_payroll.hr_rule_ttm004" model="hr.salary.rule">
+            <field name="name">Lounasseteleiden maksu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_tyontekijamaksu" />
+            <field name="code">TTM004</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Muu työntekijämaksu -->
+        <record id="hr_payroll.hr_rule_ttm005" model="hr.salary.rule">
+            <field name="name">Muu työntekijämaksu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_tyontekijamaksu" />
+            <field name="code">TTM005</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Työntekijän TyEL-maksu -->
+        <record id="hr_payroll.hr_rule_ttm007" model="hr.salary.rule">
+            <field name="name">Työntekijän TyEL-maksu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_lakisaateiset_maksut" />
+            <field name="code">TTM007</field>
+            <field name="sequence">24</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+if employee.age > 52:
+  vero=categories.Palkka*(7.20/100)
+
+else:
+  vero=categories.Palkka*(5.70/100)
+result = vero
+            </field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_tyel" />
+        </record>
+
+        <!-- Työttömyysvakuutusmaksu -->
+        <record id="hr_payroll.hr_rule_ttm008" model="hr.salary.rule">
+            <field name="name">Työttömyysvakuutusmaksu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_lakisaateiset_maksut" />
+            <field name="code">TTM008</field>
+            <field name="sequence">25</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = categories.Palkka * ( 1.15/100)</field>
+            <field name="register_id" ref="hr_payroll.hr_contribution_register_tyottomyysvakuutus" />
+        </record>
+
+        <!-- Ulosmittaus -->
+        <record id="hr_payroll.hr_rule_ttm009" model="hr.salary.rule">
+            <field name="name">Ulosmittaus</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_tyontekijamaksu" />
+            <field name="code">TTM009</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Vuokra -->
+        <record id="hr_payroll.hr_rule_ttm010" model="hr.salary.rule">
+            <field name="name">Vuokra</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_tyontekijamaksu" />
+            <field name="code">TTM010</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">fix</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Sairausvakuutusmaksu -->
+        <record id="hr_payroll.hr_rule_ttm011" model="hr.salary.rule">
+            <field name="name">Sairausvakuutusmaksu</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_tyontekijamaksu" />
+            <field name="code">TTM011</field>
+            <field name="sequence">25</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">percentage</field>
+            <field name="amount_percentage">2.12</field>
+            <field name="amount_percentage_base">categories.Palkka</field>
+            <field name="amount_python_compute"></field>
+        </record>
+
+        <!-- Lakisääteiset maksut -->
+        <record id="hr_payroll.hr_rule_ttm2016" model="hr.salary.rule">
+            <field name="name">Lakisääteiset maksut</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_vuosipalkka" />
+            <field name="code">TTM2016</field>
+            <field name="sequence">1001</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+TYEL = payslip.sum('TTM007','2016-01-01','2016-12-31')
+VAKUUTUS = payslip.sum('TTM008','2016-01-01','2016-12-31')
+
+result = TYEL+VAKUUTUS+categories.LAK
+            </field>
+        </record>
+
+        <!-- Rahapalkka -->
+        <record id="hr_payroll.hr_rule_vuo" model="hr.salary.rule">
+            <field name="name">Rahapalkka</field>
+            <field name="category_id" ref="hr_payroll.hr_salary_rule_category_vuosipalkka" />
+            <field name="code">VUO</field>
+            <field name="sequence">14</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="False" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result=payslip.sum('Brutto','2016-01-01','2016-12-31')+categories.BASIC</field>
+        </record>
+
+        <!-- Yöpymiskorvaus -->
+        <record id="hr_payroll.hr_rule_yop" model="hr.salary.rule">
+            <field name="name">Yöpymiskorvaus</field>
+            <field name="category_id" ref="hr_payroll.ALW" />
+            <field name="code">YOP</field>
+            <field name="sequence">5</field>
+            <field name="quantity">1.0</field>
+            <field name="appears_on_payslip" eval="True" />
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = (inputs.AYOP1 and inputs.AYOP1.amount)+(inputs.AYOP2 and inputs.AYOP2.amount)+(inputs.AYOP3 and inputs.AYOP4.amount)+(inputs.AYOP5 and inputs.AYOP5.amount)</field>
+        </record>
+
+    </data>
+</openerp>

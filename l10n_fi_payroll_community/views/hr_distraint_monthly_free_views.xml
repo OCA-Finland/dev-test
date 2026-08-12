@@ -1,0 +1,23 @@
+<odoo>
+    <record id="hr_distraint_monthly_free_view_tree" model="ir.ui.view">
+        <field name="name">hr.distraint.monthly.free.tree</field>
+        <field name="model">hr.distraint.monthly.free</field>
+        <field name="arch" type="xml">
+            <list string="Distraint Monthly Free List" editable="bottom">
+                <field name="employee_id"/>
+                <field name="valid_from" width="400px"/>
+                <field name="valid_until" width="400px"/>
+            </list>
+        </field>
+    </record>
+    <record id="hr_distraint_monthly_free_action" model="ir.actions.act_window">
+        <field name="name">Distraint Monthly Free</field>
+        <field name="res_model">hr.distraint.monthly.free</field>
+    </record>
+    <menuitem
+        id="hr_distraint_monthly_free_menu_action"
+        action="hr_distraint_monthly_free_action"
+        parent="payroll.payroll_menu_configuration"
+        sequence="70"
+    />
+</odoo>

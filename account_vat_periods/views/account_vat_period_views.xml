@@ -1,9 +1,9 @@
 <odoo>
-
     <record id="account_vat_period_action" model="ir.actions.act_window">
         <field name="name">VAT Periods</field>
         <field name="res_model">account.vat.period</field>
         <field name="context">{'search_default_this_fiscal_year': 1}</field>
+        <field name="view_mode">list,form</field> 
     </record>
 
     <record id="account_vat_period_view_tree" model="ir.ui.view">
@@ -13,17 +13,18 @@
             <list string="VAT Period List" create="false" edit="false" default_order="date_range_id desc">
                 <field name="date_range_id" string="VAT Period"/>
                 <button string="Close" type="object" name="action_do_close" class="btn-secondary" invisible="closeable == True or closed == True"/>
-                <button string="Close" type="object" name="action_do_close" class="btn-success" confirm="Are you sure you want to close this period?" invisible="closed == True or closeable == False"/>
+                <button string="Close" type="object" name="action_do_close" class="btn-success" confirm="Closing this period prevents you from making further changes to it. Are you sure you want to close this period?" invisible="closed == True or closeable == False"/>
                 <button string="Closed" type="object" name="action_do_cancel_close" class="btn-danger" invisible="closed == False"/>
-                <button string="Lock" type="object" name="action_do_lock" class="btn-secondary" invisible="locked == True or (closed == True and locked == False)"/>
-                <button string="Lock" type="object" name="action_do_lock" class="btn-success" confirm="Locking this period prevents you from making changes to it and periods prior to it. Are you sure you want to lock it?" invisible="locked == True or closed == False"/>
-                <button string="Locked" type="object" name="action_do_cancel_lock" class="btn-danger" invisible="locked == False"/>
-                <button string="Send Report" type="object" name="action_do_send" class="btn-secondary" invisible="locked == True"/>
-                <button string="Send Report" type="object" name="action_do_send" class="btn-success" invisible="locked == False or (locked == True and sent == True)"/>
+                <button string="Send Report" type="object" name="action_do_send" class="btn-secondary" invisible="closed == True"/>
+                <button string="Send Report" type="object" name="action_do_send" class="btn-success" invisible="closed == False or (closed == True and sent == True)"/>
                 <button string="Report Sent" type="object" name="action_do_cancel_send" class="btn-danger" invisible="sent == False"/>
                 <button string="Open Report" type="object" name="action_open_report_preview" width="150px"></button>
                 <field name="move_id" widget="many2onebutton"/>
                 <field name="closing_date" width="150px"/>
+                <field name="vat_payment_type"/>
+                <field name="payment_move_id" widget="many2onebutton"/>
+                <field name="payment_state" widget="badge" decoration-danger="payment_state == 'not_paid'" decoration-warning="payment_state in ('partial', 'in_payment')" decoration-success="payment_state in ('paid', 'reversed')" optional="show"/>
+                
             </list>
         </field>
     </record>
@@ -33,16 +34,21 @@
             <field name="model">account.vat.period</field>
             <field name="arch" type="xml">
                 <search string="Properties">
-                    <filter string="This Fiscal Year" name="this_fiscal_year" domain="[('fiscal_year_id.date_from', '=', time.strftime('%Y-01-01'))]"/>
+                    <filter string="This Fiscal Year" name="this_fiscal_year" domain="[('is_fiscal_start_date', '=', True)]"/>
                 </search>
             </field>
     </record>
 
     <menuitem
+        id="account_vat_period_conf_menu"
+        parent="account.menu_finance_entries"
+        name="Period Closing"
+        sequence="15"
+    />
+    <menuitem
         id="account_vat_period_menu_action"
         action="account_vat_period_action"
-        parent="account.menu_finance_entries"
-        sequence="70"
+        parent="account_vat_period_conf_menu"
+        sequence="10"
     />
-
 </odoo>

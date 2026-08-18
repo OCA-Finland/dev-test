@@ -1,5 +1,4 @@
 <odoo>
-
     <record id="account_fiscal_year_view_form_inherit" model="ir.ui.view">
         <field name="name">account.fiscal.year.form</field>
         <field name="model">account.fiscal.year</field>
@@ -10,5 +9,4 @@
             </field>
         </field>
     </record>
-
 </odoo>

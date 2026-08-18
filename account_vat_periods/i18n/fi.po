@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0-20260619\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-03 09:27+0000\n"
-"PO-Revision-Date: 2026-08-03 09:27+0000\n"
+"POT-Creation-Date: 2026-08-18 15:02+0000\n"
+"PO-Revision-Date: 2026-08-18 15:02+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -17,14 +17,19 @@ msgstr ""
 
 #. module: account_vat_periods
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__account_fiscal_year__vat_period_duration__12
-#: model:ir.model.fields.selection,name:account_vat_periods.selection__res_config_settings__vat_period_duration__12
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__res_company__vat_period_duration__12
 msgid "A year"
 msgstr "Vuosi"
 
 #. module: account_vat_periods
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.account_vat_period_view_tree
-msgid "Are you sure you want to close this period?"
-msgstr "Oletko varma että haluat sulkea tämän kauden?"
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__account_vat_period__payment_state__blocked
+msgid "Blocked"
+msgstr "Estetty"
+
+#. module: account_vat_periods
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__account_vat_period__payment_state__cancel
+msgid "Cancelled"
+msgstr "Peruttu"
 
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.account_vat_period_view_tree
@@ -48,6 +53,13 @@ msgid "Closing Date"
 msgstr "Sulkemispäivämäärä"
 
 #. module: account_vat_periods
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.account_vat_period_view_tree
+msgid ""
+"Closing this period prevents you from making further changes to it. Are you "
+"sure you want to close this period?"
+msgstr "Kauden sulkeminen estää sinua tekemästä muutoksia siihen. Oletko varma että haluat sulkea kauden?"
+
+#. module: account_vat_periods
 #: model:ir.model,name:account_vat_periods.model_res_company
 msgid "Companies"
 msgstr "Yritykset"
@@ -68,6 +80,7 @@ msgid "Created on"
 msgstr "Luotu"
 
 #. module: account_vat_periods
+#: model:ir.model,name:account_vat_periods.model_date_range
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__date_range_id
 msgid "Date Range"
 msgstr ""
@@ -75,7 +88,36 @@ msgstr ""
 #. module: account_vat_periods
 #: model:ir.model,name:account_vat_periods.model_date_range_generator
 msgid "Date Range Generator"
-msgstr ""
+msgstr "Date Range -generaattori"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_mis_report_instance__date_range_name
+msgid "Date Range Name"
+msgstr "Date Rangen Nimi"
+
+#. module: account_vat_periods
+#: model:mis.report.instance.period,name:account_vat_periods.mis_report_instance_period_vat_month
+#: model:mis.report.instance.period,name:account_vat_periods.mis_report_instance_period_vat_quarter
+#: model:mis.report.instance.period,name:account_vat_periods.mis_report_instance_period_vat_year
+msgid "Default"
+msgstr "Oletus"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_res_company__vat_account_id
+#: model:ir.model.fields,field_description:account_vat_periods.field_res_config_settings__account_id
+msgid "Default Account for VAT Payable"
+msgstr "Oletuarvoinen tili ALV-maksatukselle"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_res_config_settings__move_name
+msgid "Default Description for VAT Payble Line"
+msgstr "Default Name for VAT Payble Line"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_res_company__vat_payment_reference
+#: model:ir.model.fields,field_description:account_vat_periods.field_res_config_settings__payment_reference
+msgid "Default Payment Reference for VAT Payable"
+msgstr "Oletusarvoinen maksuviite ALV-maksatukselle"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_res_company__closing_id
@@ -84,9 +126,11 @@ msgid "Default VAT Closing Template"
 msgstr "Oletusarvoinen ALV-kauden sulkemispohja"
 
 #. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_res_company__vat_period_duration
 #: model:ir.model.fields,field_description:account_vat_periods.field_res_config_settings__vat_period_duration
 msgid "Default VAT Period Duration for Fiscal Year Auto-creation"
-msgstr "Oletusarvoinen ALV-kauden pituus tilikausien automaattista luomista varten"
+msgstr ""
+"Oletusarvoinen ALV-kauden pituus tilikausien automaattista luomista varten"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_res_company__mis_report_instance_id
@@ -95,9 +139,25 @@ msgid "Default VAT Report Template"
 msgstr "Oletuarvoinen ALV-raportin pohja"
 
 #. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_res_company__vat_partner_id
+#: model:ir.model.fields,field_description:account_vat_periods.field_res_config_settings__partner_id
+msgid "Default Vendor for VAT Payable"
+msgstr "Oletusarvoinen toimittaja ALV-maksatukselle"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_res_company__vat_move_name
+msgid "Default description for VAT Payble Line"
+msgstr "Oletusarvoinen kuvaus ALV-maksatukselle"
+
+#. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__display_name
 msgid "Display Name"
 msgstr "Näyttönimi"
+
+#. module: account_vat_periods
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__account_vat_period__payment_state__draft
+msgid "Draft"
+msgstr "Luonnos"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_account_fiscal_year__vat_period_duration
@@ -108,12 +168,28 @@ msgstr "Tilikauden ALV-kausien pituus"
 #. module: account_vat_periods
 #: model:ir.model,name:account_vat_periods.model_account_fiscal_year
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__fiscal_year_id
+#: model:ir.model.fields,field_description:account_vat_periods.field_date_range__fiscal_year_id
 msgid "Fiscal Year"
 msgstr "Tilikausi"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__id
 msgid "ID"
+msgstr ""
+
+#. module: account_vat_periods
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__account_vat_period__payment_state__in_payment
+msgid "In Payment"
+msgstr "Maksussa"
+
+#. module: account_vat_periods
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__account_vat_period__payment_state__invoicing_legacy
+msgid "Invoicing App Legacy"
+msgstr ""
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__is_fiscal_start_date
+msgid "Is Fiscal Start Date"
 msgstr ""
 
 #. module: account_vat_periods
@@ -132,28 +208,18 @@ msgid "Last Updated on"
 msgstr "Viimeksi päivitetty"
 
 #. module: account_vat_periods
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.account_vat_period_view_tree
-msgid "Lock"
-msgstr "Lukitse"
+#: model:ir.model,name:account_vat_periods.model_mis_report_instance
+msgid "MIS Report Instance"
+msgstr "MIS-raportin instanssi"
 
 #. module: account_vat_periods
-#: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__locked
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.account_vat_period_view_tree
-msgid "Locked"
-msgstr "Lukittu"
-
-#. module: account_vat_periods
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.account_vat_period_view_tree
-msgid ""
-"Locking this period prevents you from making changes to it and periods prior"
-" to it. Are you sure you want to lock it?"
-msgstr ""
-"Tämän kauden lukitseminen estää sinua tekemästä muutoksia siihen ja sitä "
-"edeltäviin kausiin. Oletko varma että haluat lukita sen?"
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__account_vat_period__payment_state__not_paid
+msgid "Not Paid"
+msgstr "Maksamatta"
 
 #. module: account_vat_periods
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__account_fiscal_year__vat_period_duration__1
-#: model:ir.model.fields.selection,name:account_vat_periods.selection__res_config_settings__vat_period_duration__1
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__res_company__vat_period_duration__1
 msgid "One month"
 msgstr "Yksi kuukausi"
 
@@ -163,9 +229,39 @@ msgid "Open Report"
 msgstr "Avaa Raportti"
 
 #. module: account_vat_periods
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__account_vat_period__payment_state__paid
+msgid "Paid"
+msgstr "Maksettu"
+
+#. module: account_vat_periods
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__account_vat_period__payment_state__partial
+msgid "Partially Paid"
+msgstr "Osittain Maksettu"
+
+#. module: account_vat_periods
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__account_vat_period__vat_payment_type__payable
+msgid "Payable"
+msgstr "Maksettavaa"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__payment_state
+msgid "Payment State"
+msgstr "Maksun tila"
+
+#. module: account_vat_periods
+#: model:ir.ui.menu,name:account_vat_periods.account_vat_period_conf_menu
+msgid "Period Closing"
+msgstr "Kauden Päättäminen"
+
+#. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.account_vat_period_view_search
 msgid "Properties"
 msgstr "Ominaisuudet"
+
+#. module: account_vat_periods
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__account_vat_period__vat_payment_type__receivable
+msgid "Receivable"
+msgstr "Saatavaa"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__report_generated
@@ -178,6 +274,11 @@ msgid "Report Sent"
 msgstr "Raportti lähetetty"
 
 #. module: account_vat_periods
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__account_vat_period__payment_state__reversed
+msgid "Reversed"
+msgstr "Käännetty"
+
+#. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.account_vat_period_view_tree
 msgid "Send Report"
 msgstr "Lähetä raportti"
@@ -188,10 +289,14 @@ msgid "Sent"
 msgstr "Lähetetty"
 
 #. module: account_vat_periods
-#. odoo-javascript
-#: code:addons/account_vat_periods/static/src/components/date_range_field.xml:0
-msgid "Testi"
-msgstr ""
+#: model:ir.model.fields,field_description:account_vat_periods.field_mis_report_instance__widget_show_date_range
+msgid "Show Date Range Filter"
+msgstr "Näytä Date Range -suodatin"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_mis_report_instance__widget_show_date_range
+msgid "Show the Date Range Filter in the report widget bar"
+msgstr "Näytä Date Range -suodatin raportin widget-palkissa"
 
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.account_vat_period_view_search
@@ -200,9 +305,14 @@ msgstr "Nykyinen tilikausi"
 
 #. module: account_vat_periods
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__account_fiscal_year__vat_period_duration__3
-#: model:ir.model.fields.selection,name:account_vat_periods.selection__res_config_settings__vat_period_duration__3
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__res_company__vat_period_duration__3
 msgid "Three months"
 msgstr "Kolme kuukautta"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__vat_payment_type
+msgid "VAT Payment Type"
+msgstr "Maksun tyyppi"
 
 #. module: account_vat_periods
 #: model:ir.model,name:account_vat_periods.model_account_vat_period
@@ -228,6 +338,21 @@ msgid "VAT Periods"
 msgstr "ALV-kaudet"
 
 #. module: account_vat_periods
-#: model:mis.report.instance,name:account_vat_periods.mis_period_instance_vat
-msgid "VAT Report"
-msgstr "ALV-raportti"
+#: model:mis.report.instance,name:account_vat_periods.mis_report_instance_vat_month
+msgid "VAT Report Month"
+msgstr "ALV-raportti Kuukausi"
+
+#. module: account_vat_periods
+#: model:mis.report.instance,name:account_vat_periods.mis_report_instance_vat_quarter
+msgid "VAT Report Quarter"
+msgstr "ALV-raportti Kvartaali"
+
+#. module: account_vat_periods
+#: model:mis.report.instance,name:account_vat_periods.mis_report_instance_vat_year
+msgid "VAT Report Year"
+msgstr "ALV-raportti Vuosi"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__payment_move_id
+msgid "Vendor Bill"
+msgstr "Ostolasku"

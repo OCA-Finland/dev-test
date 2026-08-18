@@ -1,5 +1,4 @@
 <odoo>
-
     <record id="res_config_settings_view_form" model="ir.ui.view">
         <field name="name">vat_period.res.config.settings.form</field>
         <field name="model">res.config.settings</field>
@@ -30,9 +29,38 @@
                             />
                         </div>
                     </setting>
+                    <setting id="default_templates_payable">
+                        <div class="row mt16" id="partner_id">
+                            <label for="partner_id" class="col-lg-5" />
+                            <field
+                                name="partner_id"
+                                options="{'no_create_edit': True, 'no_open': True}"
+                            />
+                        </div>
+                        <div class="row mt16" id="account_id">
+                            <label for="account_id" class="col-lg-5" />
+                            <field
+                                name="account_id"
+                                options="{'no_create_edit': True, 'no_open': True}"
+                            />
+                        </div>
+                        <div class="row mt16" id="payment_reference">
+                            <label for="payment_reference" class="col-lg-5" />
+                            <field
+                                name="payment_reference"
+                                options="{'no_create_edit': True, 'no_open': True}"
+                            />
+                        </div>
+                        <div class="row mt16" id="move_name">
+                            <label for="move_name" class="col-lg-5" />
+                            <field
+                                name="move_name"
+                                options="{'no_create_edit': True, 'no_open': True}"
+                            />
+                        </div>
+                    </setting>
                 </block>
             </xpath>
         </field>
     </record>
-
 </odoo>

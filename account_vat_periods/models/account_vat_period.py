@@ -1,4 +1,4 @@
-from odoo import fields, models
+from odoo import fields, models, api
 from odoo.exceptions import UserError
 from datetime import datetime
 import dateutil.relativedelta
@@ -7,19 +7,39 @@ class AccountVatPeriod(models.Model):
       _name = "account.vat.period"
       _description = "VAT Period"
 
-      #name = fields.Char(required=False, translate=True) Tätä ei ehkä edes tarvita?
       closing_date = fields.Date(readonly=True)
-      #vat_report_date = fields.Date() Nämä kaksi jääneet roikkumaan ensimmäisestä prototyypistä
-      #vat_report_deadline = fields.Date()
       closed = fields.Boolean(default=False, readonly=True)
-      locked = fields.Boolean(default=False, readonly=True)
       sent = fields.Boolean(default=False, readonly=True)
       closeable = fields.Boolean(default=False, readonly=True, compute="_compute_closeable")
-      #lockable = fields.Boolean(default=False, readonly=True, compute="_compute_lockable") Mahdollisesti tulossa pian
       report_generated = fields.Boolean(default=False, readonly=True)
+      payment_state = fields.Selection(
+            selection=[
+                  ("not_paid", "Not Paid"),
+                  ("in_payment", "In Payment"),
+                  ("paid", "Paid"),
+                  ("partial", "Partially Paid"),
+                  ("reversed", "Reversed"),
+                  ("blocked", "Blocked"),
+                  ("invoicing_legacy", "Invoicing App Legacy"),
+                  ("draft", "Draft"), 
+                  ("cancel", "Cancelled")
+            ],
+            readonly=True,
+            compute="_compute_payment_state"
+      )
+      vat_payment_type = fields.Selection(
+            selection=[
+                  ("payable", "Payable"), ("receivable", "Receivable"), ("none", "")
+            ],
+            string="VAT Payment Type",
+            readonly=True,
+            compute="_compute_vat_payment_type",
+            default=False
+      )
 
       fiscal_year_id = fields.Many2one("account.fiscal.year", readonly=True)
-      date_range_id = fields.Many2one("date.range", readonly=True)
+      date_range_id = fields.Many2one("date.range", readonly=True, ondelete="cascade")
+      payment_move_id = fields.Many2one("account.move", string="Vendor Bill", readonly=True)
 
       move_id = fields.Many2one(
             "account.move",
@@ -27,26 +47,55 @@ class AccountVatPeriod(models.Model):
             readonly=True
       )
 
+      is_fiscal_start_date = fields.Boolean(
+            compute="_compute_is_fiscal_start_date",
+            store=True
+      )
+
       def _compute_closeable(self):
-            # TÄMÄ OLETTAA ETTÄ ON AINA 12kk ALV-KAUDET, KORJAA!
-            
             for record in self:
                   try:
                         prev_vat_period = self.env["account.vat.period"].search(
-                              [("date_range_id.date_start", "=", f"{record.date_range_id.date_start - dateutil.relativedelta.relativedelta(months=1)}")], limit=1)[0]
+                              [("date_range_id.date_end", "=", f"{record.date_range_id.date_start - dateutil.relativedelta.relativedelta(days=1)}")], limit=1)[0]
 
-                        if prev_vat_period.closed == True and prev_vat_period.locked == True:
+                        if prev_vat_period.closed:
                               record.closeable = True
                         else:
                               record.closeable = False
                   except:
                         record.closeable = True
 
-      def action_do_nothing(self):
+            return True
 
-            raise UserError("This button does nothing!")
+      def _compute_payment_state(self):
+            for record in self:
+                  record.payment_state = record.payment_move_id.status_in_payment
+
+            return True
+
+      def _compute_vat_payment_type(self):
+            for record in self:
+                  if record.move_id:
+                        if self.env.user.company_id.vat_account_id in record.move_id.line_ids.account_id:
+                              record.vat_payment_type = "payable"
+                        else:
+                              record.vat_payment_type = "receivable"
+                  else:
+                        record.vat_payment_type = "none"
+
+            return True
+
+      def _compute_is_fiscal_start_date(self):
+            for record in self:
+                  if record.fiscal_year_id.date_from and self.env.user.company_id.fiscal_year_date_from:
+                        record.is_fiscal_start_date = (record.fiscal_year_id.date_from == self.env.user.company_id.fiscal_year_date_from)
+                  else:
+                        record.is_fiscal_start_date = False
+
+            return True
 
       def action_do_close(self):
+            self.ensure_one()
 
             if not self.closeable:
                   raise UserError("The previous periods have to be closed before closing this period!")
@@ -55,7 +104,6 @@ class AccountVatPeriod(models.Model):
             date_to = self.date_range_id.date_end
 
             closing = self.env.user.company_id.closing_id
-
             closing.close(None, date_from, date_to)
 
             # Find latest closing move
@@ -65,41 +113,24 @@ class AccountVatPeriod(models.Model):
             self.closing_date = datetime.now()
             self.closed = True
 
+            tax_lock_date = self.date_range_id.date_end
+
+            record = self.env["account.update.lock_date"].create({ 
+                        "tax_lock_date": tax_lock_date,
+            })
+            record.execute()
+
             return True
       
       def action_do_cancel_close(self):
-
             self.closed = False
             self.closing_date = None
             self.move_id = None
 
             return True
-      
-      def action_do_lock(self):
-
-            if self.closed == False:
-                  raise UserError("The period has to be closed before locking!")
-
-            tax_lock_date = self.date_range_id.date_end
-
-            #if <jotain joka estää lukitsemisen jos edellistä ei ole lukittu>:
-            #      raise UserError("You can not lock a period until all previous periods are locked!")
-
-            record = self.env["account.update.lock_date"].create({ 
-                        "tax_lock_date": tax_lock_date,
-            })
-
-            record.execute()
-
-            self.locked = True
-
-      def action_do_cancel_lock(self):
-
-            self.locked = False
-
-            return True
 
       def action_open_report_preview(self):
+            self.ensure_one()
 
             report = self.env.user.company_id.mis_report_instance_id
             report.date = self.date_range_id.date_start
@@ -116,16 +147,44 @@ class AccountVatPeriod(models.Model):
             }
 
       def action_do_send(self):
+            self.ensure_one()
 
-            if self.locked == False or self.closed == False:
-                  raise UserError("The period has to be closed and locked before the report can be sent!")
+            if not self.closed:
+                  raise UserError("The period has to be closed before the report can be sent!")
 
+            date = (self.date_range_id.date_start + dateutil.relativedelta.relativedelta(months=2))
+            due = date.replace(day=12)
+            price_unit = 0
+            desc = f"{self.env.user.company_id.vat_account_id.name} {self.date_range_id.name}"
+
+            for line in self.move_id.line_ids:
+                  if line.account_id == self.env.user.company_id.vat_account_id:
+                        price_unit += line.debit
+
+            if self.env.user.company_id.vat_move_name:
+                  desc = f"{self.env.user.company_id.vat_move_name} {self.date_range_id.name}"
+
+            move = self.env["account.move"].create({
+                  "move_type": "in_invoice",
+                  "partner_id": self.env.user.company_id.vat_partner_id.id,
+                  "ref": date.strftime("%Y%m%d"),
+                  "invoice_date": date,
+                  "date": date,
+                  "invoice_date_due": due,
+                  "payment_reference": self.env.user.company_id.vat_payment_reference,
+                  "invoice_line_ids": [(0, 0, {
+                        "name": desc,
+                        "account_id": self.env.user.company_id.vat_account_id.id,
+                        "price_unit": price_unit,
+                        "display_type": "product"
+                  })],
+            })
+
+            self.payment_move_id = move
             self.sent = True
 
             return True
 
       def action_do_cancel_send(self):
-
             self.sent = False
-
             return True

@@ -1,4 +1,4 @@
-<odoo>
+<odoo noupdate="1">
     <record model="account.period.closing" id="account_period_closing_vat">
         <field name="name">VAT Closing</field>
         <field name="journal_id" ref="account.1_general"/>

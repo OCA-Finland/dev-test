@@ -36,3 +36,9 @@ class AccountFiscalYear(models.Model):
         }).action_apply()
 
         return record
+
+    def _prepare_next_fiscal_year(self):
+        record = super(AccountFiscalYear, self)._prepare_next_fiscal_year()
+        record["vat_period_duration"] = self.env.company_id.vat_period_duration
+        
+        return record

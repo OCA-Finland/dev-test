@@ -1,6 +1,16 @@
-<odoo>
-    <record model="mis.report.instance" id="mis_report_instance_vat">
-        <field name="name">VAT Report</field>
+<odoo noupdate="1">
+    <record model="mis.report.instance" id="mis_report_instance_vat_month">
+        <field name="name">VAT Report Month</field>
+        <field name="comparison_mode" eval="True"/>
+        <field name="report_id" ref="l10n_fi_mis_templates.report_vat"/>
+    </record>
+    <record model="mis.report.instance" id="mis_report_instance_vat_quarter">
+        <field name="name">VAT Report Quarter</field>
+        <field name="comparison_mode" eval="True"/>
+        <field name="report_id" ref="l10n_fi_mis_templates.report_vat"/>
+    </record>
+    <record model="mis.report.instance" id="mis_report_instance_vat_year">
+        <field name="name">VAT Report Year</field>
         <field name="comparison_mode" eval="True"/>
         <field name="report_id" ref="l10n_fi_mis_templates.report_vat"/>
     </record>

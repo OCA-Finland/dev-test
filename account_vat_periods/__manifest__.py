@@ -1,6 +1,6 @@
 {
     "name": "Account Vat Periods",
-    "version": "18.0.1.0.1",
+    "version": "18.0.1.1.0",
     "category": "Localization",
     "summary": "Adds a view that automates the VAT period closing and VAT payment process",
     #"license": "",
@@ -13,7 +13,8 @@
         "account_period_close",
         "account_lock_date_update",
         "mis_builder",
-        "l10n_fi_mis_templates"
+        "l10n_fi_mis_templates",
+        "connector"
     ],
     "data": [
         "data/account_period_close.xml",
@@ -23,7 +24,11 @@
         "views/account_fiscal_year_views.xml",
         "views/mis_report_instance_views.xml",
         "views/res_config_settings.xml",
-        "security/ir.model.access.csv"
+        "security/ir.model.access.csv",
+        "security/vero_security.xml",
+        "security/vero/ir.model.access.csv",
+        "views/vero_views.xml",
+        "data/vero_cron.xml"
     ],
     "assets": {
         "web.assets_backend": [

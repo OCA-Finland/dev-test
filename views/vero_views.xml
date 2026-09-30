@@ -1,0 +1,126 @@
+<odoo>
+    <record id="vero_backend_form" model="ir.ui.view">
+        <field name="name">vero.api.backend.form</field><field name="model">vero.api.backend</field>
+        <field name="arch" type="xml">
+            <form string="Vero API">
+                <sheet>
+                    <div class="alert alert-info">Testi- ja tuotantovarmenteet hankitaan Vero API -palvelusta. Julkista testiä ei voi tehdä ilman avainta. Tämä toteutus käyttää Odoo Communitya.</div>
+                    <group><field name="name"/><field name="company_id"/><field name="active"/><field name="environment"/><field name="api_root"/></group>
+                    <group string="Yhteyshenkilö"><field name="contact_name"/><field name="contact_phone"/></group>
+                    <group string="Varmenteet ja avaimet (palvelimen tiedostopolut)">
+                        <field name="software_key_file"/><field name="certificate_file" invisible="environment == 'sandbox'"/><field name="private_key_file" invisible="environment == 'sandbox'"/>
+                        <field name="software_id"/><field name="authorization_token_file"/>
+                    </group>
+                    <group string="Yhteenvetoilmoituksen veroruudukot: valitse verottoman myynnin perusteet">
+                        <field name="goods_tag_ids" widget="many2many_tags"/><field name="services_tag_ids" widget="many2many_tags"/><field name="triangulation_tag_ids" widget="many2many_tags"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="vero_backend_list" model="ir.ui.view">
+        <field name="name">vero.api.backend.list</field><field name="model">vero.api.backend</field>
+        <field name="arch" type="xml"><list><field name="name"/><field name="company_id"/><field name="environment"/><field name="active"/></list></field>
+    </record>
+    <record id="vero_report_list" model="ir.ui.view">
+        <field name="name">vero.api.report.list</field><field name="model">vero.api.report</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0">
+                <field name="name"/><field name="company_id"/><field name="environment"/>
+                <field name="state" widget="badge" decoration-success="state == 'accepted'" decoration-warning="state in ('queued','sending','uncertain')" decoration-danger="state == 'error'"/>
+                <button name="action_status" type="object" icon="fa-info-circle" string="Tila"/>
+                <button name="action_status" type="object" icon="fa-check-circle" class="text-success" title="Vastaanotettu Verohallinnon API:ssa; ei lopullinen verotuspäätös" invisible="state != 'accepted'"/>
+                <button name="action_preview" type="object" string="Esikatsele / korjaa"/>
+                <field name="remote_status"/>
+            </list>
+        </field>
+    </record>
+    <record id="vero_report_form" model="ir.ui.view">
+        <field name="name">vero.api.report.form</field><field name="model">vero.api.report</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+                <header><button name="action_preview" type="object" string="Esikatsele / korjaa" class="oe_highlight"/><button name="action_status" type="object" string="Tila ja vastaukset"/></header>
+                <sheet><group><field name="name"/><field name="company_id"/><field name="backend_id"/><field name="kind"/><field name="date_start"/><field name="date_end"/><field name="environment"/><field name="state"/><field name="remote_status"/><field name="last_query_at"/><field name="due_date"/></group>
+                    <field name="submission_ids"><list create="0" delete="0"><field name="create_date"/><field name="state"/><field name="environment"/><field name="receipt"/><field name="bill_message"/></list></field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="vero_submission_form" model="ir.ui.view">
+        <field name="name">vero.api.submission.form</field><field name="model">vero.api.submission</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+                <header><button name="action_retry_bill" type="object" string="Muodosta / tarkista lasku" invisible="state != 'accepted'"/><button name="action_prepare_bill_adjustment" type="object" string="Valmistele laskun oikaisu" invisible="state != 'accepted'" confirm="Luodaanko kirjatun laskun hyvitysluonnos ja korjatun määrän uusi laskuluonnos? Tarkista ja kirjaa ne kirjanpidossa sekä huomioi aiempi maksu."/><button name="action_open_bill" type="object" string="Avaa lasku / oikaisu"/><button name="action_resolve" type="object" string="Kirjaa selvityksen tulos" invisible="state != 'uncertain'"/></header>
+                <sheet><group><field name="report_id"/><field name="company_id"/><field name="environment"/><field name="state"/><field name="requested_by_id"/><field name="started_at"/><field name="finished_at"/><field name="http_status"/><field name="receipt"/><field name="accepted_timestamp"/><field name="bill_id"/></group>
+                    <group><field name="error_message"/><field name="bill_message"/></group>
+                    <group string="Laskun oikaisu" invisible="not credit_note_id"><field name="superseded_bill_id"/><field name="credit_note_id"/></group>
+                    <group string="Epäselvän lähetyksen käsin tehty selvitys" invisible="not resolved_by_id"><field name="resolved_by_id"/><field name="resolved_at"/><field name="resolution_note"/></group>
+                    <notebook><page string="Lähetys"><field name="request_body"/></page><page string="Vastaus"><field name="response_body"/></page><page string="Kauden kokonaiskuva"><field name="snapshot"/></page></notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="vero_resolution_form" model="ir.ui.view">
+        <field name="name">vero.api.resolution.form</field><field name="model">vero.api.resolution</field>
+        <field name="arch" type="xml">
+            <form string="Selvitä epäselvä lähetys">
+                <div class="alert alert-warning">Varmista juuri tämän lähetyksen vastaanotto Verohallinnosta ennen tilan muuttamista. Vanhan ilmoituksen näkyminen tilakyselyssä ei todista uuden lähetyksen vastaanottoa. Tämä toiminto ei lähetä ilmoitusta uudelleen.</div>
+                <group><field name="submission_id"/><field name="result"/><field name="receipt" invisible="result != 'received'" required="result == 'received'"/><field name="accepted_timestamp" invisible="result != 'received'" required="result == 'received'"/><field name="note"/></group>
+                <footer><button name="action_confirm" type="object" string="Tallenna varmistettu tulos" class="btn-primary" confirm="Oletko varmistanut tämän lähetyksen tuloksen Verohallinnosta ja kirjannut selvityksen lähteen?"/><button string="Peruuta" special="cancel"/></footer>
+            </form>
+        </field>
+    </record>
+    <record id="vero_wizard_form" model="ir.ui.view">
+        <field name="name">vero.api.wizard.form</field><field name="model">vero.api.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Vero API">
+                <field name="status_only" invisible="1"/>
+                <group invisible="report_id"><field name="vat_period_id" readonly="1"/><field name="backend_id" required="not report_id"/><field name="kind" readonly="1"/><field name="month" invisible="kind != 'ec'"/></group>
+                <group invisible="not report_id"><field name="report_id"/><field name="environment"/><field name="remote_status"/></group>
+                <div class="alert alert-warning" invisible="not report_id or environment == 'production'">TESTIYMPÄRISTÖ: tästä lähetyksestä ei muodostu tuotannon veroilmoitusta.</div>
+                <group invisible="status_only or kind == 'ec'">
+                    <field name="no_activity"/><field name="replace_external"/><field name="replacement_reason"/>
+                </group>
+                <notebook>
+                    <page string="Esikatselu" invisible="status_only"><field name="payload_text" nolabel="1"/><field name="diff_text"/></page>
+                    <page string="Lähetyshistoria ja vastaukset">
+                        <field name="history_ids"><list create="0" edit="0" delete="0">
+                            <field name="create_date"/><field name="state" widget="badge" decoration-success="state == 'accepted'" decoration-danger="state == 'error'" decoration-warning="state in ('queued','sending','uncertain')"/>
+                            <field name="receipt"/><field name="error_message"/><field name="bill_message"/>
+                        </list></field>
+                    </page>
+                    <page string="Tilakysely"><field name="query_text" nolabel="1"/></page>
+                </notebook>
+                <footer>
+                    <button name="action_refresh" type="object" string="Laske / päivitä esikatselu" invisible="status_only"/>
+                    <button name="action_submit" type="object" string="Vahvista ja lähetä" class="btn-primary" confirm="Lähetetäänkö esikatselun mukainen ilmoitus valittuun Vero API -ympäristöön?" invisible="status_only or not payload_text"/>
+                    <button name="action_fetch_status" type="object" string="Hae tiedot Verohallinnosta" invisible="not report_id or kind == 'ec'"/>
+                    <button string="Sulje" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="vero_period_list" model="ir.ui.view">
+        <field name="name">account.vat.period.vero</field><field name="model">account.vat.period</field>
+        <field name="inherit_id" ref="account_vat_periods.account_vat_period_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_do_send'][1]" position="attributes"><attribute name="groups">account.group_account_user</attribute></xpath>
+            <xpath expr="//button[@name='action_do_send'][2]" position="attributes"><attribute name="groups">account.group_account_user</attribute></xpath>
+            <xpath expr="//button[@name='action_do_cancel_send']" position="attributes"><attribute name="groups">account.group_account_user</attribute><attribute name="string">ALV: esikatsele / korjaa</attribute></xpath>
+            <xpath expr="//field[@name='date_range_id']" position="after">
+                <button name="action_vero_ec" type="object" string="EU-yhteenveto" groups="account.group_account_user"/>
+                <button name="action_vero_status" type="object" icon="fa-info-circle" string="Vero API -tila" groups="account.group_account_user"/>
+                <field name="vero_vat_received" column_invisible="True" groups="account.group_account_user"/>
+                <field name="vero_ec_received" column_invisible="True" groups="account.group_account_user"/>
+                <button name="action_vero_status" type="object" icon="fa-check-circle" string="ALV" class="text-success" title="ALV-ilmoituksen vastaanottokuittaus tallennettu. Tarkista testi/tuotanto tilanäkymästä." invisible="not vero_vat_received" groups="account.group_account_user"/>
+                <button name="action_vero_status" type="object" icon="fa-check-circle" string="EU" class="text-success" title="Luotujen EU-ilmoitusten vastaanottokuittaukset tallennettu. Tarkista kuukaudet ja testi/tuotanto tilanäkymästä." invisible="not vero_ec_received" groups="account.group_account_user"/>
+                <field name="vero_status" optional="show" groups="account.group_account_user"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="vero_backend_action" model="ir.actions.act_window"><field name="name">Vero API -yhteydet</field><field name="res_model">vero.api.backend</field><field name="view_mode">list,form</field></record>
+    <record id="vero_report_action" model="ir.actions.act_window"><field name="name">Vero API -ilmoitukset</field><field name="res_model">vero.api.report</field><field name="view_mode">list,form</field></record>
+    <menuitem id="vero_backend_menu" name="Vero API -yhteydet" parent="connector.menu_connector" action="vero_backend_action" groups="account.group_account_user"/>
+    <menuitem id="vero_report_menu" name="Vero API -ilmoitukset" parent="account_vat_periods.account_vat_period_conf_menu" action="vero_report_action" groups="account.group_account_user"/>
+    <menuitem id="vero_backend_accounting_menu" name="Vero API -yhteydet" parent="account_vat_periods.account_vat_period_conf_menu" action="vero_backend_action" groups="account.group_account_user"/>
+</odoo>

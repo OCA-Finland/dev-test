@@ -1,0 +1,12 @@
+<odoo>
+    <record id="account_fiscal_year_view_form_inherit" model="ir.ui.view">
+        <field name="name">account.fiscal.year.form</field>
+        <field name="model">account.fiscal.year</field>
+        <field name="inherit_id" ref="account_fiscal_year.account_fiscal_year_form_view"/>
+        <field name="arch" type="xml">
+            <field name="company_id" position="after">
+                <field name="vat_period_duration"/>
+            </field>
+        </field>
+    </record>
+</odoo>

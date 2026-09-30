@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_vero_backend,vero.api.backend,model_vero_api_backend,account.group_account_user,1,1,1,0
+access_vero_report,vero.api.report,model_vero_api_report,account.group_account_user,1,1,1,0
+access_vero_submission,vero.api.submission,model_vero_api_submission,account.group_account_user,1,1,1,0
+access_vero_wizard,vero.api.wizard,model_vero_api_wizard,account.group_account_user,1,1,1,1
+access_vero_resolution,vero.api.resolution,model_vero_api_resolution,account.group_account_user,1,1,1,1

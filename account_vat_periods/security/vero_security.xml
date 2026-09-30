@@ -1,0 +1,17 @@
+<odoo>
+    <record id="vero_backend_company_rule" model="ir.rule">
+        <field name="name">Vero connections: allowed companies</field>
+        <field name="model_id" ref="model_vero_api_backend"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="vero_report_company_rule" model="ir.rule">
+        <field name="name">Vero reports: allowed companies</field>
+        <field name="model_id" ref="model_vero_api_report"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="vero_submission_company_rule" model="ir.rule">
+        <field name="name">Vero submissions: allowed companies</field>
+        <field name="model_id" ref="model_vero_api_submission"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

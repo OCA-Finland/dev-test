@@ -80,7 +80,7 @@
                             <ReportData>
                                 <ActionCode>1</ActionCode>
                                 <ReportId>
-                                    <t t-out="'%s_%s' % (delivery_id, payslip.id)" />
+                                    <t t-out="payslip.l10n_fi_ir_report_ref" />
                                 </ReportId>
                             </ReportData>
                             <IncomeEarner>

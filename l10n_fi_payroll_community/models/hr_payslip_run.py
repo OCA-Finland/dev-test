@@ -52,6 +52,9 @@ class HrPayslipRun(models.Model):
                 )
             )
 
+        for company in self.slip_ids.company_id or self.company_id:
+            self._validate_ir_company_data(company)
+
         result = self._generate_ir_report_xml(
             payslips=self.slip_ids,
             payment_date=self.l10n_fi_payment_date,

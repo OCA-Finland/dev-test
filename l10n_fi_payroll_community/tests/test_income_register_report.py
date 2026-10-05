@@ -2,6 +2,8 @@ import base64
 from datetime import date
 from unittest.mock import patch
 
+from lxml import etree
+
 from odoo.exceptions import UserError
 from odoo.tests.common import TransactionCase
 
@@ -18,7 +20,15 @@ class TestIncomeRegisterReport(TransactionCase):
         self.company = self.env.company
         self.company.company_registry = "1234567-8"
         self.company.l10n_fi_payroll_ir_contact_person_id = (
-            self.env["res.partner"].create({"name": "Test Contact"}).id
+            self.env["res.partner"]
+            .create(
+                {
+                    "name": "Test Contact",
+                    "phone": "+358401234567",
+                    "email": "contact@example.com",
+                }
+            )
+            .id
         )
 
         self.employee = self.Employee.create({"name": "Test Employee"})
@@ -425,3 +435,51 @@ class TestIncomeRegisterReport(TransactionCase):
         self.assertIn("20250601", filename)
         self.assertTrue(filename.startswith("IR_"))
         self.assertTrue(filename.endswith(".xml"))
+
+    def _generate_payslip_xml(self, payslip):
+        """Render the earnings payment report for one payslip.
+
+        :param hr.payslip payslip: payslip to render
+        :return: rendered XML
+        :rtype: str
+        """
+        return payslip._generate_ir_report_xml(
+            payslips=payslip,
+            payment_date=payslip.payment_date,
+            date_from=payslip.date_from,
+            date_to=payslip.date_to,
+        )
+
+    def test_report_id_is_stable_and_source_matches_version(self):
+        """ReportId stays within 40 characters and Source names Odoo 18.0."""
+        self.payslip.payment_date = date(2025, 5, 25)
+        first = etree.fromstring(str(self._generate_payslip_xml(self.payslip)))
+        second = etree.fromstring(str(self._generate_payslip_xml(self.payslip)))
+        report_id = first.findtext(".//ReportId")
+        source = first.findtext(".//Source")
+        self.assertTrue(report_id)
+        self.assertLessEqual(len(report_id), 40)
+        self.assertEqual(report_id, self.payslip.l10n_fi_ir_report_ref)
+        self.assertEqual(second.findtext(".//ReportId"), report_id)
+        self.assertTrue(source)
+        self.assertLessEqual(len(source), 30)
+        self.assertIn("18.0", source)
+
+    def test_company_data_validation_lists_every_problem(self):
+        """One error lists the business id and every missing contact field."""
+        self.company.company_registry = False
+        self.company.l10n_fi_payroll_ir_contact_person_id = self.env[
+            "res.partner"
+        ].create({"name": False})
+        with self.assertRaises(UserError) as missing:
+            self.payslip._validate_ir_company_data(self.company)
+        message = str(missing.exception)
+        self.assertIn("business ID", message)
+        self.assertIn("no name", message)
+        self.assertIn("phone", message)
+        self.assertIn("email", message)
+
+        self.company.l10n_fi_payroll_ir_contact_person_id = False
+        with self.assertRaises(UserError) as no_contact:
+            self.payslip._validate_ir_company_data(self.company)
+        self.assertIn("contact person", str(no_contact.exception))

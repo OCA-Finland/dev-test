@@ -4,7 +4,7 @@ from datetime import datetime
 
 from markupsafe import Markup
 
-from odoo import _, models
+from odoo import _, models, release
 from odoo.exceptions import UserError
 
 
@@ -104,6 +104,52 @@ class IncomeRegisterReportHelper(models.AbstractModel):
             )
             raise UserError(error_msg)
 
+    def _validate_ir_company_data(self, company):
+        """Check the company data required by an earnings payment report.
+
+        An empty business id or an incomplete contact person makes the XML
+        invalid. Every problem is collected into one error so the user can
+        fix them together.
+
+        :param res.company company: payer company of the report
+        :return: ``None``
+        :rtype: None
+        """
+        errors = []
+        if not company.company_registry:
+            errors.append(
+                self.env._(
+                    "Company %(company)s has no business ID.",
+                    company=company.display_name,
+                )
+            )
+        contact = company.l10n_fi_payroll_ir_contact_person_id
+        if not contact:
+            errors.append(
+                self.env._(
+                    "Company %(company)s has no Incomes Register contact person.",
+                    company=company.display_name,
+                )
+            )
+        else:
+            if not contact.name:
+                errors.append(
+                    self.env._("The Incomes Register contact person has no name.")
+                )
+            if not (contact.phone or contact.mobile):
+                errors.append(
+                    self.env._(
+                        "The Incomes Register contact person has no phone "
+                        "or mobile number."
+                    )
+                )
+            if not contact.email:
+                errors.append(
+                    self.env._("The Incomes Register contact person has no email.")
+                )
+        if errors:
+            raise UserError("\n".join(errors))
+
     def _generate_ir_filename(self, identifier, timestamp=None):
         """
         Generate a standardized filename for Income Register reports.
@@ -123,13 +169,15 @@ class IncomeRegisterReportHelper(models.AbstractModel):
             raise UserError(_("No payslips provided for report generation."))
 
         company = payslips[0].company_id
+        for payslip in payslips:
+            payslip._l10n_fi_get_ir_report_ref()
 
         tmpl_name = "l10n_fi_payroll_community.incomes_register_report_template"
         result = self.env["ir.ui.view"]._render_template(
             tmpl_name,
             {
                 "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S") + "+00:00",
-                "source": "Odoo_v17.0",
+                "source": f"Odoo_{release.major_version}",
                 "delivery_id": str(uuid.uuid4()),
                 "payment_period_date_payment": payment_date.strftime("%Y-%m-%d"),
                 "payment_period_date_from": date_from.strftime("%Y-%m-%d"),

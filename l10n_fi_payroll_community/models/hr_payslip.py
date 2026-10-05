@@ -32,6 +32,7 @@ class HrPayslip(models.Model):
         compute="_compute_ir_report_download",
         sanitize=False,
     )
+    l10n_fi_ir_report_ref = fields.Char(copy=False, readonly=True, index=True)
 
     exception_warning_state = fields.Selection(
         [("exception", "Exception")],
@@ -129,6 +130,24 @@ class HrPayslip(models.Model):
                     payslip.payslip_run_id.l10n_fi_payment_date
                 )
 
+    def _l10n_fi_get_ir_report_ref(self):
+        """Return the stable Incomes Register ReportId of this payslip.
+
+        The register rejects a second new report that reuses a ReportId, and
+        a replacement report needs the same reference. The value is assigned
+        once, kept on the payslip, and stays within the 40 character limit.
+
+        :return: stored report reference
+        :rtype: str
+        """
+        self.ensure_one()
+        if not self.l10n_fi_ir_report_ref:
+            dbuuid = (
+                self.env["ir.config_parameter"].sudo().get_param("database.uuid") or ""
+            )
+            self.l10n_fi_ir_report_ref = f"{dbuuid[:8]}-{self.id}"
+        return self.l10n_fi_ir_report_ref
+
     def action_incomes_register_report(self):
         if not self:
             return {"type": "ir.actions.act_window_close"}
@@ -144,6 +163,8 @@ class HrPayslip(models.Model):
 
         self._validate_payment_dates(valid_payslips)
         self._validate_date_consistency(valid_payslips)
+        for company in valid_payslips.company_id:
+            self._validate_ir_company_data(company)
 
         date_from = min(valid_payslips.mapped("date_from"))
         date_to = max(valid_payslips.mapped("date_to"))

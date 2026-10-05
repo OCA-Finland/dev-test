@@ -6,6 +6,7 @@
         "Adds a view that automates the VAT period closing and VAT payment process"
     ),
     "license": "AGPL-3",
+    "development_status": "Beta",
     "depends": [
         "account",
         "account_fiscal_year",

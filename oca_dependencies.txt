@@ -1,0 +1,6 @@
+payroll https://github.com/OCA/payroll 18.0
+server-ux https://github.com/OCA/server-ux 18.0
+account-financial-tools https://github.com/OCA/account-financial-tools 18.0
+mis-builder https://github.com/OCA/mis-builder 18.0
+l10n-finland https://github.com/OCA/l10n-finland 18.0
+connector https://github.com/OCA/connector 18.0

@@ -12,13 +12,13 @@
         "security/ir.model.access.csv",
     ],
     "license": "AGPL-3",
+    "development_status": "Mature",
     "version": "18.0.0.4.0",
     # "author": "NextERP Romania,"
     # "Forest and Biomass Romania,"
     # "Odoo Community Association (OCA)",
     # "website": "https://github.com/OCA/l10n-romania",
     "installable": True,
-    # "development_status": "Mature",
     "external_dependencies": {"python": ["python-dateutil"]},
     # "maintainers": ["feketemihai"],
 }

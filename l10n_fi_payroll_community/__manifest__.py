@@ -9,6 +9,7 @@
         "Zuzana Křenková <zuzana.krenkova@yoso.fi>"
     ),
     "license": "AGPL-3",
+    "development_status": "Beta",
     "category": "Human Resources",
     "depends": [
         "hr",

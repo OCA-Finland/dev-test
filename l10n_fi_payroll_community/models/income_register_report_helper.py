@@ -217,7 +217,7 @@ class IncomeRegisterReportHelper(models.AbstractModel):
                 "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S") + "+00:00",
                 "source": f"Odoo_{release.major_version}",
                 "delivery_id": delivery_id,
-                "production": production,
+                "production_environment": "true" if production else "false",
                 "faulty_control": faulty_control,
                 "payment_period_date_payment": payment_date.strftime("%Y-%m-%d"),
                 "payment_period_date_from": date_from.strftime("%Y-%m-%d"),

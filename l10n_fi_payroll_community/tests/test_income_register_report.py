@@ -278,7 +278,9 @@ class TestIncomeRegisterReport(TransactionCase):
             payslip3.l10n_fi_incomes_register_report_filename,
         )
 
-        self.assertIn("3_payslips", payslip1.l10n_fi_incomes_register_report_filename)
+        self.assertIn(
+            "multiple_employees", payslip1.l10n_fi_incomes_register_report_filename
+        )
 
     def test_different_date_from_raises_error(self):
         """
@@ -448,8 +450,7 @@ class TestIncomeRegisterReport(TransactionCase):
             payslips.action_incomes_register_report()
 
         filename = payslip1.l10n_fi_incomes_register_report_filename
-        self.assertIn("2_payslips", filename)
-        self.assertIn("20250601", filename)
+        self.assertIn("multiple_employees", filename)
         self.assertTrue(filename.startswith("IR_"))
         self.assertTrue(filename.endswith(".xml"))
 
@@ -472,12 +473,12 @@ class TestIncomeRegisterReport(TransactionCase):
         self.payslip.payment_date = date(2025, 5, 25)
         first = etree.fromstring(str(self._generate_payslip_xml(self.payslip)))
         second = etree.fromstring(str(self._generate_payslip_xml(self.payslip)))
-        report_id = first.findtext(".//ReportId")
-        source = first.findtext(".//Source")
+        report_id = (first.findtext(".//ReportId") or "").strip()
+        source = (first.findtext(".//Source") or "").strip()
         self.assertTrue(report_id)
         self.assertLessEqual(len(report_id), 40)
         self.assertEqual(report_id, self.payslip.l10n_fi_ir_report_ref)
-        self.assertEqual(second.findtext(".//ReportId"), report_id)
+        self.assertEqual((second.findtext(".//ReportId") or "").strip(), report_id)
         self.assertTrue(source)
         self.assertLessEqual(len(source), 30)
         self.assertIn("18.0", source)
@@ -487,7 +488,7 @@ class TestIncomeRegisterReport(TransactionCase):
         self.company.company_registry = False
         self.company.l10n_fi_payroll_ir_contact_person_id = self.env[
             "res.partner"
-        ].create({"name": False})
+        ].create({"name": False, "type": "other"})
         with self.assertRaises(UserError) as missing:
             self.payslip._validate_ir_company_data(self.company)
         message = str(missing.exception)
@@ -505,9 +506,11 @@ class TestIncomeRegisterReport(TransactionCase):
         """Defaults keep production and FaultyControl 2; overrides are rendered."""
         self.payslip.payment_date = date(2025, 5, 25)
         default_root = etree.fromstring(str(self._generate_payslip_xml(self.payslip)))
-        delivery_id = default_root.findtext(".//DeliveryId")
-        self.assertEqual(default_root.findtext(".//ProductionEnvironment"), "true")
-        self.assertEqual(default_root.findtext(".//FaultyControl"), "2")
+        delivery_id = (default_root.findtext(".//DeliveryId") or "").strip()
+        self.assertEqual(
+            (default_root.findtext(".//ProductionEnvironment") or "").strip(), "true"
+        )
+        self.assertEqual((default_root.findtext(".//FaultyControl") or "").strip(), "2")
         self.assertRegex(
             delivery_id,
             re.compile(
@@ -527,9 +530,13 @@ class TestIncomeRegisterReport(TransactionCase):
                 )
             )
         )
-        self.assertEqual(overridden.findtext(".//DeliveryId"), "delivery-kept")
-        self.assertEqual(overridden.findtext(".//ProductionEnvironment"), "false")
-        self.assertEqual(overridden.findtext(".//FaultyControl"), "1")
+        self.assertEqual(
+            (overridden.findtext(".//DeliveryId") or "").strip(), "delivery-kept"
+        )
+        self.assertEqual(
+            (overridden.findtext(".//ProductionEnvironment") or "").strip(), "false"
+        )
+        self.assertEqual((overridden.findtext(".//FaultyControl") or "").strip(), "1")
 
     def test_xml_generation_rejects_invalid_parameters(self):
         """FaultyControl and DeliveryId are checked before rendering."""

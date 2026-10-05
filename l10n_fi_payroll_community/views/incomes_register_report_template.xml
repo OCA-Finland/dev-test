@@ -11,19 +11,11 @@
                 <Timestamp>
                     <t t-out="timestamp" />
                 </Timestamp>
-                <Source>
-                    <t t-out="source" />
-                </Source>
+                <Source t-out="source" />
                 <DeliveryDataType>100</DeliveryDataType>
-                <DeliveryId>
-                    <t t-out="delivery_id" />
-                </DeliveryId>
-                <FaultyControl>
-                    <t t-out="faulty_control" />
-                </FaultyControl>
-                <ProductionEnvironment>
-                    <t t-out="'true' if production else 'false'" />
-                </ProductionEnvironment>
+                <DeliveryId t-out="delivery_id" />
+                <FaultyControl t-out="faulty_control" />
+                <ProductionEnvironment t-out="production_environment" />
                 <DeliveryDataOwner>
                     <Type>1</Type>
                     <Code>
@@ -83,9 +75,7 @@
                         <Report>
                             <ReportData>
                                 <ActionCode>1</ActionCode>
-                                <ReportId>
-                                    <t t-out="payslip.l10n_fi_ir_report_ref" />
-                                </ReportId>
+                                <ReportId t-out="payslip.l10n_fi_ir_report_ref" />
                             </ReportData>
                             <IncomeEarner>
                                 <IncomeEarnerIds>

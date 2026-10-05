@@ -1,5 +1,6 @@
 from odoo import fields, models
 
+
 class DateRange(models.Model):
     _inherit = "date.range"
 

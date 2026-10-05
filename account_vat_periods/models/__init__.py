@@ -1,2 +1,8 @@
-from . import res_company, account_vat_period, account_fiscal_year, mis_report_instance, date_range
-from . import vero_backend, vero_report, vero_vat_period
+from . import account_fiscal_year
+from . import account_vat_period
+from . import date_range
+from . import mis_report_instance
+from . import res_company
+from . import vero_backend
+from . import vero_report
+from . import vero_vat_period

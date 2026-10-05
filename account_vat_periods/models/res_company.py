@@ -1,5 +1,6 @@
 from odoo import fields, models
 
+
 class ResCompany(models.Model):
     _inherit = "res.company"
 
@@ -19,7 +20,7 @@ class ResCompany(models.Model):
         selection=[("1", "One month"), ("3", "Three months"), ("12", "A year")],
         string="Default VAT Period Duration for Fiscal Year Auto-creation",
     )
-    
+
     vat_partner_id = fields.Many2one(
         "res.partner",
         string="Default Vendor for VAT Payable",
@@ -36,6 +37,4 @@ class ResCompany(models.Model):
         string="Default Payment Reference for VAT Payable",
     )
 
-    vat_move_name = fields.Char(
-        string="Default description for VAT Payble Line"
-    )
+    vat_move_name = fields.Char(string="Default description for VAT Payble Line")

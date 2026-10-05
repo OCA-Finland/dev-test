@@ -1,10 +1,11 @@
 from odoo import models
 
+
 class DateRangeGenerator(models.TransientModel):
     _inherit = "date.range.generator"
 
     def action_apply(self, batch=False):
-        gen = super(DateRangeGenerator, self).action_apply()
+        gen = super().action_apply()
 
         date_ranges = self._generate_date_ranges(batch=batch)
 
@@ -35,17 +36,20 @@ class DateRangeGenerator(models.TransientModel):
             "Sep": "Syys",
             "Oct": "Loka",
             "Nov": "Marras",
-            "Dec": "Joulu"
+            "Dec": "Joulu",
         }
 
         for date_range in date_ranges:
-            fiscal_year_id = self.env["account.fiscal.year"].search([("date_from", "=", f"{date_ranges[0]["date_start"]}")], limit=1)[0]
-            date_range_id = self.env["date.range"].search([("name", "=", f"{date_range["name"]}")], limit=1)[0]
+            fiscal_year_id = self.env["account.fiscal.year"].search(
+                [("date_from", "=", f"{date_ranges[0]["date_start"]}")], limit=1
+            )[0]
+            date_range_id = self.env["date.range"].search(
+                [("name", "=", f"{date_range["name"]}")], limit=1
+            )[0]
 
-            vat_period = self.env["account.vat.period"].create({
-                "fiscal_year_id": fiscal_year_id.id,
-                "date_range_id": date_range_id.id
-            })
+            vat_period = self.env["account.vat.period"].create(
+                {"fiscal_year_id": fiscal_year_id.id, "date_range_id": date_range_id.id}
+            )
             date_range_id.fiscal_year_id = fiscal_year_id
 
             if len(date_range["name"].split(" ")) == 2:

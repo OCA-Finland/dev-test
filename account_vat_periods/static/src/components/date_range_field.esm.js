@@ -1,9 +1,9 @@
 /** @odoo-module **/
-import { useState } from "@odoo/owl";
-import { patch } from "@web/core/utils/patch";
-import { MisReportWidget } from "../../../../mis_builder/static/src/components/mis_report_widget.esm";
-import { Many2XAutocomplete } from "@web/views/fields/relational_utils";
-import { parseDate } from "@web/core/l10n/dates";
+import {useState} from "@odoo/owl";
+import {patch} from "@web/core/utils/patch";
+import {MisReportWidget} from "../../../../mis_builder/static/src/components/mis_report_widget.esm";
+import {Many2XAutocomplete} from "@web/views/fields/relational_utils";
+import {parseDate} from "@web/core/l10n/dates";
 
 patch(MisReportWidget.prototype, {
     setup() {
@@ -14,7 +14,6 @@ patch(MisReportWidget.prototype, {
             searchString: this.props.record.data.date_range_name,
             selectedId: false,
         });
-
     },
 
     async willStart() {
@@ -25,9 +24,9 @@ patch(MisReportWidget.prototype, {
             [this._instanceId()],
             ["widget_show_date_range"],
             {context: this.context}
-        )
+        );
 
-        this.widget_show_date_range = resultShowDateRange.widget_show_date_range
+        this.widget_show_date_range = resultShowDateRange.widget_show_date_range;
     },
 
     async onCustomM2oUpdate(selection) {
@@ -43,11 +42,10 @@ patch(MisReportWidget.prototype, {
             selectedRecord = selection[0];
         }
 
-        if (selectedRecord && typeof selectedRecord === 'object') {
+        if (selectedRecord && typeof selectedRecord === "object") {
             this.customM2oState.selectedId = selectedRecord.id || false;
             this.customM2oState.searchString = selectedRecord.display_name || "";
-        }
-        else if (typeof selection === "string") {
+        } else if (typeof selection === "string") {
             this.customM2oState.searchString = selection;
         }
 
@@ -59,7 +57,7 @@ patch(MisReportWidget.prototype, {
         }
 
         const displayName = selectedRecord.display_name || "";
-        this.state.date_range_id = [{ id: dateRangeId, display_name: displayName }];
+        this.state.date_range_id = [{id: dateRangeId, display_name: displayName}];
 
         const [rangeData] = await this.orm.read(
             "date.range",
@@ -71,19 +69,18 @@ patch(MisReportWidget.prototype, {
             this.state.pivot_date = parseDate(rangeData.date_start);
             this.refresh();
         }
-
     },
 
     get context() {
         return {
             ...super.context,
-            date_range: this.state.date_range_id
+            date_range: this.state.date_range_id,
         };
     },
 
     get showDateRange() {
         return this.widget_show_date_range;
-    }
+    },
 });
 
-Object.assign(MisReportWidget.components, { Many2XAutocomplete });
+Object.assign(MisReportWidget.components, {Many2XAutocomplete});

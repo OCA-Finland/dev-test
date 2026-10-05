@@ -1,11 +1,14 @@
 <odoo noupdate="1">
     <record model="account.period.closing" id="account_period_closing_vat">
         <field name="name">VAT Closing</field>
-        <field name="journal_id" ref="account.1_general"/>
-        <field name="type" eval="'selected'"/>
-        <field name="close_result" eval="False"/>
-        <field name="debit_account_id" ref="account.1_account_1764"/>
-        <field name="credit_account_id" ref="account.1_account_2939"/>
-        <field name="account_ids" eval="[ref('account.1_account_1763'), ref('account.1_account_2930')]"/>
+        <field name="journal_id" ref="account.1_general" />
+        <field name="type" eval="'selected'" />
+        <field name="close_result" eval="False" />
+        <field name="debit_account_id" ref="account.1_account_1764" />
+        <field name="credit_account_id" ref="account.1_account_2939" />
+        <field
+            name="account_ids"
+            eval="[ref('account.1_account_1763'), ref('account.1_account_2930')]"
+        />
     </record>
 </odoo>

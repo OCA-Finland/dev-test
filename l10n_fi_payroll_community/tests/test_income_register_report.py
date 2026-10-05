@@ -20,6 +20,19 @@ class TestIncomeRegisterReport(TransactionCase):
 
         self.company = self.env.company
         self.company.company_registry = "1234567-8"
+        self.journal = self.env["account.journal"].search(
+            [("type", "=", "general"), ("company_id", "=", self.company.id)],
+            limit=1,
+        )
+        if not self.journal:
+            self.journal = self.env["account.journal"].create(
+                {
+                    "name": "Miscellaneous",
+                    "code": "MISC",
+                    "type": "general",
+                    "company_id": self.company.id,
+                }
+            )
         self.company.l10n_fi_payroll_ir_contact_person_id = (
             self.env["res.partner"]
             .create(
@@ -41,12 +54,14 @@ class TestIncomeRegisterReport(TransactionCase):
                 "wage": 1000.0,
                 "state": "open",
                 "date_start": date(2025, 1, 1),
+                "journal_id": self.journal.id,
             }
         )
 
         self.payslip_run = self.PayslipRun.create(
             {
                 "name": "Test Batch",
+                "journal_id": self.journal.id,
                 "l10n_fi_payment_date": date(2025, 5, 25),
                 "date_start": date(2025, 5, 1),
                 "date_end": date(2025, 5, 31),
@@ -78,6 +93,7 @@ class TestIncomeRegisterReport(TransactionCase):
                 "wage": 1000.0,
                 "state": "open",
                 "date_start": date(2025, 1, 1),
+                "journal_id": self.journal.id,
             }
         )
 

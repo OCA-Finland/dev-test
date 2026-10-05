@@ -69,7 +69,7 @@
                     </PayerIds>
                 </Payer>
                 <Reports>
-                    <t t-foreach="payslips" t-as="payslip" t-key="payslip.id">
+                    <t t-foreach="payslips" t-as="payslip">
                         <t t-set="contract" t-value="payslip.contract_id" />
                         <t t-set="employee" t-value="payslip.employee_id" />
                         <Report>
@@ -181,7 +181,6 @@
                                     <t
                                         t-foreach="contract.l10n_fi_insurance_exception_ids"
                                         t-as="exception"
-                                        t-key="exception.id"
                                     >
                                         <ExceptionCode>
                                             <t t-out="exception.code" />
@@ -193,7 +192,6 @@
                                 <t
                                     t-foreach="payslip.line_ids.filtered(lambda line: line.appears_on_payslip and line.total and str(line.l10n_fi_code).isnumeric())"
                                     t-as="line"
-                                    t-key="line.id"
                                 >
                                     <Transaction>
                                         <TransactionBasic>

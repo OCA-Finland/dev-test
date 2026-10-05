@@ -1,9 +1,33 @@
 # Vero API – Odoo 18 Community MVP
 
+Tiivis, kuvitettu käyttöönotto-ohje (viranomaisasiat, avain ja varmenne):
+[Vero API -käyttöönoton pikaohje (PDF)](docs/Vero_API_kayttoonotto_pikaohje.pdf).
+
+Koko kausimoduulin vaiheittainen käyttäjäohje:
+[ALV-kaudet ja Vero API – käyttöohje](KAYTTOOHJE_FI.md).
+
 Toteutus täydentää `account_vat_periods`-moduulia. ALV- ja EU-yhteenvetoilmoitukset
 lähetetään itsenäisesti. Yhteenvetoilmoituksen kohde on aina kalenterikuukausi.
 Kaikki Vero-toiminnot edellyttävät ryhmää `account.group_account_user`;
 `account.group_account_readonly` ei riitä.
+
+## Ilmoitusten tila ja kaksoislähetyksen esto (18.0.1.3.0)
+
+Kausilista näyttää ALV- ja EU-ilmoitukset erikseen ympäristöineen ja kuukausineen.
+Rivin toiminto avaa olemassa olevan lähetyksen tilan. Vastaanotetun ilmoituksen
+korjaus aloitetaan erikseen; jonossa, lähetyksessä tai epäselvänä oleva ilmoitus
+estää uuden esikatselun ja lähetyksen. Yhteyden tai EU-kuukauden voi valita
+listan erillisistä kuvakkeista. Useiden ilmoitusten tiloja ei yhdistetä yhdeksi
+vihreäksi kuittaukseksi, jos jokin niistä on kesken.
+
+ALV-esikatselu tekee GetVATPeriods/v1-kyselyn. Kausivirhe tai yhteyden epäonnistuminen
+näkyy ennen vahvistamista ja estää jonoon lisäämisen. Ajastin tarkistaa kauden
+edelleen uudelleen juuri ennen lähetystä. Pelkkä kausikysely ei vahvista yksittäisen
+lähetysyrityksen vastaanottoa. Jonoon lisäämisestä näytetään selvä kuittaus.
+
+Listat päivittyvät 10 sekunnin välein näkyvissä ollessaan. Dialogin, rivimuokkauksen
+tai rivivalinnan aikana ei tehdä automaattista latausta; avoimen esikatselun valinnat
+säilyvät. Tiladialogissa on erillinen paikallisen lähetyksen päivityspainike.
 
 ## Asennus ja asetukset
 
@@ -13,7 +37,43 @@ Tämä MVP käyttää `connector.backend`-pohjaa yhteysasetuksiin ja omaa kerran
 minuutissa ajettavaa Odoo-ajastusta lähettämiseen. `queue_job`-runneria ei tarvita.
 Enterprise-moduuleja ei tarvita.
 
-Kirjanpito → Period Closing → Vero API -yhteydet:
+Versiosta 18.0.1.2.0 alkaen avaimet voi syöttää ja tilatun varmenteen noutaa
+Odoon **Avaimet ja varmenne** -toiminnossa. Testi- ja tuotantoympäristöt on tuettu.
+Käyttö edellyttää HTTPS:ää. Varmennetilaus ja ohjelmistorekisteröinti tehdään
+edelleen Verohallinnon palveluissa; automaattinen varmenteen uusiminen ei kuulu versioon.
+
+Palvelinriippuvuudet: Linux, OpenSSL 3, `signxml>=4.5.1,<5` ja sen kanssa
+yhteensopivat `cryptography`/`pyOpenSSL`-versiot. Kehitysympäristössä testattu:
+signxml 4.5.1, cryptography 46.0.7, pyOpenSSL 25.3.0, lxml 5.2.1.
+Tarkista muun Odoo-asennuksen riippuvuudet ja aja `pip check` päivityksen yhteydessä.
+Moduulin päivitys ja palvelun restart tarvitaan kerran; myöhemmät avainvaihdot
+ja noudot eivät vaadi restartia.
+
+Salaisuudet ovat `data_dir/vero_credentials`-hakemistossa, eivät tietokannassa
+tai filestoressa. Hakemisto tulee ottaa mukaan suojattuun varmistukseen ja
+palautussuunnitelmaan. Linux-palvelukäyttäjä tarvitsee kirjoitusoikeuden omaan
+data_dir-hakemistoonsa. HTTP-reitti käyttää kirjautumista, CSRF-tarkistusta,
+HTTPS-vaatimusta sekä palvelinpuolen yritys-/käyttöoikeustarkistuksia. Reitti
+ei käytä RPC:tä salaisuuksille. Reverse proxyn tulee poistaa asiakkaan omat
+Forwarded-otsakkeet, asettaa oikeat HTTPS-otsakkeet ja estää suora pääsy Odoon
+taustaporttiin. Proxy/WAF/APM ei saa tallentaa avaintoimintojen POST-runkoja.
+
+Normaalit avaintoiminnot käyttävät `account.group_account_user`-oikeutta.
+Palvelinpolkujen käsin muuttaminen vaatii `base.group_system`-oikeuden;
+pelkkä kirjanpito-oikeus ei saa osoittaa yhteyttä muiden yritysten tiedostoihin.
+Tämä tarkistetaan sekä `create`- että `write`-kutsuissa, myös RPC-käytössä.
+
+Vastauksen XML-allekirjoitus tarkistetaan SignXML:llä ja varmenneketjut
+OpenSSL:llä. `data/vero_ca/` sisältää Verohallinnon julkiset testi- ja
+tuotantoympäristön Data Providers / IR Services -CA-ketjut, ladattu 5.10.2026
+[viralliselta dokumentaatiosivulta](https://www.vero.fi/tietoa-verohallinnosta/kehittaja/varmennepalvelu/dokumentaatio/).
+Julkiset CA-varmenteet eivät ole asiakasvarmenteita tai yksityisiä avaimia.
+Luottamuspakettien päivitys kuuluu moduulin ylläpitoon; paketteja ei haeta
+ajon aikana käyttäjän syöttämistä osoitteista. Erillistä asiakasvarmenteen
+CRL-/OCSP-tarkistusta ei tässä versiossa tehdä; API-yhteystesti näyttää
+palvelun hyväksymän tai hylkäämän yhteyden.
+
+Kirjanpito → Asetukset / Configuration → Vero API -yhteydet (Configuration-valikon nykyisillä kirjanpidon ylläpitäjän oikeuksilla; myös Connector-oikopolku säilyy):
 
 1. Luo yritykselle yhteys ja valitse ympäristö. Yrityksellä on yksi yhteys per
    ympäristö. Ilmoitushistorian synnyttyä yritystä ja ympäristöä ei voi vaihtaa.
@@ -27,16 +87,16 @@ Kirjanpito → Period Closing → Vero API -yhteydet:
 4. Valitse EU-tavara-, palvelu- ja tarvittaessa kolmikantamyynnin **verottomien
    perusteiden** tax grid -tunnisteet. Tyhjät tai väärät tunnistevalinnat pitää
    korjata ennen yhteenvetoilmoituksen käyttöönottoa.
-5. Hanki Vero-testipalvelun varmenne ja ohjelmistoavain. Tallenna avain ja PEM-
-   varmenne/yksityinen avain palvelimelle Odoo-palvelun luettaviksi. Asetuksiin
-   annetaan tiedostopolut. Avainten sisältöä ei kopioida Odoon raportteihin.
+5. Hanki ohjelmistoavain ja tilaa varmenne. Tallenna yhteys, avaa **Avaimet ja
+   varmenne**, tallenna ohjelmistoavain ja nouda varmenne saamillasi siirtotunnuksilla.
+   Odoo luo tiedostot ja polut automaattisesti. Aiemmat palvelinpolut toimivat edelleen.
 6. Kopioi ympäristön SAT API:n perusosoite Vero-portaalista. Sallittuja palvelimia
    ovat `apitest.vero.fi`, `api.vero.fi` ja sandboxissa `api-sandbox.vero.fi`.
    Sandbox käyttää tilausavainta ja ennalta määrättyjä esimerkkivastauksia.
    Se ei korvaa varmenteellisen testipalvelun hyväksymistestausta.
 
 Sandboxiin riittää https://api-developer.vero.fi/ -palvelun tilausavain:
-valitse `Sandbox`, anna `software_key_file`-kenttään avaimen palvelinpolku
+valitse `Sandbox`, tallenna tilausavain **Avaimet ja varmenne** -toiminnossa
 ja jätä varmennetiedostot tyhjiksi. SAT-perusosoite on
 `https://api-sandbox.vero.fi/Return/SAT`. Moduuli lisää myös sandboxin
 vaatiman `Vero-SoftwareKey: sandbox` -otsakkeen. Rekisteröityä ohjelmistoavainta
@@ -171,3 +231,11 @@ https://api-developer.vero.fi/mapi/apis/SAT?format=openapi%2Bjson&export=true&ap
 Käytetyt operaatiot: `FileVATReturn/v2`, `FileECSalesList/v1`,
 `GetFiledVATReturn/v2`, `GetVATPeriods/v1`. Tarkka testipalvelun sopimus,
 varmennevaltuudet ja vastaanotto pitää vielä varmistaa aidossa testipalvelussa.
+
+## Testivarmenteen nouto rajapinnasta
+
+Moduulin mukana on ylläpitäjälle tarkoitettu Linux-komentorivityökalu
+[testivarmenteen noutamiseen](tools/README.md). Se luo yksityisen avaimen
+palvelimella ja käyttää Verohallinnon SignNewCertificate- ja GetCertificate-
+rajapintoja. Nouto ei vielä sisälly Odoon käyttöliittymään. Tuotantovarmenteiden
+nouto ja automaattinen uusiminen eivät kuulu tähän työkaluun.

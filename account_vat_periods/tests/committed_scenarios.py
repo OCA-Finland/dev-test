@@ -146,13 +146,20 @@ def run(env):
         mode['value'] = 'success'
         barrier = Barrier(2)
 
-        def click():
+        # Separate preview RPCs commit before two concurrent confirmation RPCs.
+        wizard_ids = []
+        for _ in range(2):
+            wizard = env['vero.api.wizard'].with_user(user).create({'report_id': reports[7]})
+            wizard.action_refresh()
+            wizard_ids.append(wizard.id)
+            env.cr.commit()
+
+        def click(wizard_id):
             for retry in range(3):
                 with registry.cursor() as cr:
                     work = api.Environment(cr, uid, {'allowed_company_ids': [company_id]})
                     try:
-                        wizard = work['vero.api.wizard'].create({'report_id': reports[7]})
-                        wizard.action_refresh()
+                        wizard = work['vero.api.wizard'].browse(wizard_id)
                         if retry == 0:
                             barrier.wait(timeout=10)
                         wizard.action_submit()
@@ -166,7 +173,7 @@ def run(env):
             return 'retry-exhausted'
 
         with ThreadPoolExecutor(max_workers=2) as pool:
-            futures = [pool.submit(click), pool.submit(click)]
+            futures = [pool.submit(click, wizard_id) for wizard_id in wizard_ids]
             outcomes = sorted(f.result(timeout=30) for f in futures)
         assert outcomes == ['blocked', 'queued'], outcomes
         attempt = inspect(reports[7])

@@ -2,6 +2,8 @@ import calendar
 import copy
 import json
 
+import requests
+
 from odoo import api, fields, models, _
 from odoo.exceptions import AccessError, UserError
 from .. import vero_payload as payloads
@@ -18,6 +20,17 @@ class VeroWizard(models.TransientModel):
     month = fields.Date(string='Yhteenvetoilmoituksen kuukausi')
     report_id = fields.Many2one('vero.api.report', readonly=True)
     status_only = fields.Boolean(default=False)
+    edit_requested = fields.Boolean(default=False)
+    queue_notice = fields.Boolean(default=False)
+    period_checked = fields.Boolean(default=False)
+    preview_warning = fields.Text(readonly=True)
+    report_state = fields.Selection(related='report_id.state')
+    latest_id = fields.Many2one('vero.api.submission', compute='_compute_latest')
+    latest_at = fields.Datetime(related='latest_id.create_date', string='Viimeisin lähetysyritys')
+    latest_error = fields.Text(related='latest_id.error_message', string='Lähetyksen virhe')
+    latest_receipt = fields.Char(related='latest_id.receipt', string='Vastaanottotunniste')
+    latest_payload = fields.Text(compute='_compute_latest', string='Viimeisimmän lähetyksen sisältö')
+    latest_response = fields.Text(compute='_compute_latest', string='Verohallinnon vastaus')
     no_activity = fields.Boolean(string='Ei toimintaa')
     replace_external = fields.Boolean(string='Korvaa aiemmin muualla annettu ALV-ilmoitus')
     replacement_reason = fields.Selection([('CLC', 'Lasku- tai täyttövirhe'), ('LGL', 'Oikeuskäytännön muutos'), ('TXA', 'Verotarkastuksen ohjaus'), ('LAW', 'Laintulkintavirhe')], string='Korjauksen syy')
@@ -43,6 +56,30 @@ class VeroWizard(models.TransientModel):
     def _compute_query(self):
         for rec in self:
             rec.query_text = json.dumps(rec.report_id.last_query or {}, ensure_ascii=False, indent=2)
+
+    @api.depends('report_id.submission_ids', 'report_id.submission_ids.response_body')
+    def _compute_latest(self):
+        for rec in self:
+            rec.latest_id = rec.report_id.submission_ids.sorted('id', reverse=True)[:1]
+            rec.latest_payload = json.dumps(rec.latest_id.request_body or {}, ensure_ascii=False, indent=2)
+            rec.latest_response = json.dumps(rec.latest_id.response_body or {}, ensure_ascii=False, indent=2)
+
+    def action_edit(self):
+        report = self._get_report()
+        if report.submission_ids.filtered(lambda s: s.state in ('queued', 'sending', 'uncertain')):
+            self.status_only = True
+            return self._action()
+        self.write({'status_only': False, 'edit_requested': True, 'queue_notice': False,
+                    'snapshot': False, 'preview_body': False, 'payload_text': False,
+                    'period_checked': False, 'preview_warning': False})
+        return self._action()
+
+    def action_local_status(self):
+        self._get_report()
+        return self._action()
+
+    def action_choose(self):
+        return self.vat_period_id._vero_open(self.kind, choose=True)
 
     def _action(self):
         self.ensure_one()
@@ -82,12 +119,26 @@ class VeroWizard(models.TransientModel):
 
     def action_refresh(self):
         report = self._get_report()
+        if report.submission_ids.filtered(lambda s: s.state in ('queued', 'sending', 'uncertain')) or (
+                report.submission_ids and not self.edit_requested):
+            self.status_only = True
+            return self._action()
         snapshot = report._payload(no_activity=self.no_activity)
         previous = report._accepted()
         diff = payloads.differences(previous.snapshot if previous else {}, snapshot)
         body = self._request_body(report, snapshot, previous)
         self.write({'snapshot': snapshot, 'preview_body': body, 'payload_text': json.dumps(body, ensure_ascii=False, indent=2),
-                    'diff_text': json.dumps(diff, ensure_ascii=False, indent=2) if diff else 'Ei muutoksia.'})
+                    'diff_text': json.dumps(diff, ensure_ascii=False, indent=2) if diff else 'Ei muutoksia.',
+                    'status_only': False, 'period_checked': False, 'preview_warning': False})
+        if report.kind == 'vat':
+            try:
+                report._check_filing_period(body)
+            except UserError as exc:
+                self.preview_warning = str(exc)
+            except requests.RequestException:
+                self.preview_warning = _('Kausikysely epäonnistui. Ilmoitusta ei lähetetty. Päivitä esikatselu ja yritä uudelleen.')
+            else:
+                self.period_checked = True
         return self._action()
 
     def _request_body(self, report, snapshot, previous):
@@ -104,6 +155,8 @@ class VeroWizard(models.TransientModel):
         report = self._get_report()
         if not self.snapshot:
             raise UserError(_('Preview the report first.'))
+        if report.kind == 'vat' and (not self.period_checked or self.preview_warning):
+            raise UserError(_('Tarkista Verohallinnon kausi päivittämällä esikatselu ennen lähettämistä.'))
         check_access(report)
         if report.kind == 'vat' and not report.vat_period_id.closed:
             raise UserError(_('Close the VAT period before submitting the VAT return.'))
@@ -132,7 +185,7 @@ class VeroWizard(models.TransientModel):
             'environment': report.backend_id.environment, 'snapshot': current,
             'request_body': body, 'content_hash': payloads.digest(current),
         })
-        self.status_only = True
+        self.write({'status_only': True, 'queue_notice': True, 'edit_requested': False})
         return self._action()
 
     def action_fetch_status(self):

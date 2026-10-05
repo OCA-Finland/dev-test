@@ -158,11 +158,30 @@ class VeroReport(models.Model):
         except ValueError as exc:
             raise UserError(str(exc)) from exc
 
+    def _check_filing_period(self, body):
+        self.ensure_one()
+        check_access(self)
+        status, data = self.backend_id._call('GetVATPeriods/v1', {'BusinessId': body['BusinessId'], 'FilingYear': self.date_end.year})
+        if status != 200 or not isinstance(data, dict):
+            raise UserError(_('Could not verify the filing period with Vero: %s') % json.dumps(data, ensure_ascii=False))
+        periods = [p for p in data.get('FilingPeriod', []) if p.get('Period') == str(self.date_end)]
+        if len(periods) != 1 or periods[0].get('StartDate') != str(self.date_start) or periods[0].get('EndDate') != str(self.date_end):
+            raise UserError(_('The selected period does not match a Vero filing period.'))
+        info = periods[0]
+        remote_state = info.get('Status')
+        if remote_state not in {'Missing', 'Processed', 'Being Processed', 'Estimated'}:
+            raise UserError(_('This filing period is expired or has an unsupported status.'))
+        if remote_state != 'Missing' and not body.get('ReplacementReturn'):
+            raise UserError(_('Verohallinnossa on jo tämän kauden ilmoitus. Hae aiemman ilmoituksen tiedot. Jos korvaat sen, valitse aiemmin muualla annetun ilmoituksen korvaaminen ja korjauksen syy, ja päivitä esikatselu.'))
+        if remote_state == 'Missing' and body.get('ReplacementReturn') and not self._accepted():
+            raise UserError(_('Verohallinnossa ei ole aiempaa ilmoitusta korvattavaksi.'))
+        self.with_context(_vero_internal=INTERNAL).write({'due_date': info.get('DueDate'), 'remote_status': remote_state})
+
     def action_preview(self):
         self.ensure_one()
         check_access(self)
-        wizard = self.env['vero.api.wizard'].create({'report_id': self.id})
-        return wizard.action_refresh()
+        wizard = self.env['vero.api.wizard'].create({'report_id': self.id, 'status_only': True})
+        return wizard.action_edit()
 
     def action_status(self):
         self.ensure_one()
@@ -243,21 +262,7 @@ class VeroSubmission(models.Model):
             raise UserError(_('The connection environment changed or was disabled after confirmation.'))
         report.backend_id._connection()
         if report.kind == 'vat':
-            status, data = report.backend_id._call('GetVATPeriods/v1', {'BusinessId': self.request_body['BusinessId'], 'FilingYear': report.date_end.year})
-            if status != 200 or not isinstance(data, dict):
-                raise UserError(_('Could not verify the filing period with Vero: %s') % json.dumps(data, ensure_ascii=False))
-            periods = [p for p in data.get('FilingPeriod', []) if p.get('Period') == str(report.date_end)]
-            if len(periods) != 1 or periods[0].get('StartDate') != str(report.date_start) or periods[0].get('EndDate') != str(report.date_end):
-                raise UserError(_('The selected period does not match a Vero filing period.'))
-            info = periods[0]
-            remote_state = info.get('Status')
-            if remote_state not in {'Missing', 'Processed', 'Being Processed', 'Estimated'}:
-                raise UserError(_('This filing period is expired or has an unsupported status.'))
-            if remote_state != 'Missing' and not self.request_body.get('ReplacementReturn'):
-                raise UserError(_('Vero already has a return for this period. Preview it and select replacement of an externally filed return.'))
-            if remote_state == 'Missing' and self.request_body.get('ReplacementReturn') and not report._accepted():
-                raise UserError(_('Vero has no earlier return to replace.'))
-            report.with_context(_vero_internal=INTERNAL).write({'due_date': info.get('DueDate'), 'remote_status': remote_state})
+            report._check_filing_period(self.request_body)
 
     def _sync_bill(self):
         self.ensure_one()
@@ -313,6 +318,8 @@ class VeroSubmission(models.Model):
         report, company = self.report_id, self.company_id
         if not company.vat_partner_id or not company.vat_account_id:
             raise UserError(_('Configure the company VAT vendor and payable account.'))
+        if company.vat_account_id.account_type in ('asset_receivable', 'liability_payable'):
+            raise UserError(_('The VAT bill line account must not be a receivable or payable account. Use a regular VAT settlement account; the vendor payable account is set separately on the vendor.'))
         if not report.due_date:
             raise UserError(_('The VAT due date is missing from the period query.'))
         return self.env['account.move'].with_company(company).create({

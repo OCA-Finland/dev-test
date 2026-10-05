@@ -1,0 +1,2 @@
+# Preserve PDF byte offsets and prevent line-ending conversion on Windows.
+*.pdf binary

@@ -1,0 +1,48 @@
+# Python bytecode and tool caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Local environments and package build output
+.venv/
+venv/
+venv-*/
+env/
+build/
+dist/
+*.egg-info/
+
+# Editor, OS and temporary files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+*~
+*.swp
+*.swo
+*.tmp
+*.bak
+*.log
+
+# Local credentials: never commit customer certificates or private keys.
+.env
+.env.*
+!.env.example
+secrets/
+vero_credentials/
+credentials.json
+*software-key*.txt
+*.key
+*.p12
+*.pfx
+*.pem
+# The module requires these public Verohallinto CA certificates.
+!account_vat_periods/data/vero_ca/*.pem

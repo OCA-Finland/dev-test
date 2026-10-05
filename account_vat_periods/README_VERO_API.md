@@ -3,7 +3,10 @@
 Tiivis, kuvitettu käyttöönotto-ohje (viranomaisasiat, avain ja varmenne):
 [Vero API -käyttöönoton pikaohje (PDF)](docs/Vero_API_kayttoonotto_pikaohje.pdf).
 
-Koko kausimoduulin vaiheittainen käyttäjäohje:
+Koko kausimoduulin tiivis, kuvitettu käyttöohje:
+[ALV-kaudet ja Vero API – käyttäjän pikaohje (PDF)](docs/ALV_kaudet_ja_Vero_API_kayttoohje.pdf).
+
+Yksityiskohtainen käyttäjäohje:
 [ALV-kaudet ja Vero API – käyttöohje](KAYTTOOHJE_FI.md).
 
 Toteutus täydentää `account_vat_periods`-moduulia. ALV- ja EU-yhteenvetoilmoitukset

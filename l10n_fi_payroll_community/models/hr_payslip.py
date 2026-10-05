@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from odoo import _, api, fields, models
+from odoo import Command, _, api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -194,9 +194,9 @@ class HrPayslip(models.Model):
             }
         )
 
-        # Upsert one income register entry per payslip
         Entry = self.env["l10n_fi.income.register.entry"]
-        for payslip in valid_payslips:
+        if len(valid_payslips) == 1:
+            payslip = valid_payslips
             existing = Entry.search(
                 [
                     ("payslip_id", "=", payslip.id),
@@ -208,6 +208,7 @@ class HrPayslip(models.Model):
                 "report_type": "individual",
                 "employee_id": payslip.employee_id.id,
                 "payslip_id": payslip.id,
+                "payslip_ids": [Command.set(payslip.ids)],
                 "date_from": date_from,
                 "date_to": date_to,
                 "generated_at": timestamp,
@@ -218,6 +219,19 @@ class HrPayslip(models.Model):
                 existing.write(vals)
             else:
                 Entry.create(vals)
+        else:
+            Entry.create(
+                {
+                    "report_type": "batch",
+                    "payslip_run_id": False,
+                    "payslip_ids": [Command.set(valid_payslips.ids)],
+                    "date_from": date_from,
+                    "date_to": date_to,
+                    "generated_at": timestamp,
+                    "report": report_binary,
+                    "filename": filename,
+                }
+            )
 
         valid_payslips[0].message_post(
             body=_(

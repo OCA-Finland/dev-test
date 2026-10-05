@@ -1,6 +1,6 @@
 import datetime
 
-from odoo import _, api, fields, models
+from odoo import Command, _, api, fields, models
 
 
 class HrPayslipRun(models.Model):
@@ -87,6 +87,7 @@ class HrPayslipRun(models.Model):
         vals = {
             "report_type": "batch",
             "payslip_run_id": self.id,
+            "payslip_ids": [Command.set(self.slip_ids.ids)],
             "date_from": self.date_start,
             "date_to": self.date_end,
             "generated_at": timestamp,

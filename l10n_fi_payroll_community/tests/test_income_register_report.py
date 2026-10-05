@@ -534,3 +534,70 @@ class TestIncomeRegisterReport(TransactionCase):
                 self.payslip.date_to,
                 delivery_id="x" * 41,
             )
+
+    def test_single_payslip_keeps_one_individual_entry(self):
+        """Generating one payslip twice still stores a single individual entry."""
+        self.payslip.payment_date = date(2025, 5, 25)
+        Entry = self.env["l10n_fi.income.register.entry"]
+        with patch(
+            "odoo.addons.base.models.ir_ui_view.View._render_template"
+        ) as mocked:
+            mocked.return_value = "<root>Payslip XML</root>"
+            self.payslip.action_incomes_register_report()
+            self.payslip.action_incomes_register_report()
+        entries = Entry.search(
+            [
+                ("payslip_id", "=", self.payslip.id),
+                ("report_type", "=", "individual"),
+            ]
+        )
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries.payslip_ids, self.payslip)
+
+    def test_multi_selection_creates_one_entry_per_generation(self):
+        """A multi-payslip selection stores one batch entry, not one per payslip."""
+        employee = self._create_employee("Second Employee")
+        other = self._create_payslip(
+            employee, date(2025, 5, 1), date(2025, 5, 31), date(2025, 5, 25)
+        )
+        self.payslip.payment_date = date(2025, 5, 25)
+        payslips = self.payslip | other
+        Entry = self.env["l10n_fi.income.register.entry"]
+        with patch(
+            "odoo.addons.base.models.ir_ui_view.View._render_template"
+        ) as mocked:
+            mocked.return_value = "<root>Combined XML</root>"
+            payslips.action_incomes_register_report()
+        entries = Entry.search(
+            [
+                ("report_type", "=", "batch"),
+                ("payslip_run_id", "=", False),
+                ("payslip_ids", "in", payslips.ids),
+            ]
+        )
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries.payslip_ids, payslips)
+        self.assertFalse(
+            Entry.search(
+                [
+                    ("report_type", "=", "individual"),
+                    ("payslip_id", "in", payslips.ids),
+                ]
+            )
+        )
+
+    def test_batch_entry_links_slip_ids(self):
+        """A payslip batch entry contains the payslips of the batch."""
+        with patch(
+            "odoo.addons.base.models.ir_ui_view.View._render_template"
+        ) as mocked:
+            mocked.return_value = "<root>Batch XML</root>"
+            self.payslip_run.action_incomes_register_report()
+        entry = self.env["l10n_fi.income.register.entry"].search(
+            [
+                ("payslip_run_id", "=", self.payslip_run.id),
+                ("report_type", "=", "batch"),
+            ]
+        )
+        self.assertEqual(len(entry), 1)
+        self.assertEqual(entry.payslip_ids, self.payslip_run.slip_ids)

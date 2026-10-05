@@ -41,10 +41,10 @@ class DateRangeGenerator(models.TransientModel):
 
         for date_range in date_ranges:
             fiscal_year_id = self.env["account.fiscal.year"].search(
-                [("date_from", "=", f"{date_ranges[0]["date_start"]}")], limit=1
+                [("date_from", "=", f"{date_ranges[0]['date_start']}")], limit=1
             )[0]
             date_range_id = self.env["date.range"].search(
-                [("name", "=", f"{date_range["name"]}")], limit=1
+                [("name", "=", f"{date_range['name']}")], limit=1
             )[0]
 
             vat_period = self.env["account.vat.period"].create(

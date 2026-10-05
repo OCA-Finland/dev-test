@@ -3,21 +3,25 @@
     <record model="ir.ui.view" id="hr_payslip_run_view_form_inherit">
         <field name="name">hr.payslip.run.view.form.inherit.l10n_fi_payroll</field>
         <field name="model">hr.payslip.run</field>
-        <field name="inherit_id" ref="payroll.hr_payslip_run_view_form"/>
+        <field name="inherit_id" ref="payroll.hr_payslip_run_view_form" />
         <field name="arch" type="xml">
             <header position="inside">
-                <button name="action_incomes_register_report"
-                        string="Create IR Report"
-                        type="object"/>
+                <button
+                    name="action_incomes_register_report"
+                    string="Create IR Report"
+                    type="object"
+                />
             </header>
             <xpath expr="//sheet/group" position="inside">
                 <group name="l10n_fi_income_register_group">
-                    <field name="l10n_fi_payment_date"/>
-                    <field name="l10n_fi_incomes_register_report" invisible="1"/>
-                    <field name="l10n_fi_ir_report_download"
-                           widget="html"
-                           nolabel="1"
-                           invisible="not l10n_fi_incomes_register_report"/>
+                    <field name="l10n_fi_payment_date" />
+                    <field name="l10n_fi_incomes_register_report" invisible="1" />
+                    <field
+                        name="l10n_fi_ir_report_download"
+                        widget="html"
+                        nolabel="1"
+                        invisible="not l10n_fi_incomes_register_report"
+                    />
                 </group>
             </xpath>
         </field>
@@ -26,7 +30,7 @@
     <record model="ir.ui.view" id="hr_payslip_run_view_form_hide_ir_column">
         <field name="name">hr.payslip.run.view.form.hide.ir.column</field>
         <field name="model">hr.payslip.run</field>
-        <field name="inherit_id" ref="payroll.hr_payslip_run_view_form"/>
+        <field name="inherit_id" ref="payroll.hr_payslip_run_view_form" />
         <field name="arch" type="xml">
             <field name="slip_ids" position="attributes">
                 <attribute name="context">{'hide_ir_column': True}</attribute>

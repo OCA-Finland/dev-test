@@ -1,141 +1,224 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='UTF-8' ?>
 <odoo>
-    <data>
-
-        <!-- Adds fields to hr contract form -->
-        <record model="ir.ui.view" id="hr_contract_form_extension">
-            <field name="name">hr.contract.form.extension</field>
-            <field name="model">hr.contract</field>
-            <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
-            <field name="arch" type="xml">
-                <data>
-                    <field name="contract_type_id" position="after">
-                        <field name="l10n_fi_tk10_code_id"/>
-                    </field>
-                    <group name="salary_info" position="after">
-                        <group>
-                            <group name="l10n_fi_pre_tax" string="Pre-Tax Benefits" invisible="country_code != 'FI'">
-                                <label for="l10n_fi_benefit_phone"/>
-                                <div class="o_row mw-50" name="l10n_fi_benefit_phone">
-                                    <field name="l10n_fi_benefit_phone" nolabel="1"/>
-                                </div>
-                                <label for="l10n_fi_benefit_car"/>
-                                <div class="o_row mw-50" name="l10n_fi_benefit_car">
-                                    <field name="l10n_fi_benefit_car" nolabel="1"/>
-                                </div>
-                                <label for="l10n_fi_benefit_car_type" invisible="not l10n_fi_benefit_car"/>
-                                <div class="o_row mw-50" name="l10n_fi_benefit_car_type"
-                                     invisible="not l10n_fi_benefit_car">
-                                    <field name="l10n_fi_benefit_car_type" nolabel="1"/>
-                                </div>
-                                <label for="l10n_fi_benefit_car_age_group" invisible="not l10n_fi_benefit_car"/>
-                                <div class="o_row mw-50" name="l10n_fi_benefit_car_age_group"
-                                     invisible="not l10n_fi_benefit_car">
-                                    <field name="l10n_fi_benefit_car_age_group" nolabel="1"/>
-                                </div>
-                                <label for="l10n_fi_benefit_apartment"/>
-                                <div class="o_row mw-50" name="l10n_fi_benefit_apartment">
-                                    <field name="l10n_fi_benefit_apartment" nolabel="1"/>
-                                </div>
-                                <label for="l10n_fi_benefit_meal"/>
-                                <div class="o_row mw-50" name="l10n_fi_benefit_meal">
-                                    <field name="l10n_fi_benefit_meal" nolabel="1"/>
-                                </div>
-
-                                <label for="l10n_fi_benefit_other"/>
-                                <div class="o_row mw-50" name="l10n_fi_benefit_other">
-                                    <field name="l10n_fi_benefit_other" nolabel="1"/>
-                                </div>
-                            </group>
-                            <group name="l10n_fi_post_tax" string="Post-Tax Deductions"
-                                   invisible="country_code != 'FI'">
-
-                                <label for="l10n_fi_have_membership_fee"/>
-                                <div class="o_row mw-50" name="l10n_fi_have_membership_fee">
-                                    <field name="l10n_fi_have_membership_fee" nolabel="1"/>
-                                </div>
-                                <label for="l10n_fi_membership_fee_type" invisible="not l10n_fi_have_membership_fee"/>
-                                <div class="o_row mw-50" name="l10n_fi__membership_fee_type"
-                                     invisible="not l10n_fi_have_membership_fee">
-                                    <field name="l10n_fi_membership_fee_type" nolabel="1"
-                                           invisible="not l10n_fi_have_membership_fee"/>
-                                </div>
-                                <label for="l10n_fi_membership_fee_precentage"
-                                       invisible="l10n_fi_membership_fee_type != 'percentage' or not l10n_fi_have_membership_fee"/>
-                                <div class="o_row mw-50" name="l10n_fi_membership_fee_precentage"
-                                     invisible="l10n_fi_membership_fee_type != 'percentage' or not l10n_fi_have_membership_fee">
-                                    <field name="l10n_fi_membership_fee_precentage" nolabel="1"
-                                           invisible="l10n_fi_membership_fee_type != 'percentage' and not l10n_fi_have_membership_fee"/>
-                                </div>
-                                <label for="l10n_fi_membership_fee_fixed"
-                                       invisible="l10n_fi_membership_fee_type != 'fixed' or not l10n_fi_have_membership_fee"/>
-                                <div class="o_row mw-50" name="l10n_fi_membership_fee_fixed"
-                                     invisible="l10n_fi_membership_fee_type != 'fixed' or not l10n_fi_have_membership_fee">
-                                    <field name="l10n_fi_membership_fee_fixed" nolabel="1"
-                                           invisible="l10n_fi_membership_fee_type != 'fixed' or not l10n_fi_have_membership_fee"/>
-                                </div>
-                                <label for="l10n_fi_union" invisible="not l10n_fi_have_membership_fee"/>
-                                <div class="o_row mw-50" name="l10n_fi_union"
-                                     invisible="not l10n_fi_have_membership_fee">
-                                    <field name="l10n_fi_union" nolabel="0"
-                                           invisible="not l10n_fi_have_membership_fee"/>
-                                </div>
-                                <label for="l10n_fi_have_distraint"/>
-                                <div class="o_row mw-50" name="l10n_fi_have_distraint">
-                                    <field name="l10n_fi_have_distraint" nolabel="1"/>
-                                </div>
-                                <label for="l10n_fi_distraint_income_type" invisible="not l10n_fi_have_distraint"/>
-                                <div class="o_row mw-50" name="l10n_fi_distraint_have_income"
-                                     invisible="not l10n_fi_have_distraint">
-                                    <field name="l10n_fi_distraint_income_type" nolabel="1"
-                                           required="l10n_fi_have_distraint"/>
-                                </div>
-                                <label for="l10n_fi_distraint_income_safe" invisible="not l10n_fi_have_distraint"/>
-                                <div class="o_row mw-50" name="l10n_fi_distraint_income_safe"
-                                     invisible="not l10n_fi_have_distraint">
-                                    <field name="l10n_fi_distraint_income_safe" nolabel="1"
-                                           required="l10n_fi_have_distraint"/>
-                                </div>
-
-                                <label for="l10n_fi_distraint_exception" invisible="not l10n_fi_have_distraint"/>
-                                <div class="o_row mw-50" name="l10n_fi_distraint_exception"
-                                     invisible="not l10n_fi_have_distraint">
-                                    <field name="l10n_fi_distraint_exception" nolabel="1"/>
-                                </div>
-                            </group>
-                            <group name="l10n_fi_post_tax" string="Post-Tax Reimbursements"
-                                   invisible="country_code != 'FI'">
-                                <label for="l10n_fi_commuter_ticket"/>
-                                <div class="o_row mw-50" name="l10n_fi_benefit_phone">
-                                    <field name="l10n_fi_commuter_ticket" nolabel="1"/>
-                                </div>
-                            </group>
-                        </group>
-                    </group>
-                    <group name="salary_info" position="after">
-                        <group name="l10n_fi_insurance" string="Insurance" invisible="country_code != 'FI'">
-                            <group>
-                                <field name="l10n_fi_pension_insurance_type"/>
-                                <field name="l10n_fi_pension_provider_id"/>
-                                <field name="l10n_pension_policy_no"/>
-                            </group>
-                            <group>
-                                <field name="l10n_fi_accident_insurance_type"/>
-                                <field name="l10n_fi_accident_insurance_code"/>
-                                <field name="l10n_fi_accident_insurance_policy_no"/>
-                                <field name="l10n_fi_insurance_exception_ids" widget="many2many_tags"/>
-                            </group>
-                        </group>
-                    </group>
-                    <group name="salary" position="inside">
-                        <label for="l10n_fi_hourly_rate"/>
-                        <div class="o_row mw-50" name="l10n_fi_hourly_rate_div">
-                            <field name="l10n_fi_hourly_rate" class="oe_inline o_hr_narrow_field" nolabel="1"/>
-                            <div class="mb-3" name="l10n_fi_hourly_rate_label">/ hour</div>
+    <!-- Adds fields to hr contract form -->
+    <record model="ir.ui.view" id="hr_contract_form_extension">
+        <field name="name">hr.contract.form.extension</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_form" />
+        <field name="arch" type="xml">
+            <field name="contract_type_id" position="after">
+                <field name="l10n_fi_tk10_code_id" />
+            </field>
+            <group name="salary_info" position="after">
+                <group>
+                    <group
+                        name="l10n_fi_pre_tax"
+                        string="Pre-Tax Benefits"
+                        invisible="country_code != 'FI'"
+                    >
+                        <label for="l10n_fi_benefit_phone" />
+                        <div class="o_row mw-50" name="l10n_fi_benefit_phone">
+                            <field name="l10n_fi_benefit_phone" nolabel="1" />
+                        </div>
+                        <label for="l10n_fi_benefit_car" />
+                        <div class="o_row mw-50" name="l10n_fi_benefit_car">
+                            <field name="l10n_fi_benefit_car" nolabel="1" />
+                        </div>
+                        <label
+                            for="l10n_fi_benefit_car_type"
+                            invisible="not l10n_fi_benefit_car"
+                        />
+                        <div
+                            class="o_row mw-50"
+                            name="l10n_fi_benefit_car_type"
+                            invisible="not l10n_fi_benefit_car"
+                        >
+                            <field name="l10n_fi_benefit_car_type" nolabel="1" />
+                        </div>
+                        <label
+                            for="l10n_fi_benefit_car_age_group"
+                            invisible="not l10n_fi_benefit_car"
+                        />
+                        <div
+                            class="o_row mw-50"
+                            name="l10n_fi_benefit_car_age_group"
+                            invisible="not l10n_fi_benefit_car"
+                        >
+                            <field name="l10n_fi_benefit_car_age_group" nolabel="1" />
+                        </div>
+                        <label for="l10n_fi_benefit_apartment" />
+                        <div class="o_row mw-50" name="l10n_fi_benefit_apartment">
+                            <field name="l10n_fi_benefit_apartment" nolabel="1" />
+                        </div>
+                        <label for="l10n_fi_benefit_meal" />
+                        <div class="o_row mw-50" name="l10n_fi_benefit_meal">
+                            <field name="l10n_fi_benefit_meal" nolabel="1" />
+                        </div>
+                        <label for="l10n_fi_benefit_other" />
+                        <div class="o_row mw-50" name="l10n_fi_benefit_other">
+                            <field name="l10n_fi_benefit_other" nolabel="1" />
                         </div>
                     </group>
-                </data>
-            </field>
-        </record>
-    </data>
+                    <group
+                        name="l10n_fi_post_tax"
+                        string="Post-Tax Deductions"
+                        invisible="country_code != 'FI'"
+                    >
+                        <label for="l10n_fi_have_membership_fee" />
+                        <div class="o_row mw-50" name="l10n_fi_have_membership_fee">
+                            <field name="l10n_fi_have_membership_fee" nolabel="1" />
+                        </div>
+                        <label
+                            for="l10n_fi_membership_fee_type"
+                            invisible="not l10n_fi_have_membership_fee"
+                        />
+                        <div
+                            class="o_row mw-50"
+                            name="l10n_fi__membership_fee_type"
+                            invisible="not l10n_fi_have_membership_fee"
+                        >
+                            <field
+                                name="l10n_fi_membership_fee_type"
+                                nolabel="1"
+                                invisible="not l10n_fi_have_membership_fee"
+                            />
+                        </div>
+                        <label
+                            for="l10n_fi_membership_fee_precentage"
+                            invisible="l10n_fi_membership_fee_type != 'percentage' or not l10n_fi_have_membership_fee"
+                        />
+                        <div
+                            class="o_row mw-50"
+                            name="l10n_fi_membership_fee_precentage"
+                            invisible="l10n_fi_membership_fee_type != 'percentage' or not l10n_fi_have_membership_fee"
+                        >
+                            <field
+                                name="l10n_fi_membership_fee_precentage"
+                                nolabel="1"
+                                invisible="l10n_fi_membership_fee_type != 'percentage' and not l10n_fi_have_membership_fee"
+                            />
+                        </div>
+                        <label
+                            for="l10n_fi_membership_fee_fixed"
+                            invisible="l10n_fi_membership_fee_type != 'fixed' or not l10n_fi_have_membership_fee"
+                        />
+                        <div
+                            class="o_row mw-50"
+                            name="l10n_fi_membership_fee_fixed"
+                            invisible="l10n_fi_membership_fee_type != 'fixed' or not l10n_fi_have_membership_fee"
+                        >
+                            <field
+                                name="l10n_fi_membership_fee_fixed"
+                                nolabel="1"
+                                invisible="l10n_fi_membership_fee_type != 'fixed' or not l10n_fi_have_membership_fee"
+                            />
+                        </div>
+                        <label
+                            for="l10n_fi_union"
+                            invisible="not l10n_fi_have_membership_fee"
+                        />
+                        <div
+                            class="o_row mw-50"
+                            name="l10n_fi_union"
+                            invisible="not l10n_fi_have_membership_fee"
+                        >
+                            <field
+                                name="l10n_fi_union"
+                                nolabel="0"
+                                invisible="not l10n_fi_have_membership_fee"
+                            />
+                        </div>
+                        <label for="l10n_fi_have_distraint" />
+                        <div class="o_row mw-50" name="l10n_fi_have_distraint">
+                            <field name="l10n_fi_have_distraint" nolabel="1" />
+                        </div>
+                        <label
+                            for="l10n_fi_distraint_income_type"
+                            invisible="not l10n_fi_have_distraint"
+                        />
+                        <div
+                            class="o_row mw-50"
+                            name="l10n_fi_distraint_have_income"
+                            invisible="not l10n_fi_have_distraint"
+                        >
+                            <field
+                                name="l10n_fi_distraint_income_type"
+                                nolabel="1"
+                                required="l10n_fi_have_distraint"
+                            />
+                        </div>
+                        <label
+                            for="l10n_fi_distraint_income_safe"
+                            invisible="not l10n_fi_have_distraint"
+                        />
+                        <div
+                            class="o_row mw-50"
+                            name="l10n_fi_distraint_income_safe"
+                            invisible="not l10n_fi_have_distraint"
+                        >
+                            <field
+                                name="l10n_fi_distraint_income_safe"
+                                nolabel="1"
+                                required="l10n_fi_have_distraint"
+                            />
+                        </div>
+                        <label
+                            for="l10n_fi_distraint_exception"
+                            invisible="not l10n_fi_have_distraint"
+                        />
+                        <div
+                            class="o_row mw-50"
+                            name="l10n_fi_distraint_exception"
+                            invisible="not l10n_fi_have_distraint"
+                        >
+                            <field name="l10n_fi_distraint_exception" nolabel="1" />
+                        </div>
+                    </group>
+                    <group
+                        name="l10n_fi_post_tax"
+                        string="Post-Tax Reimbursements"
+                        invisible="country_code != 'FI'"
+                    >
+                        <label for="l10n_fi_commuter_ticket" />
+                        <div class="o_row mw-50" name="l10n_fi_benefit_phone">
+                            <field name="l10n_fi_commuter_ticket" nolabel="1" />
+                        </div>
+                    </group>
+                </group>
+            </group>
+            <group name="salary_info" position="after">
+                <group
+                    name="l10n_fi_insurance"
+                    string="Insurance"
+                    invisible="country_code != 'FI'"
+                >
+                    <group>
+                        <field name="l10n_fi_pension_insurance_type" />
+                        <field name="l10n_fi_pension_provider_id" />
+                        <field name="l10n_pension_policy_no" />
+                    </group>
+                    <group>
+                        <field name="l10n_fi_accident_insurance_type" />
+                        <field name="l10n_fi_accident_insurance_code" />
+                        <field name="l10n_fi_accident_insurance_policy_no" />
+                        <field
+                            name="l10n_fi_insurance_exception_ids"
+                            widget="many2many_tags"
+                        />
+                    </group>
+                </group>
+            </group>
+            <group name="salary" position="inside">
+                <label for="l10n_fi_hourly_rate" />
+                <div class="o_row mw-50" name="l10n_fi_hourly_rate_div">
+                    <field
+                        name="l10n_fi_hourly_rate"
+                        class="oe_inline o_hr_narrow_field"
+                        nolabel="1"
+                    />
+                    <div class="mb-3" name="l10n_fi_hourly_rate_label">/ hour</div>
+                </div>
+            </group>
+        </field>
+    </record>
 </odoo>

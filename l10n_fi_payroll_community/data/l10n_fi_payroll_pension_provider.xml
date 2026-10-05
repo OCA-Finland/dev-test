@@ -1,129 +1,178 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version='1.0' encoding='UTF-8' ?>
 <odoo>
-    <data>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_10">
-            <field name="name">Eläketurvakeskus</field>
-            <field name="code">10</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_16">
-            <field name="name">Ortodoksisen kirkon papiston eläkekassa</field>
-            <field name="code">16</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_20">
-            <field name="name">Kevan jäsenyhteisöt</field>
-            <field name="code">20</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_24">
-            <field name="name">Keva - Åland landskapsregerings pensionssystem</field>
-            <field name="code">24</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_25">
-            <field name="name">Keva - kirkko</field>
-            <field name="code">25</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_27">
-            <field name="name">Suomen Pankki</field>
-            <field name="code">27</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_29">
-            <field name="name">Keva - Kelan toimisuhde-eläkkeet</field>
-            <field name="code">29</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_30">
-            <field name="name">Keva - valtio</field>
-            <field name="code">30</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_34">
-            <field name="name">Merimieseläkekassa</field>
-            <field name="code">34</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_35">
-            <field name="name">Maatalousyrittäjien eläkelaitos</field>
-            <field name="code">35</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_46">
-            <field name="name">Keskinäinen Eläkevakuutusyhtiö Ilmarinen</field>
-            <field name="code">46</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_54">
-            <field name="name">Keskinäinen Työeläkevakuutusyhtiö Elo</field>
-            <field name="code">54</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_55">
-            <field name="name">Keskinäinen työeläkevakuutusyhtiö Varma</field>
-            <field name="code">55</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_56">
-            <field name="name">Eläkevakuutusosakeyhtiö Veritas</field>
-            <field name="code">56</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_70014">
-            <field name="name">UPM Sellutehtaiden eläkesäätiö</field>
-            <field name="code">70014</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_70047">
-            <field name="name">Sanoman Eläkesäätiö</field>
-            <field name="code">70047</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_70072">
-            <field name="name">Sandvik Eläkesäätiö</field>
-            <field name="code">70072</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_70076">
-            <field name="name">Kontinon yhteiseläkesäätiö</field>
-            <field name="code">70076</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_70078">
-            <field name="name">Yleisradion eläkesäätiö</field>
-            <field name="code">70078</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_70088">
-            <field name="name">ABB Eläkesäätiö</field>
-            <field name="code">70088</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_70093">
-            <field name="name">L-Fashion Group Oy:n eläkesäätiö</field>
-            <field name="code">70093</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_70109">
-            <field name="name">Honeywell Oy:n Henkilökunnan Eläkesäätiö</field>
-            <field name="code">70109</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_70199">
-            <field name="name">Telian Eläkesäätiö</field>
-            <field name="code">70199</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_70200">
-            <field name="name">Yara Suomen Eläkesäätiö</field>
-            <field name="code">70200</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_70202">
-            <field name="name">Orionin Eläkesäätiö</field>
-            <field name="code">70202</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_80001">
-            <field name="name">Valion Eläkekassa</field>
-            <field name="code">80001</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_80005">
-            <field name="name">OP-Eläkekassa</field>
-            <field name="code">80005</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_80008">
-            <field name="name">Eläkekassa Verso</field>
-            <field name="code">80008</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_80009">
-            <field name="name">Apteekkien Eläkekassa</field>
-            <field name="code">80009</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_80012">
-            <field name="name">Liikennepalvelualojen Eläkekassa Viabek</field>
-            <field name="code">80012</field>
-        </record>
-        <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_80014">
-            <field name="name">Reka Eläkekassa</field>
-            <field name="code">80014</field>
-        </record>
-    </data>
+    <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_10">
+        <field name="name">Eläketurvakeskus</field>
+        <field name="code">10</field>
+    </record>
+    <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_16">
+        <field name="name">Ortodoksisen kirkon papiston eläkekassa</field>
+        <field name="code">16</field>
+    </record>
+    <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_20">
+        <field name="name">Kevan jäsenyhteisöt</field>
+        <field name="code">20</field>
+    </record>
+    <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_24">
+        <field name="name">Keva - Åland landskapsregerings pensionssystem</field>
+        <field name="code">24</field>
+    </record>
+    <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_25">
+        <field name="name">Keva - kirkko</field>
+        <field name="code">25</field>
+    </record>
+    <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_27">
+        <field name="name">Suomen Pankki</field>
+        <field name="code">27</field>
+    </record>
+    <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_29">
+        <field name="name">Keva - Kelan toimisuhde-eläkkeet</field>
+        <field name="code">29</field>
+    </record>
+    <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_30">
+        <field name="name">Keva - valtio</field>
+        <field name="code">30</field>
+    </record>
+    <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_34">
+        <field name="name">Merimieseläkekassa</field>
+        <field name="code">34</field>
+    </record>
+    <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_35">
+        <field name="name">Maatalousyrittäjien eläkelaitos</field>
+        <field name="code">35</field>
+    </record>
+    <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_46">
+        <field name="name">Keskinäinen Eläkevakuutusyhtiö Ilmarinen</field>
+        <field name="code">46</field>
+    </record>
+    <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_54">
+        <field name="name">Keskinäinen Työeläkevakuutusyhtiö Elo</field>
+        <field name="code">54</field>
+    </record>
+    <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_55">
+        <field name="name">Keskinäinen työeläkevakuutusyhtiö Varma</field>
+        <field name="code">55</field>
+    </record>
+    <record model="l10n.fi.payroll.pension.provider" id="l10n_fi_pension_provider_56">
+        <field name="name">Eläkevakuutusosakeyhtiö Veritas</field>
+        <field name="code">56</field>
+    </record>
+    <record
+        model="l10n.fi.payroll.pension.provider"
+        id="l10n_fi_pension_provider_70014"
+    >
+        <field name="name">UPM Sellutehtaiden eläkesäätiö</field>
+        <field name="code">70014</field>
+    </record>
+    <record
+        model="l10n.fi.payroll.pension.provider"
+        id="l10n_fi_pension_provider_70047"
+    >
+        <field name="name">Sanoman Eläkesäätiö</field>
+        <field name="code">70047</field>
+    </record>
+    <record
+        model="l10n.fi.payroll.pension.provider"
+        id="l10n_fi_pension_provider_70072"
+    >
+        <field name="name">Sandvik Eläkesäätiö</field>
+        <field name="code">70072</field>
+    </record>
+    <record
+        model="l10n.fi.payroll.pension.provider"
+        id="l10n_fi_pension_provider_70076"
+    >
+        <field name="name">Kontinon yhteiseläkesäätiö</field>
+        <field name="code">70076</field>
+    </record>
+    <record
+        model="l10n.fi.payroll.pension.provider"
+        id="l10n_fi_pension_provider_70078"
+    >
+        <field name="name">Yleisradion eläkesäätiö</field>
+        <field name="code">70078</field>
+    </record>
+    <record
+        model="l10n.fi.payroll.pension.provider"
+        id="l10n_fi_pension_provider_70088"
+    >
+        <field name="name">ABB Eläkesäätiö</field>
+        <field name="code">70088</field>
+    </record>
+    <record
+        model="l10n.fi.payroll.pension.provider"
+        id="l10n_fi_pension_provider_70093"
+    >
+        <field name="name">L-Fashion Group Oy:n eläkesäätiö</field>
+        <field name="code">70093</field>
+    </record>
+    <record
+        model="l10n.fi.payroll.pension.provider"
+        id="l10n_fi_pension_provider_70109"
+    >
+        <field name="name">Honeywell Oy:n Henkilökunnan Eläkesäätiö</field>
+        <field name="code">70109</field>
+    </record>
+    <record
+        model="l10n.fi.payroll.pension.provider"
+        id="l10n_fi_pension_provider_70199"
+    >
+        <field name="name">Telian Eläkesäätiö</field>
+        <field name="code">70199</field>
+    </record>
+    <record
+        model="l10n.fi.payroll.pension.provider"
+        id="l10n_fi_pension_provider_70200"
+    >
+        <field name="name">Yara Suomen Eläkesäätiö</field>
+        <field name="code">70200</field>
+    </record>
+    <record
+        model="l10n.fi.payroll.pension.provider"
+        id="l10n_fi_pension_provider_70202"
+    >
+        <field name="name">Orionin Eläkesäätiö</field>
+        <field name="code">70202</field>
+    </record>
+    <record
+        model="l10n.fi.payroll.pension.provider"
+        id="l10n_fi_pension_provider_80001"
+    >
+        <field name="name">Valion Eläkekassa</field>
+        <field name="code">80001</field>
+    </record>
+    <record
+        model="l10n.fi.payroll.pension.provider"
+        id="l10n_fi_pension_provider_80005"
+    >
+        <field name="name">OP-Eläkekassa</field>
+        <field name="code">80005</field>
+    </record>
+    <record
+        model="l10n.fi.payroll.pension.provider"
+        id="l10n_fi_pension_provider_80008"
+    >
+        <field name="name">Eläkekassa Verso</field>
+        <field name="code">80008</field>
+    </record>
+    <record
+        model="l10n.fi.payroll.pension.provider"
+        id="l10n_fi_pension_provider_80009"
+    >
+        <field name="name">Apteekkien Eläkekassa</field>
+        <field name="code">80009</field>
+    </record>
+    <record
+        model="l10n.fi.payroll.pension.provider"
+        id="l10n_fi_pension_provider_80012"
+    >
+        <field name="name">Liikennepalvelualojen Eläkekassa Viabek</field>
+        <field name="code">80012</field>
+    </record>
+    <record
+        model="l10n.fi.payroll.pension.provider"
+        id="l10n_fi_pension_provider_80014"
+    >
+        <field name="name">Reka Eläkekassa</field>
+        <field name="code">80014</field>
+    </record>
 </odoo>

@@ -4,9 +4,9 @@
         <field name="model">hr.distraint.monthly.free</field>
         <field name="arch" type="xml">
             <list string="Distraint Monthly Free List" editable="bottom">
-                <field name="employee_id"/>
-                <field name="valid_from" width="400px"/>
-                <field name="valid_until" width="400px"/>
+                <field name="employee_id" />
+                <field name="valid_from" width="400px" />
+                <field name="valid_until" width="400px" />
             </list>
         </field>
     </record>

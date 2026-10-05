@@ -1,55 +1,76 @@
-<?xml version="1.0" encoding="utf-8"?>
-<openerp>
-    <data noupdate="0">
-
-        <!-- Finnish contribution register selections. Ordered by name -->
-        <record id="hr_payroll.hr_contribution_register_ennakonpidatyksen_alainen_palkka" model="hr.payroll.social.contribution">
-            <field name="name">Ennakonpidätyksen alainen palkka</field>
-        </record>
-
-        <record id="hr_payroll.hr_contribution_register_ennakonpidatykset" model="hr.payroll.social.contribution">
-            <field name="name">Ennakonpidätykset</field>
-        </record>
-
-        <record id="hr_payroll.hr_contribution_register_korvaukset" model="hr.payroll.social.contribution">
-            <field name="name">Korvaukset</field>
-        </record>
-
-        <record id="hr_payroll.hr_contribution_register_lomapalkka" model="hr.payroll.social.contribution">
-            <field name="name">Lomapalkka</field>
-        </record>
-
-        <record id="hr_payroll.hr_contribution_register_paivarahat" model="hr.payroll.social.contribution">
-            <field name="name">Päivärahat</field>
-        </record>
-
-        <record id="hr_payroll.hr_contribution_register_sairasajan_palkka" model="hr.payroll.social.contribution">
-            <field name="name">Sairasajanpalkka</field>
-        </record>
-
-        <record id="hr_payroll.hr_contribution_register_sairasajan_korvaus" model="hr.payroll.social.contribution">
-            <field name="name">Sairasajan korvaus</field>
-        </record>
-
-        <record id="hr_payroll.hr_contribution_register_sosiaaliturvamaksu" model="hr.payroll.social.contribution">
-            <field name="name">Sosiaaliturvamaksu</field>
-        </record>
-
-        <record id="hr_payroll.hr_contribution_register_tapaturmavakuutusmaksu" model="hr.payroll.social.contribution">
-            <field name="name">Tapaturmavakuutusmaksu</field>
-        </record>
-
-        <record id="hr_payroll.hr_contribution_register_tyel" model="hr.payroll.social.contribution">
-            <field name="name">TYEL</field>
-        </record>
-
-        <record id="hr_payroll.hr_contribution_register_tyontekijat" model="hr.payroll.social.contribution">
-            <field name="name">Työntekijät</field>
-        </record>
-
-        <record id="hr_payroll.hr_contribution_register_tyottomyysvakuutus" model="hr.payroll.social.contribution">
-            <field name="name">Työttömyysvakuutus</field>
-        </record>
-
-    </data>
-</openerp>
+<?xml version='1.0' encoding='UTF-8' ?>
+<odoo>
+    <!-- Finnish contribution register selections. Ordered by name -->
+    <record
+        id="hr_payroll.hr_contribution_register_ennakonpidatyksen_alainen_palkka"
+        model="hr.payroll.social.contribution"
+    >
+        <field name="name">Ennakonpidätyksen alainen palkka</field>
+    </record>
+    <record
+        id="hr_payroll.hr_contribution_register_ennakonpidatykset"
+        model="hr.payroll.social.contribution"
+    >
+        <field name="name">Ennakonpidätykset</field>
+    </record>
+    <record
+        id="hr_payroll.hr_contribution_register_korvaukset"
+        model="hr.payroll.social.contribution"
+    >
+        <field name="name">Korvaukset</field>
+    </record>
+    <record
+        id="hr_payroll.hr_contribution_register_lomapalkka"
+        model="hr.payroll.social.contribution"
+    >
+        <field name="name">Lomapalkka</field>
+    </record>
+    <record
+        id="hr_payroll.hr_contribution_register_paivarahat"
+        model="hr.payroll.social.contribution"
+    >
+        <field name="name">Päivärahat</field>
+    </record>
+    <record
+        id="hr_payroll.hr_contribution_register_sairasajan_palkka"
+        model="hr.payroll.social.contribution"
+    >
+        <field name="name">Sairasajanpalkka</field>
+    </record>
+    <record
+        id="hr_payroll.hr_contribution_register_sairasajan_korvaus"
+        model="hr.payroll.social.contribution"
+    >
+        <field name="name">Sairasajan korvaus</field>
+    </record>
+    <record
+        id="hr_payroll.hr_contribution_register_sosiaaliturvamaksu"
+        model="hr.payroll.social.contribution"
+    >
+        <field name="name">Sosiaaliturvamaksu</field>
+    </record>
+    <record
+        id="hr_payroll.hr_contribution_register_tapaturmavakuutusmaksu"
+        model="hr.payroll.social.contribution"
+    >
+        <field name="name">Tapaturmavakuutusmaksu</field>
+    </record>
+    <record
+        id="hr_payroll.hr_contribution_register_tyel"
+        model="hr.payroll.social.contribution"
+    >
+        <field name="name">TYEL</field>
+    </record>
+    <record
+        id="hr_payroll.hr_contribution_register_tyontekijat"
+        model="hr.payroll.social.contribution"
+    >
+        <field name="name">Työntekijät</field>
+    </record>
+    <record
+        id="hr_payroll.hr_contribution_register_tyottomyysvakuutus"
+        model="hr.payroll.social.contribution"
+    >
+        <field name="name">Työttömyysvakuutus</field>
+    </record>
+</odoo>

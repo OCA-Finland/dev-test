@@ -3,18 +3,23 @@
     <record model="ir.ui.view" id="hr_payslip_view_form_payment">
         <field name="name">hr.payslip.view.form.inherit.l10n_fi_payroll</field>
         <field name="model">hr.payslip</field>
-        <field name="inherit_id" ref="payroll.hr_payslip_view_form"/>
+        <field name="inherit_id" ref="payroll.hr_payslip_view_form" />
         <field name="arch" type="xml">
             <header position="inside">
-                <field name="state" invisible="1"/>
-                <button name="action_create_payment" type="object" string="Create Payment" class="oe_highlight"
-                        data-hotkey="w"
-                        context="{'dont_redirect_to_payments': True, 'hr_payroll_payment_register': True}"
-                        invisible="state != 'done'"
-                        groups="account.group_account_invoice"/>
+                <field name="state" invisible="1" />
+                <button
+                    name="action_create_payment"
+                    type="object"
+                    string="Create Payment"
+                    class="oe_highlight"
+                    data-hotkey="w"
+                    context="{'dont_redirect_to_payments': True, 'hr_payroll_payment_register': True}"
+                    invisible="state != 'done'"
+                    groups="account.group_account_invoice"
+                />
             </header>
             <xpath expr="//field[@name='input_line_ids']/list" position="inside">
-                <field name="input_type_id" options="{'no_create': True}"/>
+                <field name="input_type_id" options="{'no_create': True}" />
             </xpath>
             <xpath expr="//field[@name='compute_date']" position="after">
                 <field name="payment_date" />
@@ -25,40 +30,45 @@
     <record model="ir.ui.view" id="hr_payslip_view_form_ir_report">
         <field name="name">hr.payslip.view.form.inherit.income.register</field>
         <field name="model">hr.payslip</field>
-        <field name="inherit_id" ref="payroll.hr_payslip_view_form"/>
+        <field name="inherit_id" ref="payroll.hr_payslip_view_form" />
         <field name="arch" type="xml">
             <header position="inside">
-                <button name="action_incomes_register_report"
-                        string="Generate IR Report"
-                        type="object"
-                        icon="fa-file-text-o"
-                        invisible="state != 'done'"/>
+                <button
+                    name="action_incomes_register_report"
+                    string="Generate IR Report"
+                    type="object"
+                    icon="fa-file-text-o"
+                    invisible="state != 'done'"
+                />
             </header>
             <field name="company_id" position="after">
-                <field name="l10n_fi_incomes_register_report_filename" invisible="1"/>
-                <field name="l10n_fi_incomes_register_report"
-                       filename="l10n_fi_incomes_register_report_filename"
-                       invisible="not l10n_fi_incomes_register_report"/>
+                <field name="l10n_fi_incomes_register_report_filename" invisible="1" />
+                <field
+                    name="l10n_fi_incomes_register_report"
+                    filename="l10n_fi_incomes_register_report_filename"
+                    invisible="not l10n_fi_incomes_register_report"
+                />
             </field>
         </field>
     </record>
 
-    
-<record id="view_model_form_inherit_exception_state" model="ir.ui.view">
+    <record id="view_model_form_inherit_exception_state" model="ir.ui.view">
         <field name="name">hr.payslip.view.form.inherit.exception_warning_states</field>
         <field name="model">hr.payslip</field>
-        <field name="inherit_id" ref="payroll.hr_payslip_view_form"/>
+        <field name="inherit_id" ref="payroll.hr_payslip_view_form" />
         <field name="arch" type="xml">
-            <xpath expr="//page[@name='computation']//field[@name='currency_id']" position="after">
-                <field name="exception_warning_state"
-                       string="Exception"
-                       optional="show"
-                       widget="badge"
-                       decoration-danger="exception_warning_state"
-                       />
+            <xpath
+                expr="//page[@name='computation']//field[@name='currency_id']"
+                position="after"
+            >
+                <field
+                    name="exception_warning_state"
+                    string="Exception"
+                    optional="show"
+                    widget="badge"
+                    decoration-danger="exception_warning_state"
+                />
             </xpath>
-
         </field>
     </record>
-
 </odoo>

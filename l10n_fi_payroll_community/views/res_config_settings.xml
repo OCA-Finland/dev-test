@@ -1,19 +1,24 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version='1.0' encoding='UTF-8' ?>
 <odoo>
-    <data>
-        <record model="ir.ui.view" id="res_config_settings_view_form_inherit_payroll_income_register">
-            <field name="name">res.config.settings.view.form.inherit.payroll.income.register</field>
-            <field name="model">res.config.settings</field>
-            <field name="inherit_id" ref="l10n_fi_payroll_defaults"/>
-            <field name="arch" type="xml">
-                <xpath expr="//block[@id='l10n_fi_payroll_defaults']" position="inside">
-                    <setting name="l10n_fi_payroll_ir_contact_person_id"
-                             string="Income Register Contact Person"
-                             help="Select the contact person for Income Register related matters.">
-                        <field name="l10n_fi_payroll_ir_contact_person_id"/>
-                    </setting>
-                </xpath>
-            </field>
-        </record>
-    </data>
+    <record
+        model="ir.ui.view"
+        id="res_config_settings_view_form_inherit_payroll_income_register"
+    >
+        <field
+            name="name"
+        >res.config.settings.view.form.inherit.payroll.income.register</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="l10n_fi_payroll_defaults" />
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='l10n_fi_payroll_defaults']" position="inside">
+                <setting
+                    name="l10n_fi_payroll_ir_contact_person_id"
+                    string="Income Register Contact Person"
+                    help="Select the contact person for Income Register related matters."
+                >
+                    <field name="l10n_fi_payroll_ir_contact_person_id" />
+                </setting>
+            </xpath>
+        </field>
+    </record>
 </odoo>

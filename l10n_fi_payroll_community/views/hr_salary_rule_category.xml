@@ -3,10 +3,10 @@
     <record model="ir.ui.view" id="hr_salary_rule_category_inherit">
         <field name="name">hr.salary.rule.category.inherit</field>
         <field name="model">hr.salary.rule.category</field>
-        <field name="inherit_id" ref="payroll.hr_salary_rule_category_view_form"/>
+        <field name="inherit_id" ref="payroll.hr_salary_rule_category_view_form" />
         <field name="arch" type="xml">
             <xpath expr="//field[@name='parent_id']" position="after">
-                <field name="l10n_fi_ytd_include"/>
+                <field name="l10n_fi_ytd_include" />
             </xpath>
         </field>
     </record>

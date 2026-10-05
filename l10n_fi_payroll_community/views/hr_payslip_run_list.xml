@@ -4,13 +4,15 @@
     <record model="ir.ui.view" id="hr_payslip_run_view_list_inherit">
         <field name="name">hr.payslip.run.view.list.inherit.income.register</field>
         <field name="model">hr.payslip.run</field>
-        <field name="inherit_id" ref="payroll.hr_payslip_run_view_tree"/>
+        <field name="inherit_id" ref="payroll.hr_payslip_run_view_tree" />
         <field name="arch" type="xml">
             <field name="state" position="after">
-                <field name="l10n_fi_ir_report_download"
-                       string="IR Report"
-                       optional="show"
-                       widget="html"/>
+                <field
+                    name="l10n_fi_ir_report_download"
+                    string="IR Report"
+                    optional="show"
+                    widget="html"
+                />
             </field>
         </field>
     </record>

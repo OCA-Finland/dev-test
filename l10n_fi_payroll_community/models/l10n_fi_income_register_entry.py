@@ -1,59 +1,66 @@
-from odoo import models, fields
+import base64
 import io
 import zipfile
-import base64
+
+from odoo import fields, models
 
 
 class L10nFiIncomeRegisterEntry(models.Model):
-    _name = 'l10n_fi.income.register.entry'
-    _description = 'Income Register Report Entry'
-    _order = 'generated_at desc'
+    _name = "l10n_fi.income.register.entry"
+    _description = "Income Register Report Entry"
+    _order = "generated_at desc"
 
-    report_type = fields.Selection([
-        ('individual', 'Individual'),
-        ('batch', 'Batch'),
-    ], string='Type', required=True)
+    report_type = fields.Selection(
+        [
+            ("individual", "Individual"),
+            ("batch", "Batch"),
+        ],
+        string="Type",
+        required=True,
+    )
     employee_id = fields.Many2one(
-        'hr.employee',
-        string='Employee',
+        "hr.employee",
+        string="Employee",
     )
     payslip_id = fields.Many2one(
-        'hr.payslip',
-        string='Payslip',
+        "hr.payslip",
+        string="Payslip",
     )
     payslip_run_id = fields.Many2one(
-        'hr.payslip.run',
-        string='Batch',
+        "hr.payslip.run",
+        string="Batch",
     )
-    date_from = fields.Date(string='Period From')
-    date_to = fields.Date(string='Period To')
-    generated_at = fields.Datetime(string='Generated On', required=True)
-    report = fields.Binary(string='Report', required=True, attachment=False)
-    filename = fields.Char(string='Filename', required=True)
-    
+    date_from = fields.Date(string="Period From")
+    date_to = fields.Date(string="Period To")
+    generated_at = fields.Datetime(string="Generated On", required=True)
+    report = fields.Binary(required=True, attachment=False)
+    filename = fields.Char(required=True)
+
     def action_bulk_download(self):
         if not self:
             return
 
         zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
             for record in self:
                 if record.report and record.filename:
                     zip_file.writestr(record.filename, base64.b64decode(record.report))
 
         zip_buffer.seek(0)
-        zip_data = base64.b64encode(zip_buffer.read()).decode('utf-8')
+        zip_data = base64.b64encode(zip_buffer.read()).decode("utf-8")
 
-        attachment = self.env['ir.attachment'].create({
-            'name': 'income_register_reports.zip',
-            'datas': zip_data,
-            'mimetype': 'application/zip',
-            'res_model': self._name,
-            'res_id': self[0].id,
-        })
+        attachment = self.env["ir.attachment"].create(
+            {
+                "name": "income_register_reports.zip",
+                "datas": zip_data,
+                "mimetype": "application/zip",
+                "res_model": self._name,
+                "res_id": self[0].id,
+            }
+        )
 
         return {
-            'type': 'ir.actions.act_url',
-            'url': f'/web/content/{attachment.id}?download=true',
-            'target': 'self',
+            "type": "ir.actions.act_url",
+            "url": f"/web/content/{attachment.id}?download=true",
+            "target": "self",
         }

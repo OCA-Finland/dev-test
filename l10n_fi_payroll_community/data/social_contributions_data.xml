@@ -1,124 +1,106 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<odoo>
-    <data noupdate="1">
-
-        <!-- Earnings-related pension insurance contribution -->
-
-        <record id="ssc_1" model="hr.payroll.social.contribution">
-            <field name="age_from">0</field>
-            <field name="age_until">17</field>
-            <field name="contribution_type">pension_insurance</field>
-            <field name="employee_share_percentage">0</field>
-            <field name="employer_share_percentage">0</field>
-            <field name="valid_from">2025-01-01</field>
-            <field name="valid_until">2026-12-31</field>
-        </record>
-
-        <record id="ssc_2" model="hr.payroll.social.contribution">
-            <field name="age_from">17</field>
-            <field name="age_until">52</field>
-            <field name="contribution_type">pension_insurance</field>
-            <field name="employee_share_percentage">0.073</field>
-            <field name="employer_share_percentage">0.1751</field>
-            <field name="valid_from">2025-01-01</field>
-            <field name="valid_until">2026-12-31</field>
-        </record>
-
-        <record id="ssc_3" model="hr.payroll.social.contribution">
-            <field name="age_from">63</field>
-            <field name="age_until">68</field>
-            <field name="contribution_type">pension_insurance</field>
-            <field name="employee_share_percentage">0.073</field>
-            <field name="employer_share_percentage">0.1751</field>
-            <field name="valid_from">2025-01-01</field>
-            <field name="valid_until">2026-12-31</field>
-        </record>
-
-        <record id="ssc_4" model="hr.payroll.social.contribution">
-            <field name="age_from">69</field>
-            <field name="age_until">100</field>
-            <field name="contribution_type">pension_insurance</field>
-            <field name="employee_share_percentage">0</field>
-            <field name="employer_share_percentage">0</field>
-            <field name="valid_from">2025-01-01</field>
-            <field name="valid_until">2026-12-31</field>
-        </record>
-
-        <!-- TyEL variation -->
-
-        <record id="ssc_5" model="hr.payroll.social.contribution">
-            <field name="age_from">0</field>
-            <field name="age_until">15</field>
-            <field name="contribution_type">pension_insurance</field>
-            <field name="employee_share_percentage">0</field>
-            <field name="employer_share_percentage">0</field>
-            <field name="valid_from">2025-01-01</field>
-            <field name="valid_until">2026-12-31</field>
-        </record>
-
-        <record id="ssc_6" model="hr.payroll.social.contribution">
-            <field name="age_from">16</field>
-            <field name="age_until">67</field>
-            <field name="contribution_type">pension_insurance</field>
-            <field name="employee_share_percentage">0.0106</field>
-            <field name="employer_share_percentage">0.0187</field>
-            <field name="valid_from">2025-01-01</field>
-            <field name="valid_until">2026-12-31</field>
-        </record>
-
-        <record id="ssc_7" model="hr.payroll.social.contribution">
-            <field name="age_from">68</field>
-            <field name="age_until">100</field>
-            <field name="contribution_type">pension_insurance</field>
-            <field name="employee_share_percentage">0</field>
-            <field name="employer_share_percentage">0</field>
-            <field name="valid_from">2025-01-01</field>
-            <field name="valid_until">2026-12-31</field>
-        </record>
-
-        <!-- Unemployment insurance -->
-
-        <record id="ssc_8" model="hr.payroll.social.contribution">
-            <field name="age_from">0</field>
-            <field name="age_until">17</field>
-            <field name="contribution_type">unemployment_insurance</field>
-            <field name="employee_share_percentage">0</field>
-            <field name="employer_share_percentage">0</field>
-            <field name="valid_from">2025-01-01</field>
-            <field name="valid_until">2026-12-31</field>
-        </record>
-
-        <record id="ssc_9" model="hr.payroll.social.contribution">
-            <field name="age_from">18</field>
-            <field name="age_until">64</field>
-            <field name="contribution_type">unemployment_insurance</field>
-            <field name="employee_share_percentage">0.0059</field>
-            <field name="employer_share_percentage">0.002</field>
-            <field name="valid_from">2025-01-01</field>
-            <field name="valid_until">2026-12-31</field>
-        </record>
-
-        <record id="ssc_10" model="hr.payroll.social.contribution">
-            <field name="age_from">65</field>
-            <field name="age_until">100</field>
-            <field name="contribution_type">unemployment_insurance</field>
-            <field name="employee_share_percentage">0</field>
-            <field name="employer_share_percentage">0</field>
-            <field name="valid_from">2025-01-01</field>
-            <field name="valid_until">2026-12-31</field>
-        </record>
-
-        <!-- Special group -->
-
-        <record id="ssc_11" model="hr.payroll.social.contribution">
-            <field name="age_from">53</field>
-            <field name="age_until">62</field>
-            <field name="contribution_type">pension_insurance</field>
-            <field name="employee_share_percentage">0.08</field>
-            <field name="employer_share_percentage">0.01681</field>
-            <field name="valid_from">2025-01-01</field>
-            <field name="valid_until">2026-12-31</field>
-        </record>
-
-    </data>
+<?xml version='1.0' encoding='UTF-8' ?>
+<odoo noupdate="1">
+    <!-- Earnings-related pension insurance contribution -->
+    <record id="ssc_1" model="hr.payroll.social.contribution">
+        <field name="age_from">0</field>
+        <field name="age_until">17</field>
+        <field name="contribution_type">pension_insurance</field>
+        <field name="employee_share_percentage">0</field>
+        <field name="employer_share_percentage">0</field>
+        <field name="valid_from">2025-01-01</field>
+        <field name="valid_until">2026-12-31</field>
+    </record>
+    <record id="ssc_2" model="hr.payroll.social.contribution">
+        <field name="age_from">17</field>
+        <field name="age_until">52</field>
+        <field name="contribution_type">pension_insurance</field>
+        <field name="employee_share_percentage">0.073</field>
+        <field name="employer_share_percentage">0.1751</field>
+        <field name="valid_from">2025-01-01</field>
+        <field name="valid_until">2026-12-31</field>
+    </record>
+    <record id="ssc_3" model="hr.payroll.social.contribution">
+        <field name="age_from">63</field>
+        <field name="age_until">68</field>
+        <field name="contribution_type">pension_insurance</field>
+        <field name="employee_share_percentage">0.073</field>
+        <field name="employer_share_percentage">0.1751</field>
+        <field name="valid_from">2025-01-01</field>
+        <field name="valid_until">2026-12-31</field>
+    </record>
+    <record id="ssc_4" model="hr.payroll.social.contribution">
+        <field name="age_from">69</field>
+        <field name="age_until">100</field>
+        <field name="contribution_type">pension_insurance</field>
+        <field name="employee_share_percentage">0</field>
+        <field name="employer_share_percentage">0</field>
+        <field name="valid_from">2025-01-01</field>
+        <field name="valid_until">2026-12-31</field>
+    </record>
+    <!-- TyEL variation -->
+    <record id="ssc_5" model="hr.payroll.social.contribution">
+        <field name="age_from">0</field>
+        <field name="age_until">15</field>
+        <field name="contribution_type">pension_insurance</field>
+        <field name="employee_share_percentage">0</field>
+        <field name="employer_share_percentage">0</field>
+        <field name="valid_from">2025-01-01</field>
+        <field name="valid_until">2026-12-31</field>
+    </record>
+    <record id="ssc_6" model="hr.payroll.social.contribution">
+        <field name="age_from">16</field>
+        <field name="age_until">67</field>
+        <field name="contribution_type">pension_insurance</field>
+        <field name="employee_share_percentage">0.0106</field>
+        <field name="employer_share_percentage">0.0187</field>
+        <field name="valid_from">2025-01-01</field>
+        <field name="valid_until">2026-12-31</field>
+    </record>
+    <record id="ssc_7" model="hr.payroll.social.contribution">
+        <field name="age_from">68</field>
+        <field name="age_until">100</field>
+        <field name="contribution_type">pension_insurance</field>
+        <field name="employee_share_percentage">0</field>
+        <field name="employer_share_percentage">0</field>
+        <field name="valid_from">2025-01-01</field>
+        <field name="valid_until">2026-12-31</field>
+    </record>
+    <!-- Unemployment insurance -->
+    <record id="ssc_8" model="hr.payroll.social.contribution">
+        <field name="age_from">0</field>
+        <field name="age_until">17</field>
+        <field name="contribution_type">unemployment_insurance</field>
+        <field name="employee_share_percentage">0</field>
+        <field name="employer_share_percentage">0</field>
+        <field name="valid_from">2025-01-01</field>
+        <field name="valid_until">2026-12-31</field>
+    </record>
+    <record id="ssc_9" model="hr.payroll.social.contribution">
+        <field name="age_from">18</field>
+        <field name="age_until">64</field>
+        <field name="contribution_type">unemployment_insurance</field>
+        <field name="employee_share_percentage">0.0059</field>
+        <field name="employer_share_percentage">0.002</field>
+        <field name="valid_from">2025-01-01</field>
+        <field name="valid_until">2026-12-31</field>
+    </record>
+    <record id="ssc_10" model="hr.payroll.social.contribution">
+        <field name="age_from">65</field>
+        <field name="age_until">100</field>
+        <field name="contribution_type">unemployment_insurance</field>
+        <field name="employee_share_percentage">0</field>
+        <field name="employer_share_percentage">0</field>
+        <field name="valid_from">2025-01-01</field>
+        <field name="valid_until">2026-12-31</field>
+    </record>
+    <!-- Special group -->
+    <record id="ssc_11" model="hr.payroll.social.contribution">
+        <field name="age_from">53</field>
+        <field name="age_until">62</field>
+        <field name="contribution_type">pension_insurance</field>
+        <field name="employee_share_percentage">0.08</field>
+        <field name="employer_share_percentage">0.01681</field>
+        <field name="valid_from">2025-01-01</field>
+        <field name="valid_until">2026-12-31</field>
+    </record>
 </odoo>

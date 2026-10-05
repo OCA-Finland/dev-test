@@ -21,7 +21,7 @@ try:
     from odoo.addons.hr_payroll.models import hr_payslip_input_type
 except ImportError:
     from . import hr_payslip_input_type
-    
+
 # OCA
 from . import account_payment_register
 from . import hr_payslip_input

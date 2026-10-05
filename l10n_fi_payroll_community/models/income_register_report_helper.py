@@ -161,12 +161,50 @@ class IncomeRegisterReportHelper(models.AbstractModel):
         safe_identifier = str(identifier).replace(" ", "_").replace("/", "_")
         return f"IR_{safe_identifier}_{timestamp_str}.xml"
 
-    def _generate_ir_report_xml(self, payslips, payment_date, date_from, date_to):
-        """
-        Generate Income Register XML report for given payslips.
+    def _generate_ir_report_xml(
+        self,
+        payslips,
+        payment_date,
+        date_from,
+        date_to,
+        *,
+        delivery_id=None,
+        production=True,
+        faulty_control=2,
+    ):
+        """Generate an Incomes Register earnings payment report.
+
+        Existing buttons keep the current defaults: a new DeliveryId, the
+        production environment, and FaultyControl 2. The Incomes Register
+        module passes ``production`` from its connection, reuses
+        ``delivery_id`` so a resend stays idempotent, and chooses
+        ``faulty_control``.
+
+        :param hr.payslip payslips: payslips included in the report
+        :param datetime.date payment_date: payment date of the period
+        :param datetime.date date_from: first day of the payment period
+        :param datetime.date date_to: last day of the payment period
+        :param str delivery_id: DeliveryId of at most 40 characters. A new
+            UUID is used when this is empty.
+        :param bool production: ``True`` renders ProductionEnvironment as true
+        :param int faulty_control: ``1`` rejects only invalid reports, ``2``
+            rejects the whole record
+        :return: rendered XML
+        :rtype: str
         """
         if not payslips:
             raise UserError(_("No payslips provided for report generation."))
+        if delivery_id is None:
+            delivery_id = str(uuid.uuid4())
+        if len(delivery_id) > 40:
+            raise UserError(
+                self.env._(
+                    "DeliveryId must be at most %(limit)s characters.",
+                    limit=40,
+                )
+            )
+        if faulty_control not in (1, 2):
+            raise UserError(self.env._("FaultyControl must be 1 or 2."))
 
         company = payslips[0].company_id
         for payslip in payslips:
@@ -178,7 +216,9 @@ class IncomeRegisterReportHelper(models.AbstractModel):
             {
                 "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S") + "+00:00",
                 "source": f"Odoo_{release.major_version}",
-                "delivery_id": str(uuid.uuid4()),
+                "delivery_id": delivery_id,
+                "production": production,
+                "faulty_control": faulty_control,
                 "payment_period_date_payment": payment_date.strftime("%Y-%m-%d"),
                 "payment_period_date_from": date_from.strftime("%Y-%m-%d"),
                 "payment_period_date_to": date_to.strftime("%Y-%m-%d"),

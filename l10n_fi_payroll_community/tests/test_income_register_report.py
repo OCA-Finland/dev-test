@@ -1,4 +1,5 @@
 import base64
+import re
 from datetime import date
 from unittest.mock import patch
 
@@ -483,3 +484,53 @@ class TestIncomeRegisterReport(TransactionCase):
         with self.assertRaises(UserError) as no_contact:
             self.payslip._validate_ir_company_data(self.company)
         self.assertIn("contact person", str(no_contact.exception))
+
+    def test_xml_generation_defaults_and_overrides(self):
+        """Defaults keep production and FaultyControl 2; overrides are rendered."""
+        self.payslip.payment_date = date(2025, 5, 25)
+        default_root = etree.fromstring(str(self._generate_payslip_xml(self.payslip)))
+        delivery_id = default_root.findtext(".//DeliveryId")
+        self.assertEqual(default_root.findtext(".//ProductionEnvironment"), "true")
+        self.assertEqual(default_root.findtext(".//FaultyControl"), "2")
+        self.assertRegex(
+            delivery_id,
+            re.compile(
+                r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            ),
+        )
+        overridden = etree.fromstring(
+            str(
+                self.payslip._generate_ir_report_xml(
+                    self.payslip,
+                    self.payslip.payment_date,
+                    self.payslip.date_from,
+                    self.payslip.date_to,
+                    delivery_id="delivery-kept",
+                    production=False,
+                    faulty_control=1,
+                )
+            )
+        )
+        self.assertEqual(overridden.findtext(".//DeliveryId"), "delivery-kept")
+        self.assertEqual(overridden.findtext(".//ProductionEnvironment"), "false")
+        self.assertEqual(overridden.findtext(".//FaultyControl"), "1")
+
+    def test_xml_generation_rejects_invalid_parameters(self):
+        """FaultyControl and DeliveryId are checked before rendering."""
+        self.payslip.payment_date = date(2025, 5, 25)
+        with self.assertRaises(UserError):
+            self.payslip._generate_ir_report_xml(
+                self.payslip,
+                self.payslip.payment_date,
+                self.payslip.date_from,
+                self.payslip.date_to,
+                faulty_control=3,
+            )
+        with self.assertRaises(UserError):
+            self.payslip._generate_ir_report_xml(
+                self.payslip,
+                self.payslip.payment_date,
+                self.payslip.date_from,
+                self.payslip.date_to,
+                delivery_id="x" * 41,
+            )

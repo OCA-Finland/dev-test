@@ -18,8 +18,12 @@
                 <DeliveryId>
                     <t t-out="delivery_id" />
                 </DeliveryId>
-                <FaultyControl>2</FaultyControl>
-                <ProductionEnvironment>true</ProductionEnvironment>
+                <FaultyControl>
+                    <t t-out="faulty_control" />
+                </FaultyControl>
+                <ProductionEnvironment>
+                    <t t-out="'true' if production else 'false'" />
+                </ProductionEnvironment>
                 <DeliveryDataOwner>
                     <Type>1</Type>
                     <Code>

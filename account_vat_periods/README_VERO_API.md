@@ -14,6 +14,19 @@ lähetetään itsenäisesti. Yhteenvetoilmoituksen kohde on aina kalenterikuukau
 Kaikki Vero-toiminnot edellyttävät ryhmää `account.group_account_user`;
 `account.group_account_readonly` ei riitä.
 
+## Kielet ja kenttäohjeet (18.0.1.4.0)
+
+Python-, JavaScript- ja XML-lähteiden käyttöliittymätekstit ovat englanniksi.
+Suomenkielinen käyttöliittymä valitaan Odoo-käyttäjän kieliasetuksella;
+`i18n/fi.po` kattaa moduulin kenttien nimet, ohjetekstit, valinnat, näkymät
+ja ilmoitukset. Kaikilla 92 uudella Vero-kentällä on yksityiskohtainen
+ohjeteksti. Avaimen ja varmenteen syöttönäkymässä on lisäksi kysymysmerkit.
+Rajapinnan alkuperäisiä vastauksia ja historiallisia lähetyssisältöjä ei muuteta.
+MIS-raportin olemassa olevat tekniset rivitunnisteet säilyvät yhteensopivina.
+
+Käännöstestit tarkistavat kenttien nimet ja ohjeet, selainkäännökset,
+virheilmoitukset sekä tilatekstien päivittymisen käyttäjän kielen mukaan.
+
 ## Ilmoitusten tila ja kaksoislähetyksen esto (18.0.1.3.0)
 
 Kausilista näyttää ALV- ja EU-ilmoitukset erikseen ympäristöineen ja kuukausineen.

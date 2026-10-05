@@ -1,5 +1,6 @@
 import hashlib
 import logging
+import re
 from pathlib import Path
 import uuid
 
@@ -37,14 +38,14 @@ class VeroBackendCredentials(models.Model):
         try:
             return vero_payload.business_id(self.company_id.vat)
         except ValueError:
-            raise credentials.CredentialError('Aseta yritykselle varmenteen haltijan suomalainen Y-tunnus tai FI-ALV-tunniste ennen noutoa.') from None
+            raise credentials.CredentialError(_("Set the certificate holder's Finnish business ID or FI VAT number on the company before retrieval.")) from None
 
     def _credential_mutation_allowed(self):
         self._credential_access()
         if self.env['vero.api.submission'].search_count([
             ('report_id.backend_id', '=', self.id), ('state', 'in', ['queued', 'sending', 'uncertain']),
         ]):
-            raise credentials.CredentialError('Yhteydellä on keskeneräinen tai epäselvä ilmoitus. Selvitä se ennen avainten vaihtoa.')
+            raise credentials.CredentialError(_('This connection has a pending or uncertain return. Resolve it before changing credentials.'))
 
     def _credential_info(self):
         self._credential_access()
@@ -52,6 +53,18 @@ class VeroBackendCredentials(models.Model):
         enrollment = credentials.Enrollment(directory, self.environment, '', self.env.uid)
         with credentials.locked(directory):
             status = enrollment.status()
+        phase = status.get('phase')
+        messages = {
+            'uncertain': _('The request has started. If no response is available, verify the outcome with the Finnish Tax Administration before trying again.'),
+            'waiting': _('Request received. Wait at least 30 seconds, then retrieve the certificate.'),
+            'ready': _('Certificate verified and ready for activation.'),
+            'active': _('The certificate has been retrieved. Check the current certificate details and test the connection.'),
+        }
+        if phase == 'rejected':
+            codes = ', '.join(re.findall(r'PKI\d{3}', status.get('message', '')))
+            status['message'] = _('The Finnish Tax Administration rejected the request: %s', codes)
+        elif phase in messages:
+            status['message'] = messages[phase]
         result = {
             'name': self.name, 'company': self.company_id.display_name,
             'environment': self.environment, 'vat': self.company_id.vat or '',
@@ -67,13 +80,13 @@ class VeroBackendCredentials(models.Model):
                     'expires': cert.not_valid_after_utc.isoformat(),
                 }
             except Exception:
-                result['certificate_error'] = 'Nykyisen varmenteen tietoja ei voitu lukea.'
+                result['certificate_error'] = _('The current certificate details could not be read.')
         return result
 
     def action_credentials(self):
         self._credential_access()
         return {'type': 'ir.actions.client', 'tag': 'account_vat_periods.credentials',
-                'name': _('Vero API: avaimet ja varmenne'), 'params': {'backend_id': self.id}}
+                'name': _('Vero API: keys and certificate'), 'params': {'backend_id': self.id}}
 
     def _credential_operation(self, operation, values):
         """Private method: secret inputs must NEVER pass through call_kw/RPC logs."""
@@ -85,12 +98,12 @@ class VeroBackendCredentials(models.Model):
                 'BusinessId': self._credential_identity(), 'FilingYear': fields.Date.today().year,
             })
             if code != 200 or not isinstance(data, dict) or not isinstance(data.get('FilingPeriod'), list):
-                raise credentials.CredentialError('Vero API -yhteystesti epäonnistui. Tarkista ympäristö, avain, varmenne ja API-oikeudet.')
+                raise credentials.CredentialError(_('The Vero API connection test failed. Check the environment, key, certificate and API permissions.'))
             result = self._credential_info()
             result['connection_ok'] = True
             return result
         if operation not in ('save_key', 'submit', 'retrieve', 'activate'):
-            raise credentials.CredentialError('Tuntematon avaintoiminto.')
+            raise credentials.CredentialError(_('Unknown credential operation.'))
         # Serialize identity/path updates with this operation before filesystem
         # side effects. Files have their own lock because DB rollback is possible.
         self.env.cr.execute('SELECT id FROM vero_api_backend WHERE id=%s FOR UPDATE NOWAIT', [self.id])
@@ -101,7 +114,7 @@ class VeroBackendCredentials(models.Model):
                 self._credential_mutation_allowed()
                 key = values.get('software_key', '')
                 if not isinstance(key, str) or not 16 <= len(key) <= 4096 or any(ord(c) < 33 or ord(c) > 126 for c in key):
-                    raise credentials.CredentialError('API-avain puuttuu tai sisältää välilyöntejä tai virheellisiä merkkejä.')
+                    raise credentials.CredentialError(_('The API key is missing or contains whitespace or invalid characters.'))
                 path = directory / ('software-key-' + uuid.uuid4().hex + '.txt')
                 credentials.save_private(path, key.encode())
                 self.with_context(_vero_managed_credentials=_MANAGED_WRITE).write({'software_key_file': str(path)})
@@ -117,7 +130,7 @@ class VeroBackendCredentials(models.Model):
                                     'private_key_file': str(generation / 'private-key.pem')})
                         # The filesystem state says validated, not necessarily committed.
                         # Status confirms activation from the DB pointer; repeat is safe.
-                        state.update(phase='active', message='Varmenne on noudettu. Tarkista nykyisen varmenteen tiedot ja testaa yhteys.')
+                        state.update(phase='active', message='The certificate has been retrieved. Check the current certificate details and test the connection.')
                         enrollment.save(state)
             _logger.info('Vero credential operation=%s backend=%s company=%s user=%s environment=%s',
                          operation, self.id, self.company_id.id, self.env.uid, self.environment)

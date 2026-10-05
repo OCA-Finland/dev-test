@@ -18,27 +18,147 @@ class VeroReport(models.Model):
     _order = 'date_end desc, id desc'
     _check_company_auto = True
 
-    name = fields.Char(compute='_compute_name')
-    company_id = fields.Many2one('res.company', required=True, index=True)
-    backend_id = fields.Many2one('vero.api.backend', required=True, check_company=True, ondelete='restrict')
-    vat_period_id = fields.Many2one('account.vat.period', required=True, ondelete='restrict')
-    kind = fields.Selection([('vat', 'ALV'), ('ec', 'EU-yhteenveto')], required=True)
-    date_start = fields.Date(required=True)
-    date_end = fields.Date(required=True)
-    environment = fields.Selection(related='backend_id.environment')
-    submission_ids = fields.One2many('vero.api.submission', 'report_id')
-    state = fields.Selection([('draft', 'Ei lähetetty'), ('queued', 'Jonossa'), ('sending', 'Lähetys kesken / tarkistettava'), ('accepted', 'Vastaanotettu'), ('error', 'Virhe'), ('uncertain', 'Tulos epäselvä'), ('not_received', 'Selvitetty: ei vastaanotettu')], compute='_compute_state')
-    last_query = fields.Json(readonly=True)
-    last_query_at = fields.Datetime(readonly=True)
-    remote_status = fields.Char(readonly=True)
-    due_date = fields.Date(readonly=True)
+    name = fields.Char(
+        string='Name',
+        compute='_compute_name',
+        help=(
+            'Descriptive name used to identify this connection or return in lists. Include the company '
+            'and environment when naming a connection so that test and production are easy to '
+            'distinguish.'
+        ),
+    )
+    company_id = fields.Many2one(
+        'res.company',
+        string='Company',
+        required=True,
+        index=True,
+        help=(
+            'Company that owns this connection or return. Accounting data, credentials and access checks '
+            'are restricted to this company; select the company whose own tax information is being '
+            'reported.'
+        ),
+    )
+    backend_id = fields.Many2one(
+        'vero.api.backend',
+        string='Vero connection',
+        required=True,
+        check_company=True,
+        ondelete='restrict',
+        help=(
+            'Company-specific connection that determines the destination environment, credentials and '
+            'contact details. Select it before preparing a return and verify that Production is intended '
+            'before confirming a real submission.'
+        ),
+    )
+    vat_period_id = fields.Many2one(
+        'account.vat.period',
+        string='VAT period',
+        required=True,
+        ondelete='restrict',
+        help=(
+            'Accounting VAT period associated with this return. VAT returns cover the exact period; EC '
+            'sales lists cover one selected calendar month within it. VAT submission requires this period '
+            'to be closed, but EC submission does not.'
+        ),
+    )
+    kind = fields.Selection(
+        [('vat', 'VAT'), ('ec', 'EC sales list')],
+        string='Report type',
+        required=True,
+        help=(
+            'VAT return or EC sales list. The two report types are prepared and submitted independently; '
+            'receiving one does not submit or confirm the other.'
+        ),
+    )
+    date_start = fields.Date(
+        string='Period start',
+        required=True,
+        help=(
+            'First date included in the report calculation. Only posted accounting entries belonging to '
+            'this company and report period are included; check this date against the intended tax '
+            'period.'
+        ),
+    )
+    date_end = fields.Date(
+        string='Period end',
+        required=True,
+        help=(
+            'Last date included in the report calculation and part of the report identity. VAT periods '
+            'must match the period returned by the Finnish Tax Administration; EC reports end on the last '
+            'day of the selected month.'
+        ),
+    )
+    environment = fields.Selection(
+        string='Environment',
+        related='backend_id.environment',
+        help=(
+            'Vero service used by this connection or submission. Sandbox and Test certificate are for '
+            'testing; Production sends real tax returns. Each environment needs its own compatible '
+            'credentials and service address.'
+        ),
+    )
+    submission_ids = fields.One2many(
+        'vero.api.submission',
+        'report_id',
+        string='Submission history',
+        help=(
+            'All confirmed submission attempts for this report, including previous accepted versions and '
+            'failures. Open an attempt to inspect its exact request, response, receipt and bill '
+            'processing result.'
+        ),
+    )
+    state = fields.Selection(
+        [('draft', 'Not sent'), ('queued', 'Queued'), ('sending', 'Sending / check status'), ('accepted', 'Received'), ('error', 'Error'), ('uncertain', 'Uncertain result'), ('not_received', 'Resolved: not received')],
+        string='Submission status',
+        compute='_compute_state',
+        help=(
+            'Current processing state. Queued, sending or uncertain submissions block another attempt '
+            'until processed or resolved. Received means a receipt is recorded, not that tax has been '
+            'paid or a final tax decision has been issued.'
+        ),
+    )
+    last_query = fields.Json(
+        string='Latest query response',
+        readonly=True,
+        help=(
+            'Raw response from the most recent VAT status query, including its HTTP status. The response '
+            'may describe an older return and does not by itself prove receipt of the latest submission '
+            'attempt.'
+        ),
+    )
+    last_query_at = fields.Datetime(
+        string='Last queried at',
+        readonly=True,
+        help=(
+            'Time when this report was last queried from the Finnish Tax Administration. It is a query '
+            'timestamp, not the time when a return was submitted or received.'
+        ),
+    )
+    remote_status = fields.Char(
+        string='Remote status',
+        readonly=True,
+        help=(
+            'Status text returned by the latest query to the Finnish Tax Administration. This can refer '
+            "to an earlier return and is separate from Odoo's submission status and receipt history."
+        ),
+    )
+    due_date = fields.Date(
+        string='Due date',
+        readonly=True,
+        help=(
+            "Tax payment due date obtained from the Finnish Tax Administration's filing period query. It "
+            "is used for the VAT bill; verify it together with the company's payment reference before "
+            'paying.'
+        ),
+    )
 
     _sql_constraints = [('vero_report_unique', 'unique(backend_id,kind,date_end)', 'This report already exists for this connection and period.')]
 
+    @api.depends_context('lang')
     @api.depends('kind', 'date_end')
     def _compute_name(self):
         for rec in self:
-            rec.name = '%s %s' % (dict(self._fields['kind'].selection).get(rec.kind, ''), rec.date_end or '')
+            rec.name = '%s %s' % (dict(self._fields['kind']._description_selection(self.env)).get(rec.kind, ''), rec.date_end or '')
 
     @api.depends('submission_ids.state')
     def _compute_state(self):
@@ -87,7 +207,7 @@ class VeroReport(models.Model):
         instance = self.env['mis.report.instance'].with_context(
             calculation_context
         ).sudo().create({
-            'name': 'Vero calculation', 'report_id': template.report_id.id,
+            'name': _('Vero calculation'), 'report_id': template.report_id.id,
             'company_id': self.company_id.id, 'multi_company': False,
             'currency_id': self.company_id.currency_id.id, 'target_move': 'posted',
             'date_from': self.date_start, 'date_to': self.date_end, 'temporary': True,
@@ -130,8 +250,8 @@ class VeroReport(models.Model):
                 partner = line.partner_id.commercial_partner_id
                 try:
                     key = payloads.vat_identifier(partner.vat)
-                except ValueError as exc:
-                    raise UserError('%s: %s' % (line.move_id.display_name, exc)) from exc
+                except payloads.PayloadError as exc:
+                    raise UserError('%s: %s' % (line.move_id.display_name, exc.translated(self.env._))) from exc
                 if key[0] == 'XI' and field == 'SalesOfServices':
                     raise UserError(_('Northern Ireland EC reporting applies to goods, not services.'))
                 if key not in buyers:
@@ -155,8 +275,8 @@ class VeroReport(models.Model):
             if self.kind == 'vat':
                 return payloads.vat_payload(self._mis_values(), self.company_id.vat, self.date_end, contact, no_activity)
             return payloads.ec_payload(self._ec_buyers(), self.company_id.vat, self.date_start, contact)
-        except ValueError as exc:
-            raise UserError(str(exc)) from exc
+        except payloads.PayloadError as exc:
+            raise UserError(exc.translated(self.env._)) from exc
 
     def _check_filing_period(self, body):
         self.ensure_one()
@@ -172,9 +292,9 @@ class VeroReport(models.Model):
         if remote_state not in {'Missing', 'Processed', 'Being Processed', 'Estimated'}:
             raise UserError(_('This filing period is expired or has an unsupported status.'))
         if remote_state != 'Missing' and not body.get('ReplacementReturn'):
-            raise UserError(_('Verohallinnossa on jo tämän kauden ilmoitus. Hae aiemman ilmoituksen tiedot. Jos korvaat sen, valitse aiemmin muualla annetun ilmoituksen korvaaminen ja korjauksen syy, ja päivitä esikatselu.'))
+            raise UserError(_('The Finnish Tax Administration already has a return for this period. Retrieve the previous return. To replace it, select replacement of a return filed elsewhere and the reason for correction, then refresh the preview.'))
         if remote_state == 'Missing' and body.get('ReplacementReturn') and not self._accepted():
-            raise UserError(_('Verohallinnossa ei ole aiempaa ilmoitusta korvattavaksi.'))
+            raise UserError(_('There is no previous return to replace at the Finnish Tax Administration.'))
         self.with_context(_vero_internal=INTERNAL).write({'due_date': info.get('DueDate'), 'remote_status': remote_state})
 
     def action_preview(self):
@@ -199,7 +319,7 @@ class VeroReport(models.Model):
             status, response = self.backend_id._call('GetFiledVATReturn/v2', body)
         except requests.RequestException:
             raise UserError(_('The status request failed. The submission state was not changed.')) from None
-        self.with_context(_vero_internal=INTERNAL).write({'last_query': {'http_status': status, 'body': response}, 'last_query_at': fields.Datetime.now(), 'remote_status': response.get('Status') if status == 200 and isinstance(response, dict) else 'Query error'})
+        self.with_context(_vero_internal=INTERNAL).write({'last_query': {'http_status': status, 'body': response}, 'last_query_at': fields.Datetime.now(), 'remote_status': response.get('Status') if status == 200 and isinstance(response, dict) else _('Query error')})
         # A fetched old return or a matching amount is not proof of this attempt's receipt.
         return True
 
@@ -209,28 +329,219 @@ class VeroSubmission(models.Model):
     _description = 'Immutable Vero submission attempt'
     _order = 'id desc'
 
-    report_id = fields.Many2one('vero.api.report', required=True, ondelete='restrict', index=True)
-    company_id = fields.Many2one(related='report_id.company_id', store=True, index=True)
-    state = fields.Selection([('queued', 'Jonossa'), ('sending', 'Lähetys kesken / tarkistettava'), ('accepted', 'Vastaanotettu'), ('error', 'Virhe'), ('uncertain', 'Tulos epäselvä'), ('not_received', 'Selvitetty: ei vastaanotettu')], required=True, default='queued', readonly=True)
-    environment = fields.Selection([('sandbox', 'Sandbox'), ('test', 'Test'), ('production', 'Production')], required=True, readonly=True)
-    requested_by_id = fields.Many2one('res.users', required=True, readonly=True)
-    snapshot = fields.Json(required=True, readonly=True)
-    request_body = fields.Json(required=True, readonly=True)
-    content_hash = fields.Char(required=True, readonly=True)
-    response_body = fields.Json(readonly=True)
-    http_status = fields.Integer(readonly=True)
-    receipt = fields.Char(readonly=True)
-    accepted_timestamp = fields.Char(readonly=True)
-    started_at = fields.Datetime(readonly=True)
-    finished_at = fields.Datetime(readonly=True)
-    error_message = fields.Text(readonly=True)
-    bill_message = fields.Text(readonly=True)
-    bill_id = fields.Many2one('account.move', readonly=True)
-    credit_note_id = fields.Many2one('account.move', readonly=True)
-    superseded_bill_id = fields.Many2one('account.move', readonly=True)
-    resolved_by_id = fields.Many2one('res.users', readonly=True)
-    resolved_at = fields.Datetime(readonly=True)
-    resolution_note = fields.Text(readonly=True)
+    report_id = fields.Many2one(
+        'vero.api.report',
+        string='Report',
+        required=True,
+        ondelete='restrict',
+        index=True,
+        help=(
+            'VAT return or EC sales list to which this record belongs. A report keeps its company, period '
+            'and environment, while corrections create new submission attempts in the same history.'
+        ),
+    )
+    company_id = fields.Many2one(
+        string='Company',
+        related='report_id.company_id',
+        store=True,
+        index=True,
+        help=(
+            'Company that owns this connection or return. Accounting data, credentials and access checks '
+            'are restricted to this company; select the company whose own tax information is being '
+            'reported.'
+        ),
+    )
+    state = fields.Selection(
+        [('queued', 'Queued'), ('sending', 'Sending / check status'), ('accepted', 'Received'), ('error', 'Error'), ('uncertain', 'Uncertain result'), ('not_received', 'Resolved: not received')],
+        string='Submission status',
+        required=True,
+        default='queued',
+        readonly=True,
+        help=(
+            'Current processing state. Queued, sending or uncertain submissions block another attempt '
+            'until processed or resolved. Received means a receipt is recorded, not that tax has been '
+            'paid or a final tax decision has been issued.'
+        ),
+    )
+    environment = fields.Selection(
+        [('sandbox', 'Sandbox'), ('test', 'Test'), ('production', 'Production')],
+        string='Environment',
+        required=True,
+        readonly=True,
+        help=(
+            'Vero service used by this connection or submission. Sandbox and Test certificate are for '
+            'testing; Production sends real tax returns. Each environment needs its own compatible '
+            'credentials and service address.'
+        ),
+    )
+    requested_by_id = fields.Many2one(
+        'res.users',
+        string='Confirmed by',
+        required=True,
+        readonly=True,
+        help=(
+            "User who confirmed this submission. Processing uses this user's accounting and company "
+            'permissions; disabling the user or removing access before processing may prevent the queued '
+            'submission.'
+        ),
+    )
+    snapshot = fields.Json(
+        string='Full period snapshot',
+        required=True,
+        readonly=True,
+        help=(
+            'Complete calculated report content frozen for this preview or submission. EC corrections '
+            'retain the full buyer totals here even when the outgoing request includes only changed '
+            'buyers; this snapshot is the comparison baseline.'
+        ),
+    )
+    request_body = fields.Json(
+        string='Submitted data',
+        required=True,
+        readonly=True,
+        help=(
+            'Exact JSON payload confirmed for this submission attempt. It remains unchanged even if '
+            'accounting data is later edited. EC corrections may contain only changed buyers rather than '
+            'the full period snapshot.'
+        ),
+    )
+    content_hash = fields.Char(
+        string='Content fingerprint',
+        required=True,
+        readonly=True,
+        help=(
+            'Automatically calculated fingerprint of the confirmed report content. It helps detect '
+            'unchanged or outdated previews; it is not a receipt from the Finnish Tax Administration and '
+            'should not be edited.'
+        ),
+    )
+    response_body = fields.Json(
+        string='Service response',
+        readonly=True,
+        help=(
+            'Original response saved for this submission attempt. Inspect it with the HTTP status and '
+            'receipt when investigating a failure; a response from a test environment is not a production '
+            'filing.'
+        ),
+    )
+    http_status = fields.Integer(
+        string='HTTP status',
+        readonly=True,
+        help=(
+            'HTTP response code returned for this submission, such as 200 for a successful HTTP request. '
+            'A successful HTTP code alone is insufficient: check the service response, receipt identifier '
+            'and reception time.'
+        ),
+    )
+    receipt = fields.Char(
+        string='Receipt identifier',
+        readonly=True,
+        help=(
+            'Unique receipt identifier returned by the Finnish Tax Administration or recorded after '
+            'verified manual resolution. Use it when identifying this particular submission; it is not '
+            "the company's tax payment reference."
+        ),
+    )
+    accepted_timestamp = fields.Char(
+        string='Reception time',
+        readonly=True,
+        help=(
+            'Reception timestamp supplied by the Finnish Tax Administration, including its original '
+            'timezone representation. Together with the receipt identifier it identifies the accepted '
+            'submission, not the bill payment.'
+        ),
+    )
+    started_at = fields.Datetime(
+        string='Processing started at',
+        readonly=True,
+        help=(
+            'Time when the scheduled worker started processing this submission. A started attempt with no '
+            'confirmed outcome may require investigation rather than another submission.'
+        ),
+    )
+    finished_at = fields.Datetime(
+        string='Processing finished at',
+        readonly=True,
+        help=(
+            'Time when this attempt finished processing or was marked for investigation. Check the '
+            'submission status and receipt to determine the outcome; this timestamp alone does not prove '
+            'receipt.'
+        ),
+    )
+    error_message = fields.Text(
+        string='Error details',
+        readonly=True,
+        help=(
+            'Explanation of a failed check, failed request or uncertain network outcome. Read it before '
+            'retrying. Historical messages are kept as recorded; resolve uncertain receipt before '
+            'preparing another attempt.'
+        ),
+    )
+    bill_message = fields.Text(
+        string='Bill processing message',
+        readonly=True,
+        help=(
+            'Result or required action from VAT bill creation or adjustment. A bill error does not undo '
+            'an accepted tax return. Correct the accounting setup and use Create / check bill instead of '
+            'resubmitting the return.'
+        ),
+    )
+    bill_id = fields.Many2one(
+        'account.move',
+        string='VAT bill',
+        readonly=True,
+        help=(
+            'Vendor bill associated with this accepted VAT submission. Bills are created as drafts for '
+            'positive payable VAT; posting, paying and reconciling them are separate accounting tasks.'
+        ),
+    )
+    credit_note_id = fields.Many2one(
+        'account.move',
+        string='Adjustment credit note',
+        readonly=True,
+        help=(
+            'Draft credit note prepared for the full amount of the previous posted VAT bill. Review and '
+            'post it, then reconcile it while taking earlier payments into account. It is not posted or '
+            'paid automatically.'
+        ),
+    )
+    superseded_bill_id = fields.Many2one(
+        'account.move',
+        string='Previous VAT bill',
+        readonly=True,
+        help=(
+            'Earlier posted or paid VAT bill replaced by this adjustment. It is preserved for the audit '
+            'trail and previous payments remain in place; inspect it with the credit note and replacement '
+            'bill.'
+        ),
+    )
+    resolved_by_id = fields.Many2one(
+        'res.users',
+        string='Resolved by',
+        readonly=True,
+        help=(
+            'User who recorded the verified result of an uncertain submission. This audit information '
+            'identifies the person responsible for checking the outcome with the Finnish Tax '
+            'Administration.'
+        ),
+    )
+    resolved_at = fields.Datetime(
+        string='Resolved at',
+        readonly=True,
+        help=(
+            'Time when a verified manual resolution was recorded. This is separate from the original '
+            'request time and the reception time supplied by the Finnish Tax Administration.'
+        ),
+    )
+    resolution_note = fields.Text(
+        string='Resolution evidence',
+        readonly=True,
+        help=(
+            'Source and explanation supporting the verified outcome of an uncertain submission. Identify '
+            'how this specific attempt was checked; an older return visible in a status query is not '
+            'sufficient evidence.'
+        ),
+    )
 
     def init(self):
         self.env.cr.execute("""CREATE UNIQUE INDEX IF NOT EXISTS vero_one_pending_submission
@@ -293,21 +604,21 @@ class VeroSubmission(models.Model):
             # the period link. Never cancel that credit when VAT changes again.
             move = self._create_vat_bill(amount) if amount > 0 else self.env['account.move']
             self._update(bill_id=move.id, credit_note_id=credit.id, superseded_bill_id=credit.reversed_entry_id.id,
-                         bill_message=_('Aiempi hyvitys säilytettiin. Tarkista oikaisun kirjaukset ja maksukohdistukset.'))
+                         bill_message=_('The previous credit note was retained. Check the adjustment entries and payment reconciliation.'))
             period.write({'payment_move_id': move.id or credit.id, 'sent': True})
             return
         if existing and existing.move_type == 'in_invoice' and existing.currency_id == company.currency_id and existing.partner_id == company.vat_partner_id and existing.state != 'cancel' and company.currency_id.compare_amounts(existing.amount_total, amount) == 0:
             self._update(bill_id=existing.id, credit_note_id=credit.id, superseded_bill_id=credit.reversed_entry_id.id, bill_message=earlier.bill_message or False)
             return
         if existing and existing.state == 'posted':
-            self._update(bill_message=_('Kirjattu tai maksettu lasku: valmistele laskun oikaisu. Tarkista ja kirjaa hyvitys sekä uusi lasku ja kohdista maksut kirjanpidossa. API-ilmoitus on vastaanotettu.'))
+            self._update(bill_message=_('Posted or paid bill: prepare a bill adjustment. Check and post the credit note and new bill, then reconcile payments in accounting. The API return has been received.'))
             return
         if existing and existing.state == 'draft':
             existing.button_cancel()
         if credit:
             self._update(credit_note_id=credit.id, superseded_bill_id=credit.reversed_entry_id.id)
         if amount <= 0:
-            self._update(bill_message=_('Ei maksettavaa ALV-laskua. Tarkista mahdollinen palautussaatava sulkukirjaukselta.'))
+            self._update(bill_message=_('No VAT bill is payable. Check any refund receivable in the closing entry.'))
             period.write({'payment_move_id': credit.id or False, 'sent': True})
             return
         move = self._create_vat_bill(amount)
@@ -326,7 +637,7 @@ class VeroSubmission(models.Model):
             'company_id': company.id, 'move_type': 'in_invoice', 'partner_id': company.vat_partner_id.id,
             'invoice_date': fields.Date.context_today(self), 'invoice_date_due': report.due_date,
             'ref': 'Vero %s / %s' % (report.date_end, self.receipt), 'payment_reference': company.vat_payment_reference,
-            'invoice_line_ids': [(0, 0, {'name': 'ALV %s' % report.date_end, 'account_id': company.vat_account_id.id, 'quantity': 1, 'price_unit': amount, 'tax_ids': [(5, 0, 0)]})],
+            'invoice_line_ids': [(0, 0, {'name': _('VAT %s', report.date_end), 'account_id': company.vat_account_id.id, 'quantity': 1, 'price_unit': amount, 'tax_ids': [(5, 0, 0)]})],
         })
 
     def action_prepare_bill_adjustment(self):
@@ -356,9 +667,9 @@ class VeroSubmission(models.Model):
                 'ref': 'Vero correction %s / %s' % (report.date_end, self.receipt)}], cancel=False)
             new = self._create_vat_bill(amount) if amount > 0 else self.env['account.move']
             self._update(credit_note_id=credit.id, superseded_bill_id=old.id, bill_id=new.id,
-                bill_message=_('Oikaisuluonnokset luotu. Tarkista ja kirjaa hyvitys sekä mahdollinen uusi lasku. Kohdista hyvitys, huomioi aiempi maksu ja tarkista jäljelle jäävä velka tai palautus.'))
+                bill_message=_('Adjustment drafts created. Check and post the credit note and any new bill. Reconcile the credit note, account for the previous payment and check the remaining liability or refund.'))
             period.write({'payment_move_id': new.id or credit.id, 'sent': True})
-        return {'type': 'ir.actions.act_window', 'name': _('ALV-laskun oikaisu'), 'res_model': 'account.move',
+        return {'type': 'ir.actions.act_window', 'name': _('VAT bill adjustment'), 'res_model': 'account.move',
                 'view_mode': 'list,form', 'domain': [('id', 'in', (self.credit_note_id | self.bill_id).ids)], 'target': 'current'}
 
     def action_retry_bill(self):
@@ -374,7 +685,7 @@ class VeroSubmission(models.Model):
             raise UserError(_('Only an uncertain submission needs manual resolution.'))
         wizard = self.env['vero.api.resolution'].create({'submission_id': self.id})
         return {'type': 'ir.actions.act_window', 'res_model': wizard._name, 'res_id': wizard.id,
-                'view_mode': 'form', 'target': 'new', 'name': _('Selvitä epäselvä lähetys')}
+                'view_mode': 'form', 'target': 'new', 'name': _('Resolve uncertain submission')}
 
     def action_open_bill(self):
         self.ensure_one()
@@ -426,7 +737,7 @@ class VeroSubmission(models.Model):
                             with cr.savepoint():
                                 submission._sync_bill()
                         except Exception as exc:
-                            submission._update(bill_message=self.env._('Ilmoitus vastaanotettu; laskuvaihe epäonnistui: %s') % str(exc))
+                            submission._update(bill_message=self.env._('Return received; bill processing failed: %s') % str(exc))
                         cr.commit()
                 except Exception as exc:
                     cr.rollback()
@@ -435,7 +746,7 @@ class VeroSubmission(models.Model):
                     message = self.env._('Network error. Verify receipt before retrying.') if isinstance(exc, requests.RequestException) else str(exc)
                     # A committed receipt must survive even a later bookkeeping failure.
                     if safe.state == 'accepted':
-                        safe._update(bill_message=self.env._('Ilmoitus vastaanotettu; tarkista laskuvaihe: %s') % message)
+                        safe._update(bill_message=self.env._('Return received; check bill processing: %s') % message)
                     else:
                         safe._update(state='uncertain' if posted else 'error', error_message=message, finished_at=fields.Datetime.now())
                     cr.commit()

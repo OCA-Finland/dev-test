@@ -8,34 +8,35 @@ class DateRangeGenerator(models.TransientModel):
 
         date_ranges = self._generate_date_ranges(batch=batch)
 
+        _ = self.with_context(lang='fi_FI').env._
         fi_months_long = {
-            "January": "Tammikuu",
-            "February": "Helmikuu",
-            "March": "Maaliskuu",
-            "April": "Huhtikuu",
-            "May": "Toukokuu",
-            "June": "Kesäkuu",
-            "July": "Heinäkuu",
-            "August": "Elokuu",
-            "September": "Syyskuu",
-            "October": "Lokakuu",
-            "November": "Marraskuu",
-            "December": "Joulukuu",
+            'January': _('January'),
+            'February': _('February'),
+            'March': _('March'),
+            'April': _('April'),
+            'May': _('May'),
+            'June': _('June'),
+            'July': _('July'),
+            'August': _('August'),
+            'September': _('September'),
+            'October': _('October'),
+            'November': _('November'),
+            'December': _('December'),
         }
 
         fi_months_short = {
-            "Jan": "Tammi",
-            "Feb": "Helmi",
-            "Mar": "Maalis",
-            "Apr": "Huhti",
-            "May": "Touko",
-            "Jun": "Kesä",
-            "Jul": "Heinä",
-            "Aug": "Elo",
-            "Sep": "Syys",
-            "Oct": "Loka",
-            "Nov": "Marras",
-            "Dec": "Joulu"
+            'Jan': _('Jan (short)'),
+            'Feb': _('Feb (short)'),
+            'Mar': _('Mar (short)'),
+            'Apr': _('Apr (short)'),
+            'May': _('May (short)'),
+            'Jun': _('Jun (short)'),
+            'Jul': _('Jul (short)'),
+            'Aug': _('Aug (short)'),
+            'Sep': _('Sep (short)'),
+            'Oct': _('Oct (short)'),
+            'Nov': _('Nov (short)'),
+            'Dec': _('Dec (short)'),
         }
 
         for date_range in date_ranges:

@@ -3,16 +3,16 @@
         <field name="name">vero.api.backend.form</field><field name="model">vero.api.backend</field>
         <field name="arch" type="xml">
             <form string="Vero API">
-                <header><button name="action_credentials" type="object" string="Avaimet ja varmenne" class="oe_highlight" groups="account.group_account_user"/></header>
+                <header><button name="action_credentials" type="object" string="Keys and certificate" class="oe_highlight" groups="account.group_account_user"/></header>
                 <sheet>
-                    <div class="alert alert-info">Tallenna ohjelmistoavain ja nouda tilattu testi- tai tuotantovarmenne painikkeella Avaimet ja varmenne. Varmenne tilataan ensin Verohallinnon varmennepalvelusta. Tämä toteutus käyttää Odoo Communitya.</div>
+                    <div class="alert alert-info">Save the software key and retrieve an ordered test or production certificate using Keys and certificate. Order the certificate from the Finnish Tax Administration's Certificate Service first. This implementation supports Odoo Community.</div>
                     <group><field name="name"/><field name="company_id"/><field name="active"/><field name="environment"/><field name="api_root"/></group>
-                    <group string="Yhteyshenkilö"><field name="contact_name"/><field name="contact_phone"/></group>
-                    <group string="Ylläpidon lisäasetukset: palvelimen tiedostopolut" groups="base.group_system">
+                    <group string="Contact details"><field name="contact_name"/><field name="contact_phone"/></group>
+                    <group string="Administrator settings: server file paths" groups="base.group_system">
                         <field name="software_key_file"/><field name="certificate_file" invisible="environment == 'sandbox'"/><field name="private_key_file" invisible="environment == 'sandbox'"/>
                         <field name="software_id"/><field name="authorization_token_file"/>
                     </group>
-                    <group string="Yhteenvetoilmoituksen veroruudukot: valitse verottoman myynnin perusteet">
+                    <group string="EC sales list tax grids: select untaxed sales bases">
                         <field name="goods_tag_ids" widget="many2many_tags"/><field name="services_tag_ids" widget="many2many_tags"/><field name="triangulation_tag_ids" widget="many2many_tags"/>
                     </group>
                 </sheet>
@@ -29,9 +29,9 @@
             <list create="0" edit="0" delete="0" js_class="vero_status_list">
                 <field name="name"/><field name="company_id"/><field name="environment"/>
                 <field name="state" widget="badge" decoration-success="state == 'accepted'" decoration-warning="state in ('queued','sending','uncertain')" decoration-danger="state == 'error'"/>
-                <button name="action_status" type="object" icon="fa-info-circle" string="Tila"/>
-                <button name="action_status" type="object" icon="fa-check-circle" class="text-success" title="Vastaanotettu Verohallinnon API:ssa; ei lopullinen verotuspäätös" invisible="state != 'accepted'"/>
-                <button name="action_preview" type="object" string="Valmistele / korjaa" invisible="state in ('queued', 'sending', 'uncertain')"/>
+                <button name="action_status" type="object" icon="fa-info-circle" string="Status"/>
+                <button name="action_status" type="object" icon="fa-check-circle" class="text-success" title="Received by the Finnish Tax Administration API; not a final tax decision" invisible="state != 'accepted'"/>
+                <button name="action_preview" type="object" string="Prepare / correct" invisible="state in ('queued', 'sending', 'uncertain')"/>
                 <field name="remote_status"/>
             </list>
         </field>
@@ -40,7 +40,7 @@
         <field name="name">vero.api.report.form</field><field name="model">vero.api.report</field>
         <field name="arch" type="xml">
             <form create="0" edit="0" delete="0">
-                <header><button name="action_preview" type="object" string="Valmistele / korjaa" invisible="state in ('queued', 'sending', 'uncertain')" class="oe_highlight"/><button name="action_status" type="object" string="Tila ja vastaukset"/></header>
+                <header><button name="action_preview" type="object" string="Prepare / correct" invisible="state in ('queued', 'sending', 'uncertain')" class="oe_highlight"/><button name="action_status" type="object" string="Status and responses"/></header>
                 <sheet><group><field name="name"/><field name="company_id"/><field name="backend_id"/><field name="kind"/><field name="date_start"/><field name="date_end"/><field name="environment"/><field name="state"/><field name="remote_status"/><field name="last_query_at"/><field name="due_date"/></group>
                     <field name="submission_ids"><list create="0" delete="0"><field name="create_date"/><field name="state"/><field name="environment"/><field name="receipt"/><field name="bill_message"/></list></field>
                 </sheet>
@@ -51,12 +51,12 @@
         <field name="name">vero.api.submission.form</field><field name="model">vero.api.submission</field>
         <field name="arch" type="xml">
             <form create="0" edit="0" delete="0">
-                <header><button name="action_retry_bill" type="object" string="Muodosta / tarkista lasku" invisible="state != 'accepted'"/><button name="action_prepare_bill_adjustment" type="object" string="Valmistele laskun oikaisu" invisible="state != 'accepted'" confirm="Luodaanko kirjatun laskun hyvitysluonnos ja korjatun määrän uusi laskuluonnos? Tarkista ja kirjaa ne kirjanpidossa sekä huomioi aiempi maksu."/><button name="action_open_bill" type="object" string="Avaa lasku / oikaisu"/><button name="action_resolve" type="object" string="Kirjaa selvityksen tulos" invisible="state != 'uncertain'"/></header>
+                <header><button name="action_retry_bill" type="object" string="Create / check bill" invisible="state != 'accepted'"/><button name="action_prepare_bill_adjustment" type="object" string="Prepare bill adjustment" invisible="state != 'accepted'" confirm="Create a draft credit note for the posted bill and a new draft bill for the corrected amount? Check and post them in accounting and account for the previous payment."/><button name="action_open_bill" type="object" string="Open bill / adjustment"/><button name="action_resolve" type="object" string="Record verified outcome" invisible="state != 'uncertain'"/></header>
                 <sheet><group><field name="report_id"/><field name="company_id"/><field name="environment"/><field name="state"/><field name="requested_by_id"/><field name="started_at"/><field name="finished_at"/><field name="http_status"/><field name="receipt"/><field name="accepted_timestamp"/><field name="bill_id"/></group>
                     <group><field name="error_message"/><field name="bill_message"/></group>
-                    <group string="Laskun oikaisu" invisible="not credit_note_id"><field name="superseded_bill_id"/><field name="credit_note_id"/></group>
-                    <group string="Epäselvän lähetyksen käsin tehty selvitys" invisible="not resolved_by_id"><field name="resolved_by_id"/><field name="resolved_at"/><field name="resolution_note"/></group>
-                    <notebook><page string="Lähetys"><field name="request_body"/></page><page string="Vastaus"><field name="response_body"/></page><page string="Kauden kokonaiskuva"><field name="snapshot"/></page></notebook>
+                    <group string="Bill adjustment" invisible="not credit_note_id"><field name="superseded_bill_id"/><field name="credit_note_id"/></group>
+                    <group string="Manual resolution of an uncertain submission" invisible="not resolved_by_id"><field name="resolved_by_id"/><field name="resolved_at"/><field name="resolution_note"/></group>
+                    <notebook><page string="Submission"><field name="request_body"/></page><page string="Response"><field name="response_body"/></page><page string="Full period snapshot"><field name="snapshot"/></page></notebook>
                 </sheet>
             </form>
         </field>
@@ -64,10 +64,10 @@
     <record id="vero_resolution_form" model="ir.ui.view">
         <field name="name">vero.api.resolution.form</field><field name="model">vero.api.resolution</field>
         <field name="arch" type="xml">
-            <form string="Selvitä epäselvä lähetys">
-                <div class="alert alert-warning">Varmista juuri tämän lähetyksen vastaanotto Verohallinnosta ennen tilan muuttamista. Vanhan ilmoituksen näkyminen tilakyselyssä ei todista uuden lähetyksen vastaanottoa. Tämä toiminto ei lähetä ilmoitusta uudelleen.</div>
+            <form string="Resolve uncertain submission">
+                <div class="alert alert-warning">Verify receipt of this specific submission with the Finnish Tax Administration before changing its state. An older return in a status query does not prove receipt of this submission. This action does not resubmit the return.</div>
                 <group><field name="submission_id"/><field name="result"/><field name="receipt" invisible="result != 'received'" required="result == 'received'"/><field name="accepted_timestamp" invisible="result != 'received'" required="result == 'received'"/><field name="note"/></group>
-                <footer><button name="action_confirm" type="object" string="Tallenna varmistettu tulos" class="btn-primary" confirm="Oletko varmistanut tämän lähetyksen tuloksen Verohallinnosta ja kirjannut selvityksen lähteen?"/><button string="Peruuta" special="cancel"/></footer>
+                <footer><button name="action_confirm" type="object" string="Save verified outcome" class="btn-primary" confirm="Have you verified this submission's outcome with the Finnish Tax Administration and recorded the verification source?"/><button string="Cancel" special="cancel"/></footer>
             </form>
         </field>
     </record>
@@ -79,39 +79,39 @@
                 <field name="period_checked" invisible="1"/>
                 <field name="queue_notice" invisible="1"/>
                 <field name="latest_id" invisible="1"/>
-                <div class="alert alert-info" invisible="not queue_notice or report_state != 'queued'">Ilmoitus lisätty lähetysjonoon. Sitä ei tarvitse lähettää uudelleen. Voit sulkea ikkunan; kausilistan tila päivittyy automaattisesti.</div>
-                <div class="alert alert-warning" invisible="report_state not in ('queued', 'sending') or (queue_notice and report_state == 'queued')">Ilmoitus on jonossa tai lähetys on käynnissä. Uusi lähetys on estetty. Päivitä tila alla olevalla painikkeella.</div>
-                <div class="alert alert-warning" invisible="report_state != 'uncertain'">Lähetyksen tulos on epäselvä. Älä lähetä uudelleen. Tarkista vastaus ja selvitä vastaanotto Verohallinnosta. Selvityksen voi kirjata lähetyshistorian riviltä.</div>
-                <div class="alert alert-success" invisible="report_state != 'accepted'">Vastaanotettu Verohallinnossa. Vastaanottokuittaus on tallennettu. Tämä ei ole lopullinen verotuspäätös. Muutoksia varten valitse Tee korjaus.</div>
-                <div class="alert alert-danger" invisible="report_state != 'error'">Viimeisin lähetys epäonnistui. Tarkista alla oleva virhe ennen uuden esikatselun tekemistä.</div>
+                <div class="alert alert-info" invisible="not queue_notice or report_state != 'queued'">Return added to the submission queue. Do not submit it again. You can close this window; the period list updates automatically.</div>
+                <div class="alert alert-warning" invisible="report_state not in ('queued', 'sending') or (queue_notice and report_state == 'queued')">The return is queued or being sent. Another submission is blocked. Refresh the status using the button below.</div>
+                <div class="alert alert-warning" invisible="report_state != 'uncertain'">The submission outcome is uncertain. Do not resubmit. Read the response and verify receipt with the Finnish Tax Administration. Record the verified outcome from the submission history.</div>
+                <div class="alert alert-success" invisible="report_state != 'accepted'">Received by the Finnish Tax Administration. The receipt has been saved. This is not a final tax decision. Select Make correction to change the return.</div>
+                <div class="alert alert-danger" invisible="report_state != 'error'">The latest submission failed. Read the error below before preparing another preview.</div>
                 <group invisible="report_id"><field name="vat_period_id" readonly="1"/><field name="backend_id" required="not report_id"/><field name="kind" readonly="1"/><field name="month" invisible="kind != 'ec'"/></group>
-                <group invisible="not report_id"><field name="report_id" string="Ilmoitus"/><field name="backend_id" readonly="1" string="Yhteys"/><field name="environment" string="Ympäristö"/><field name="report_state" string="Ilmoituksen tila" widget="badge" decoration-success="report_state == 'accepted'" decoration-danger="report_state == 'error'" decoration-warning="report_state in ('queued', 'sending', 'uncertain')"/><field name="latest_at" invisible="not latest_id"/><field name="latest_receipt" invisible="not latest_receipt"/></group>
+                <group invisible="not report_id"><field name="report_id" string="Report"/><field name="backend_id" readonly="1" string="Connection"/><field name="environment" string="Environment"/><field name="report_state" string="Report status" widget="badge" decoration-success="report_state == 'accepted'" decoration-danger="report_state == 'error'" decoration-warning="report_state in ('queued', 'sending', 'uncertain')"/><field name="latest_at" invisible="not latest_id"/><field name="latest_receipt" invisible="not latest_receipt"/></group>
                 <div class="alert alert-danger" invisible="not latest_error"><field name="latest_error" nolabel="1"/></div>
                 <div class="alert alert-warning" invisible="not preview_warning"><field name="preview_warning" nolabel="1"/></div>
-                <div class="alert alert-warning" invisible="not report_id or environment == 'production'">TESTIYMPÄRISTÖ: tästä lähetyksestä ei muodostu tuotannon veroilmoitusta.</div>
+                <div class="alert alert-warning" invisible="not report_id or environment == 'production'">TEST ENVIRONMENT: this submission does not create a production tax return.</div>
                 <group invisible="status_only or kind == 'ec'">
                     <field name="no_activity"/><field name="replace_external"/><field name="replacement_reason"/>
                 </group>
                 <notebook>
-                    <page string="Esikatselu" invisible="status_only"><field name="payload_text" nolabel="1"/><field name="diff_text"/></page>
-                    <page string="Lähetetty ilmoitus ja vastaus" invisible="not latest_id"><field name="latest_payload"/><field name="latest_response"/></page>
-                    <page string="Lähetyshistoria ja vastaukset">
+                    <page string="Preview" invisible="status_only"><field name="payload_text" nolabel="1"/><field name="diff_text"/></page>
+                    <page string="Submitted return and response" invisible="not latest_id"><field name="latest_payload"/><field name="latest_response"/></page>
+                    <page string="Submission history and responses">
                         <field name="history_ids"><list create="0" edit="0" delete="0">
                             <field name="create_date"/><field name="state" widget="badge" decoration-success="state == 'accepted'" decoration-danger="state == 'error'" decoration-warning="state in ('queued','sending','uncertain')"/>
                             <field name="receipt"/><field name="error_message"/><field name="bill_message"/>
                         </list></field>
                     </page>
-                    <page string="Tilakysely"><group><field name="remote_status" string="Viimeisimmän kyselyn tilatieto"/></group><p>Kyselytieto voi koskea aiempaa ilmoitusta. Se ei muuta lähetyksen vastaanottokuittausta.</p><field name="query_text" nolabel="1"/></page>
+                    <page string="Status query"><group><field name="remote_status" string="Latest queried status"/></group><p>Query data may refer to an earlier return. It does not change the submission receipt.</p><field name="query_text" nolabel="1"/></page>
                 </notebook>
                 <footer>
-                    <button name="action_refresh" type="object" string="Laske / päivitä esikatselu" invisible="status_only"/>
-                    <button name="action_submit" type="object" string="Vahvista ja lähetä" class="btn-primary" confirm="Lähetetäänkö esikatselun mukainen ilmoitus valittuun Vero API -ympäristöön?" invisible="status_only or not payload_text or preview_warning or (kind == 'vat' and not period_checked) or report_state in ('queued', 'sending', 'uncertain')"/>
-                    <button name="action_edit" type="object" string="Tee korjaus" invisible="not status_only or report_state != 'accepted'"/>
-                    <button name="action_edit" type="object" string="Valmistele ilmoitus" invisible="not status_only or report_state not in ('draft', 'error', 'not_received')"/>
-                    <button name="action_local_status" type="object" string="Päivitä lähetyksen tila" invisible="not status_only"/>
-                    <button name="action_choose" type="object" string="Toinen kuukausi / yhteys" invisible="not status_only"/>
-                    <button name="action_fetch_status" type="object" string="Hae tiedot Verohallinnosta" invisible="not report_id or kind == 'ec'"/>
-                    <button string="Sulje" special="cancel"/>
+                    <button name="action_refresh" type="object" string="Calculate / refresh preview" invisible="status_only"/>
+                    <button name="action_submit" type="object" string="Confirm and submit" class="btn-primary" confirm="Submit the previewed return to the selected Vero API environment?" invisible="status_only or not payload_text or preview_warning or (kind == 'vat' and not period_checked) or report_state in ('queued', 'sending', 'uncertain')"/>
+                    <button name="action_edit" type="object" string="Make correction" invisible="not status_only or report_state != 'accepted'"/>
+                    <button name="action_edit" type="object" string="Prepare return" invisible="not status_only or report_state not in ('draft', 'error', 'not_received')"/>
+                    <button name="action_local_status" type="object" string="Refresh submission status" invisible="not status_only"/>
+                    <button name="action_choose" type="object" string="Another month / connection" invisible="not status_only"/>
+                    <button name="action_fetch_status" type="object" string="Fetch data from the Finnish Tax Administration" invisible="not report_id or kind == 'ec'"/>
+                    <button string="Close" special="cancel"/>
                 </footer>
             </form>
         </field>
@@ -130,29 +130,29 @@
             <xpath expr="//field[@name='date_range_id']" position="after">
                 <field name="vero_vat_state" column_invisible="True" groups="account.group_account_user"/>
                 <field name="vero_vat_status" class="text-wrap" width="240px" decoration-success="vero_vat_state == 'accepted'" decoration-warning="vero_vat_state in ('queued', 'sending', 'uncertain')" decoration-danger="vero_vat_state == 'error'" groups="account.group_account_user"/>
-                <button name="action_do_send" type="object" string="Tee ALV-ilmoitus" icon="fa-pencil" invisible="vero_vat_state != 'draft'" groups="account.group_account_user"/>
-                <button name="action_do_send" type="object" string="ALV: lähetyksen tila" icon="fa-clock-o" invisible="vero_vat_state not in ('queued', 'sending')" groups="account.group_account_user"/>
-                <button name="action_do_send" type="object" string="Näytä ALV-ilmoitus" icon="fa-check-circle" class="text-success" invisible="vero_vat_state != 'accepted'" groups="account.group_account_user"/>
-                <button name="action_do_send" type="object" string="ALV: näytä virhe" icon="fa-exclamation-triangle" class="text-danger" invisible="vero_vat_state != 'error'" groups="account.group_account_user"/>
-                <button name="action_do_send" type="object" string="ALV: selvitä tila" icon="fa-question-circle" invisible="vero_vat_state != 'uncertain'" groups="account.group_account_user"/>
-                <button name="action_do_send" type="object" string="ALV: ilmoitukset" icon="fa-list" invisible="vero_vat_state not in ('multiple', 'not_received')" groups="account.group_account_user"/>
+                <button name="action_do_send" type="object" string="Prepare VAT return" icon="fa-pencil" invisible="vero_vat_state != 'draft'" groups="account.group_account_user"/>
+                <button name="action_do_send" type="object" string="VAT: submission status" icon="fa-clock-o" invisible="vero_vat_state not in ('queued', 'sending')" groups="account.group_account_user"/>
+                <button name="action_do_send" type="object" string="View VAT return" icon="fa-check-circle" class="text-success" invisible="vero_vat_state != 'accepted'" groups="account.group_account_user"/>
+                <button name="action_do_send" type="object" string="VAT: view error" icon="fa-exclamation-triangle" class="text-danger" invisible="vero_vat_state != 'error'" groups="account.group_account_user"/>
+                <button name="action_do_send" type="object" string="VAT: resolve status" icon="fa-question-circle" invisible="vero_vat_state != 'uncertain'" groups="account.group_account_user"/>
+                <button name="action_do_send" type="object" string="VAT: returns" icon="fa-list" invisible="vero_vat_state not in ('multiple', 'not_received')" groups="account.group_account_user"/>
                 <field name="vero_ec_state" column_invisible="True" groups="account.group_account_user"/>
                 <field name="vero_ec_status" class="text-wrap" width="200px" decoration-success="vero_ec_state == 'accepted'" decoration-warning="vero_ec_state in ('queued', 'sending', 'uncertain')" decoration-danger="vero_ec_state == 'error'" groups="account.group_account_user"/>
-                <button name="action_vero_ec" type="object" string="Tee EU-ilmoitus" icon="fa-pencil" invisible="vero_ec_state != 'draft'" groups="account.group_account_user"/>
-                <button name="action_vero_ec" type="object" string="EU: lähetyksen tila" icon="fa-clock-o" invisible="vero_ec_state not in ('queued', 'sending')" groups="account.group_account_user"/>
-                <button name="action_vero_ec" type="object" string="Näytä EU-ilmoitus" icon="fa-check-circle" class="text-success" invisible="vero_ec_state != 'accepted'" groups="account.group_account_user"/>
-                <button name="action_vero_ec" type="object" string="EU: näytä virhe" icon="fa-exclamation-triangle" class="text-danger" invisible="vero_ec_state != 'error'" groups="account.group_account_user"/>
-                <button name="action_vero_ec" type="object" string="EU: selvitä tila" icon="fa-question-circle" invisible="vero_ec_state != 'uncertain'" groups="account.group_account_user"/>
-                <button name="action_vero_ec" type="object" string="EU: ilmoitukset" icon="fa-list" invisible="vero_ec_state not in ('multiple', 'not_received')" groups="account.group_account_user"/>
-                <button name="action_vero_choose_ec" type="object" icon="fa-calendar-plus-o" title="Valitse EU-ilmoituksen kuukausi tai toinen yhteys" groups="account.group_account_user"/>
-                <button name="action_vero_choose_vat" type="object" icon="fa-exchange" title="Valitse ALV-ilmoituksen toinen yhteys / ympäristö" groups="account.group_account_user"/>
-                <button name="action_vero_status" type="object" icon="fa-history" title="Kaikki ilmoitukset ja lähetyshistoria" groups="account.group_account_user"/>
+                <button name="action_vero_ec" type="object" string="Prepare EC sales list" icon="fa-pencil" invisible="vero_ec_state != 'draft'" groups="account.group_account_user"/>
+                <button name="action_vero_ec" type="object" string="EC: submission status" icon="fa-clock-o" invisible="vero_ec_state not in ('queued', 'sending')" groups="account.group_account_user"/>
+                <button name="action_vero_ec" type="object" string="View EC sales list" icon="fa-check-circle" class="text-success" invisible="vero_ec_state != 'accepted'" groups="account.group_account_user"/>
+                <button name="action_vero_ec" type="object" string="EC: view error" icon="fa-exclamation-triangle" class="text-danger" invisible="vero_ec_state != 'error'" groups="account.group_account_user"/>
+                <button name="action_vero_ec" type="object" string="EC: resolve status" icon="fa-question-circle" invisible="vero_ec_state != 'uncertain'" groups="account.group_account_user"/>
+                <button name="action_vero_ec" type="object" string="EC: reports" icon="fa-list" invisible="vero_ec_state not in ('multiple', 'not_received')" groups="account.group_account_user"/>
+                <button name="action_vero_choose_ec" type="object" icon="fa-calendar-plus-o" title="Select the EC sales list month or another connection" groups="account.group_account_user"/>
+                <button name="action_vero_choose_vat" type="object" icon="fa-exchange" title="Select another VAT connection / environment" groups="account.group_account_user"/>
+                <button name="action_vero_status" type="object" icon="fa-history" title="All reports and submission history" groups="account.group_account_user"/>
             </xpath>
         </field>
     </record>
-    <record id="vero_backend_action" model="ir.actions.act_window"><field name="name">Vero API -yhteydet</field><field name="res_model">vero.api.backend</field><field name="view_mode">list,form</field></record>
-    <record id="vero_report_action" model="ir.actions.act_window"><field name="name">Vero API -ilmoitukset</field><field name="res_model">vero.api.report</field><field name="view_mode">list,form</field></record>
-    <menuitem id="vero_backend_menu" name="Vero API -yhteydet" parent="connector.menu_connector" action="vero_backend_action" groups="account.group_account_user"/>
-    <menuitem id="vero_report_menu" name="Vero API -ilmoitukset" parent="account_vat_periods.account_vat_period_conf_menu" action="vero_report_action" groups="account.group_account_user"/>
-    <menuitem id="vero_backend_accounting_menu" name="Vero API -yhteydet" parent="account.menu_finance_configuration" sequence="50" action="vero_backend_action" groups="account.group_account_user"/>
+    <record id="vero_backend_action" model="ir.actions.act_window"><field name="name">Vero API connections</field><field name="res_model">vero.api.backend</field><field name="view_mode">list,form</field></record>
+    <record id="vero_report_action" model="ir.actions.act_window"><field name="name">Vero API reports</field><field name="res_model">vero.api.report</field><field name="view_mode">list,form</field></record>
+    <menuitem id="vero_backend_menu" name="Vero API connections" parent="connector.menu_connector" action="vero_backend_action" groups="account.group_account_user"/>
+    <menuitem id="vero_report_menu" name="Vero API reports" parent="account_vat_periods.account_vat_period_conf_menu" action="vero_report_action" groups="account.group_account_user"/>
+    <menuitem id="vero_backend_accounting_menu" name="Vero API connections" parent="account.menu_finance_configuration" sequence="50" action="vero_backend_action" groups="account.group_account_user"/>
 </odoo>

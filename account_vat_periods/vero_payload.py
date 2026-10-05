@@ -5,6 +5,24 @@ import json
 import re
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
+
+def _(message):
+    """Mark a source literal for Odoo export without requiring an ORM environment."""
+    return message
+
+
+class PayloadError(ValueError):
+    """Keep the source template and arguments until the user's language is known."""
+
+    def __init__(self, source, *values):
+        self.source = source
+        self.values = values
+        super().__init__(source % values if values else source)
+
+    def translated(self, translate):
+        return translate(self.source, *self.values)
+
+
 VAT_MAPPING = {
     'vero_25_5': 'VATOnDomesticSalesByTaxRate.HighVATRate',
     'vero_13_5': 'VATOnDomesticSalesByTaxRate.MediumVATRate',
@@ -29,14 +47,14 @@ EU_CODES = set('AT BE BG CY CZ DE DK EE EL ES FR HR HU IE IT LT LU LV MT NL PL P
 
 def money(value):
     if value is None or isinstance(value, bool):
-        raise ValueError('Missing or invalid numeric report value.')
+        raise PayloadError(_('Missing or invalid numeric report value.'))
     try:
         number = Decimal(str(value))
         if not number.is_finite():
-            raise ValueError('Non-finite report value.')
+            raise PayloadError(_('Non-finite report value.'))
         return float(number.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
     except InvalidOperation as exc:
-        raise ValueError('Invalid numeric report value: %s' % value) from exc
+        raise PayloadError(_('Invalid numeric report value: %s'), value) from exc
 
 
 def business_id(value):
@@ -44,19 +62,19 @@ def business_id(value):
     if re.fullmatch(r'FI\d{8}', value):
         value = value[2:9] + '-' + value[9]
     if not re.fullmatch(r'\d{7}-\d', value):
-        raise ValueError('Set a Finnish business ID or FI VAT number for the company.')
+        raise PayloadError(_('Set a Finnish business ID or FI VAT number for the company.'))
     weights = (7, 9, 10, 5, 8, 4, 2)
     remainder = sum(int(n) * w for n, w in zip(value[:7], weights)) % 11
     check = 0 if remainder == 0 else 11 - remainder
     if check == 10 or check != int(value[-1]):
-        raise ValueError('Invalid Finnish business ID checksum.')
+        raise PayloadError(_('Invalid Finnish business ID checksum.'))
     return value
 
 
 def contact(name, phone):
     name, phone = (name or '').strip(), (phone or '').strip()
     if not name or not phone or len(name) > 35 or len(phone) > 35:
-        raise ValueError('Contact name and phone number are required (maximum 35 characters each).')
+        raise PayloadError(_('Contact name and phone number are required (maximum 35 characters each).'))
     return {'FullName': name, 'PhoneNumber': phone}
 
 
@@ -64,14 +82,14 @@ def vat_payload(values, company_vat, date_end, contact_details, no_activity=Fals
     details = {}
     for kpi, path in VAT_MAPPING.items():
         if kpi not in values:
-            raise ValueError('Missing MIS report row: ' + kpi)
+            raise PayloadError(_('Missing MIS report row: %s'), kpi)
         target = details
         parts = path.split('.')
         for part in parts[:-1]:
             target = target.setdefault(part, {})
         target[parts[-1]] = money(values[kpi])
     if no_activity and any(money(values[kpi]) != 0 for kpi in VAT_MAPPING):
-        raise ValueError('No activity cannot be selected when report values are nonzero.')
+        raise PayloadError(_('No activity cannot be selected when report values are nonzero.'))
     payload = {'BusinessId': business_id(company_vat), 'FilingPeriod': str(date_end),
                'ContactDetails': contact_details, 'NoActivity': bool(no_activity),
                'ReplacementReturn': False}
@@ -94,7 +112,7 @@ def buyer_key(row):
 def vat_identifier(vat):
     vat = re.sub(r'[\s.\-]', '', (vat or '').upper())
     if len(vat) < 4 or vat[:2] not in EU_CODES or not re.fullmatch(r'[A-Z0-9]{2,12}', vat[2:]):
-        raise ValueError('Missing or invalid EU buyer VAT identifier: ' + vat)
+        raise PayloadError(_('Missing or invalid EU buyer VAT identifier: %s'), vat)
     return vat[:2], vat[2:]
 
 

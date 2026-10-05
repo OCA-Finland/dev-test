@@ -1,4 +1,4 @@
-from odoo import fields, models, api
+from odoo import fields, models, api, _
 from odoo.exceptions import UserError
 from datetime import datetime
 import dateutil.relativedelta
@@ -98,7 +98,7 @@ class AccountVatPeriod(models.Model):
             self.ensure_one()
 
             if not self.closeable:
-                  raise UserError("The previous periods have to be closed before closing this period!")
+                  raise UserError(_("The previous periods have to be closed before closing this period!"))
 
             date_from = self.date_range_id.date_start
             date_to = self.date_range_id.date_end
@@ -136,7 +136,7 @@ class AccountVatPeriod(models.Model):
             report.date = self.date_range_id.date_start
 
             return {
-                  "name": "VAT Report Preview",
+                  "name": _("VAT Report Preview"),
                   "type": "ir.actions.act_window",
                   "res_model": "mis.report.instance",
                   "view_mode": "form",
@@ -150,7 +150,7 @@ class AccountVatPeriod(models.Model):
             self.ensure_one()
 
             if not self.closed:
-                  raise UserError("The period has to be closed before the report can be sent!")
+                  raise UserError(_("The period has to be closed before the report can be sent!"))
 
             date = (self.date_range_id.date_start + dateutil.relativedelta.relativedelta(months=2))
             due = date.replace(day=12)

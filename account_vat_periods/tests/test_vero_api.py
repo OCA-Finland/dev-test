@@ -789,7 +789,7 @@ class TestVeroAPI(TransactionCase):
         with patch.object(type(self.backend), '_call', return_value=self._period_response('Processed')) as call, \
              patch.object(type(self.report), '_payload', return_value=self.payload()):
             wizard.action_refresh()
-            self.assertIn('jo tämän kauden ilmoitus', wizard.preview_warning)
+            self.assertIn('already has a return for this period', wizard.preview_warning)
             self.assertFalse(wizard.period_checked)
             self.assertTrue(wizard.payload_text)
             with self.assertRaises(UserError):
@@ -846,8 +846,8 @@ class TestVeroAPI(TransactionCase):
         self.attempt()
         self.assertEqual(self.period.vero_vat_state, 'accepted')
         self.assertIn('SANDBOX', self.period.vero_vat_status)
-        self.assertIn('Vastaanotettu Verohallinnossa', self.period.vero_vat_status)
-        self.assertEqual(self.period.vero_ec_status, 'Ei lähetetty')
+        self.assertIn('Received by the Finnish Tax Administration', self.period.vero_vat_status)
+        self.assertEqual(self.period.vero_ec_status, 'Not sent')
         backend = self.env['vero.api.backend'].create({'name': 'Production UI fixture',
             'company_id': self.company.id, 'environment': 'production',
             'contact_name': 'Test', 'contact_phone': '+3581'})
@@ -856,7 +856,7 @@ class TestVeroAPI(TransactionCase):
             'kind': 'vat', 'date_start': '2026-03-01', 'date_end': '2026-03-31'})
         self.assertEqual(self.period.vero_vat_state, 'multiple')
         self.assertFalse(self.period.vero_vat_received)
-        self.assertIn('TUOTANTO', self.period.vero_vat_status)
+        self.assertIn('PRODUCTION', self.period.vero_vat_status)
         action = self.period.with_user(self.user).action_do_send()
         self.assertEqual(action['res_model'], 'vero.api.report')
         self.assertIn(('kind', '=', 'vat'), action['domain'])

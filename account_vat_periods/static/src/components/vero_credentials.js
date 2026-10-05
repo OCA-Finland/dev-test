@@ -1,5 +1,6 @@
 /** @odoo-module **/
 import { Component, onWillStart, useRef, useState } from "@odoo/owl";
+import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 
@@ -34,13 +35,13 @@ export class VeroCredentials extends Component {
             } else {
                 this.state.info = result;
                 if (operation !== "status") {
-                    this.state.success = operation === "save_key" ? "API-avain tallennettu." :
-                        operation === "test_connection" ? "Yhteys toimii: Verohallinnon kausikysely onnistui. Veroilmoitusta ei lähetetty." :
-                        "Toiminto valmis. Tarkista noudon tila alta.";
+                    this.state.success = operation === "save_key" ? _t('API key saved.') :
+                        operation === "test_connection" ? _t('Connection successful: the filing period query succeeded. No tax return was submitted.') :
+                        _t('Operation complete. Check the retrieval status below.');
                 }
             }
         } catch {
-            this.state.error = "Yhteys katkesi. Päivitä noudon tila ennen uutta yritystä.";
+            this.state.error = _t('Connection interrupted. Refresh the retrieval status before trying again.');
         } finally {
             // Do not retain secrets in component state, storage or error objects.
             for (const key of Object.keys(values)) {
@@ -64,6 +65,19 @@ export class VeroCredentials extends Component {
         this.transfer.el.value = "";
         this.password.el.value = "";
         return this.run("submit", values);
+    }
+
+    get environmentLabel() {
+        return { sandbox: _t("Sandbox"), test: _t("Test certificate"), production: _t("Production") }[this.state.info?.environment] || "";
+    }
+
+    get phaseLabel() {
+        return { uncertain: _t("Uncertain result"), waiting: _t("Waiting for certificate"),
+            ready: _t("Ready to activate"), active: _t("Activated"), rejected: _t("Rejected") }[this.state.info?.enrollment.phase] || "";
+    }
+
+    get missingVatLabel() {
+        return _t("Missing - complete the company details first");
     }
 
     back() {

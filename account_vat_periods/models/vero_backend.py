@@ -24,21 +24,157 @@ class VeroBackend(models.Model):
     _description = 'Vero API connection'
     _check_company_auto = True
 
-    name = fields.Char(required=True, default='Vero API')
-    company_id = fields.Many2one('res.company', required=True, default=lambda self: self.env.company, index=True)
-    active = fields.Boolean(default=True)
-    environment = fields.Selection([('sandbox', 'Sandbox'), ('test', 'Test certificate'), ('production', 'Production')], required=True, default='test')
-    api_root = fields.Char(string='SAT API base URL', help='Copy the SAT base URL from the Vero API portal. No trailing operation name. Required for certificate environments.')
-    software_key_file = fields.Char(copy=False, help='Absolute server path to the software key (sandbox: subscription key). Contents are never shown in reports.')
-    certificate_file = fields.Char(copy=False, help='Absolute server path to the PEM client certificate.')
-    private_key_file = fields.Char(copy=False, help='Absolute server path to the PEM private key readable by the Odoo service.')
-    authorization_token_file = fields.Char(copy=False, help='Optional current Suomi.fi authorization token. Automatic token renewal is not part of this MVP.')
-    software_id = fields.Char()
-    contact_name = fields.Char(required=True, size=35)
-    contact_phone = fields.Char(required=True, size=35)
-    goods_tag_ids = fields.Many2many('account.account.tag', 'vero_goods_tag_rel', 'backend_id', 'tag_id', string='EC goods tax grids', domain=[('applicability', '=', 'taxes')])
-    services_tag_ids = fields.Many2many('account.account.tag', 'vero_services_tag_rel', 'backend_id', 'tag_id', string='EC services tax grids', domain=[('applicability', '=', 'taxes')])
-    triangulation_tag_ids = fields.Many2many('account.account.tag', 'vero_triangle_tag_rel', 'backend_id', 'tag_id', string='EC triangulation tax grids', domain=[('applicability', '=', 'taxes')])
+    name = fields.Char(
+        string='Name',
+        required=True,
+        default='Vero API',
+        help=(
+            'Descriptive name used to identify this connection or return in lists. Include the company '
+            'and environment when naming a connection so that test and production are easy to '
+            'distinguish.'
+        ),
+    )
+    company_id = fields.Many2one(
+        'res.company',
+        string='Company',
+        required=True,
+        default=lambda self: self.env.company,
+        index=True,
+        help=(
+            'Company that owns this connection or return. Accounting data, credentials and access checks '
+            'are restricted to this company; select the company whose own tax information is being '
+            'reported.'
+        ),
+    )
+    active = fields.Boolean(
+        string='Active',
+        default=True,
+        help=(
+            'Enable this connection for preparing and sending returns. Deactivating it also prevents '
+            'processing of queued submissions, so finish or resolve pending submissions before disabling '
+            'the connection.'
+        ),
+    )
+    environment = fields.Selection(
+        [('sandbox', 'Sandbox'), ('test', 'Test certificate'), ('production', 'Production')],
+        string='Environment',
+        required=True,
+        default='test',
+        help=(
+            'Vero service used by this connection or submission. Sandbox and Test certificate are for '
+            'testing; Production sends real tax returns. Each environment needs its own compatible '
+            'credentials and service address.'
+        ),
+    )
+    api_root = fields.Char(
+        string='SAT API base URL',
+        help=(
+            'Official HTTPS base address of the selected Vero SAT environment, without an operation '
+            'suffix such as /FileVATReturn/v2. Obtain the correct address from your software provider. '
+            'The host must match the selected environment.'
+        ),
+    )
+    software_key_file = fields.Char(
+        string='Software key file',
+        copy=False,
+        help=(
+            'Absolute server path to the protected software API key file, or the subscription key file in '
+            'Sandbox. Use Keys and certificate to save the key securely; this field contains only the '
+            'path and never the secret itself.'
+        ),
+    )
+    certificate_file = fields.Char(
+        string='Certificate file',
+        copy=False,
+        help=(
+            "Absolute server path to the company's PEM client certificate for the selected environment. "
+            'Retrieve and activate it through Keys and certificate. Test and production certificates '
+            'cannot be used interchangeably.'
+        ),
+    )
+    private_key_file = fields.Char(
+        string='Private key file',
+        copy=False,
+        help=(
+            'Absolute server path to the protected private key matching the client certificate. The key '
+            'is generated on the Odoo server during enrollment and must remain confidential. Only '
+            'technical administrators may set this path manually.'
+        ),
+    )
+    authorization_token_file = fields.Char(
+        string='Authorization token file',
+        copy=False,
+        help=(
+            "Optional absolute server path to a current authorization token for acting on another party's "
+            'behalf. Leave empty for normal own-company filing. Token acquisition, authorization and '
+            'renewal must be arranged separately.'
+        ),
+    )
+    software_id = fields.Char(
+        string='Software identifier',
+        help=(
+            'Optional software identifier supplied by the software provider and sent in the '
+            'Vero-SoftwareId header. It does not replace the software API key or the company certificate; '
+            'leave empty unless your provider instructs otherwise.'
+        ),
+    )
+    contact_name = fields.Char(
+        string='Contact name',
+        required=True,
+        size=35,
+        help=(
+            'Name of the person the Finnish Tax Administration can contact about the return. This value '
+            'is included in the submitted contact details and must contain no more than 35 characters.'
+        ),
+    )
+    contact_phone = fields.Char(
+        string='Contact phone',
+        required=True,
+        size=35,
+        help=(
+            'Telephone number of the contact person responsible for the return, preferably including the '
+            'country code. It is sent with each return and must contain no more than 35 characters.'
+        ),
+    )
+    goods_tag_ids = fields.Many2many(
+        'account.account.tag',
+        'vero_goods_tag_rel',
+        'backend_id',
+        'tag_id',
+        string='EC goods tax grids',
+        domain=[('applicability', '=', 'taxes')],
+        help=(
+            'Tax grids identifying the untaxed base of goods sold to EU customers. Select both invoice '
+            'and refund tags used by your taxes, not VAT amount tags. A tag cannot also belong to '
+            'services or triangulation sales.'
+        ),
+    )
+    services_tag_ids = fields.Many2many(
+        'account.account.tag',
+        'vero_services_tag_rel',
+        'backend_id',
+        'tag_id',
+        string='EC services tax grids',
+        domain=[('applicability', '=', 'taxes')],
+        help=(
+            'Tax grids identifying the untaxed base of services sold to EU customers. Include invoice and '
+            'refund tags, not VAT amount tags. Both goods and services selections are required even if '
+            'only one category has sales this month.'
+        ),
+    )
+    triangulation_tag_ids = fields.Many2many(
+        'account.account.tag',
+        'vero_triangle_tag_rel',
+        'backend_id',
+        'tag_id',
+        string='EC triangulation tax grids',
+        domain=[('applicability', '=', 'taxes')],
+        help=(
+            'Tax grids identifying untaxed triangulation sales for the EC sales list. Include relevant '
+            'invoice and refund tags and keep them separate from goods and services tags. Leave empty if '
+            'triangulation sales are not used.'
+        ),
+    )
 
     _sql_constraints = [('vero_backend_company_environment', 'unique(company_id,environment)', 'Use one Vero connection per company and environment. Update its credentials when necessary.')]
 
@@ -64,13 +200,13 @@ class VeroBackend(models.Model):
     def _secret(self, field):
         value = self[field]
         if not value or not Path(value).is_absolute():
-            raise UserError(_('Configure the absolute server path for %s.') % self._fields[field].string)
+            raise UserError(_('Configure the absolute server path for %s.') % self._fields[field]._description_string(self.env))
         try:
             secret = Path(value).read_text().strip()
         except OSError:
-            raise UserError(_('The configured credential file cannot be read: %s') % self._fields[field].string) from None
+            raise UserError(_('The configured credential file cannot be read: %s') % self._fields[field]._description_string(self.env)) from None
         if not secret:
-            raise UserError(_('The configured credential file is empty: %s') % self._fields[field].string)
+            raise UserError(_('The configured credential file is empty: %s') % self._fields[field]._description_string(self.env))
         return secret
 
     def _connection(self):
@@ -108,5 +244,5 @@ class VeroBackend(models.Model):
         try:
             data = response.json()
         except (ValueError, json.JSONDecodeError):
-            data = {'ErrorText': 'The service did not return JSON.'}
+            data = {'ErrorText': _('The service did not return JSON.')}
         return response.status_code, data

@@ -1,10 +1,6 @@
-.. image:: https://odoo-community.org/readme-banner-image
-   :target: https://odoo-community.org/get-involved?utm_source=readme
-   :alt: Odoo Community Association
-
-================================
-Romania - Account Period Closing
-================================
+======================
+Account Period Closing
+======================
 
 .. 
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -14,23 +10,17 @@ Romania - Account Period Closing
    !! source digest: sha256:06acd28adf21533e48140a8f2cce15836a141932a528f576ddfd12b3e44df35c
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-.. |badge1| image:: https://img.shields.io/badge/maturity-Mature-brightgreen.png
+.. |badge1| image:: https://img.shields.io/badge/maturity-Beta-yellow.png
     :target: https://odoo-community.org/page/development-status
-    :alt: Mature
-.. |badge2| image:: https://img.shields.io/badge/license-AGPL--3-blue.png
+    :alt: Beta
+.. |badge2| image:: https://img.shields.io/badge/licence-AGPL--3-blue.png
     :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
-.. |badge3| image:: https://img.shields.io/badge/github-OCA%2Fl10n--romania-lightgray.png?logo=github
-    :target: https://github.com/OCA/l10n-romania/tree/18.0/l10n_ro_account_period_close
-    :alt: OCA/l10n-romania
-.. |badge4| image:: https://img.shields.io/badge/weblate-Translate%20me-F47D42.png
-    :target: https://translation.odoo-community.org/projects/l10n-romania-18-0/l10n-romania-18-0-l10n_ro_account_period_close
-    :alt: Translate me on Weblate
-.. |badge5| image:: https://img.shields.io/badge/runboat-Try%20me-875A7B.png
-    :target: https://runboat.odoo-community.org/builds?repo=OCA/l10n-romania&target_branch=18.0
-    :alt: Try me on Runboat
+.. |badge3| image:: https://img.shields.io/badge/github-OCA--Finland%2Fdev--test-lightgray.png?logo=github
+    :target: https://github.com/OCA-Finland/dev-test/tree/18.0-dev/account_period_close
+    :alt: OCA-Finland/dev-test
 
-|badge1| |badge2| |badge3| |badge4| |badge5|
+|badge1| |badge2| |badge3|
 
 This module allows you to close incomes, expense, vat between two dates.
 
@@ -44,10 +34,10 @@ Installation
 
 To install this module, you need to:
 
-- clone the repository https://github.com/OCA/l10n-romania
+- clone the repository https://github.com/OCA-Finland/dev-test
 - add the path to this repository in your configuration (addons-path)
 - update the module list
-- search for "Romania - Account Period Closing" in your addons
+- search for "Account Period Closing" in your addons
 - install the module
 
 Configuration
@@ -77,10 +67,10 @@ option.
 Bug Tracker
 ===========
 
-Bugs are tracked on `GitHub Issues <https://github.com/OCA/l10n-romania/issues>`_.
+Bugs are tracked on `GitHub Issues <https://github.com/OCA-Finland/dev-test/issues>`_.
 In case of trouble, please check there if your issue has already been reported.
 If you spotted it first, help us to smash it by providing a detailed and welcomed
-`feedback <https://github.com/OCA/l10n-romania/issues/new?body=module:%20l10n_ro_account_period_close%0Aversion:%2018.0%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
+`feedback <https://github.com/OCA-Finland/dev-test/issues/new?body=module:%20account_period_close%0Aversion:%2018.0-dev%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
 
 Do not contact contributors directly about support or help with technical issues.
 
@@ -90,8 +80,7 @@ Credits
 Authors
 -------
 
-* NextERP Romania
-* Forest and Biomass Romania
+* 
 
 Contributors
 ------------
@@ -106,24 +95,6 @@ technical issues.
 Maintainers
 -----------
 
-This module is maintained by the OCA.
+This module is part of the `OCA-Finland/dev-test <https://github.com/OCA-Finland/dev-test/tree/18.0-dev/account_period_close>`_ project on GitHub.
 
-.. image:: https://odoo-community.org/logo.png
-   :alt: Odoo Community Association
-   :target: https://odoo-community.org
-
-OCA, or the Odoo Community Association, is a nonprofit organization whose
-mission is to support the collaborative development of Odoo features and
-promote its widespread use.
-
-.. |maintainer-feketemihai| image:: https://github.com/feketemihai.png?size=40px
-    :target: https://github.com/feketemihai
-    :alt: feketemihai
-
-Current `maintainer <https://odoo-community.org/page/maintainer-role>`__:
-
-|maintainer-feketemihai| 
-
-This module is part of the `OCA/l10n-romania <https://github.com/OCA/l10n-romania/tree/18.0/l10n_ro_account_period_close>`_ project on GitHub.
-
-You are welcome to contribute. To learn how please visit https://odoo-community.org/page/Contribute.
+You are welcome to contribute.

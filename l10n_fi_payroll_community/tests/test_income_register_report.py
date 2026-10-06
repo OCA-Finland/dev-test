@@ -1,6 +1,7 @@
 import base64
 import re
 from datetime import date
+from pathlib import Path
 from unittest.mock import patch
 
 from lxml import etree
@@ -634,3 +635,15 @@ class TestIncomeRegisterReport(TransactionCase):
         )
         self.assertEqual(len(entry), 1)
         self.assertEqual(entry.payslip_ids, self.payslip_run.slip_ids)
+
+    def test_generated_xml_matches_incomes_register_schema(self):
+        """The earnings payment report validates against WageReportsToIR.xsd.
+
+        Text and identifier values must not include the template indentation.
+        The schema counts that whitespace towards String30 and String40.
+        """
+        self.employee.ssnid = "010101-123A"
+        report = etree.fromstring(str(self._generate_payslip_xml(self.payslip)))
+        schema_path = Path(__file__).parent / "xsd" / "WageReportsToIR.xsd"
+        schema = etree.XMLSchema(etree.parse(str(schema_path)))
+        schema.assertValid(report)

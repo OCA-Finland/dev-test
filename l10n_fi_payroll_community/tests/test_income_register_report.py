@@ -507,16 +507,14 @@ class TestIncomeRegisterReport(TransactionCase):
         self.payslip.payment_date = date(2025, 5, 25)
         default_root = etree.fromstring(str(self._generate_payslip_xml(self.payslip)))
         delivery_id = (default_root.findtext(".//DeliveryId") or "").strip()
+        uuid_delivery = re.compile(
+            r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        )
         self.assertEqual(
             (default_root.findtext(".//ProductionEnvironment") or "").strip(), "true"
         )
         self.assertEqual((default_root.findtext(".//FaultyControl") or "").strip(), "2")
-        self.assertRegex(
-            delivery_id,
-            re.compile(
-                r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
-            ),
-        )
+        self.assertRegex(delivery_id, uuid_delivery)
         overridden = etree.fromstring(
             str(
                 self.payslip._generate_ir_report_xml(
@@ -537,6 +535,18 @@ class TestIncomeRegisterReport(TransactionCase):
             (overridden.findtext(".//ProductionEnvironment") or "").strip(), "false"
         )
         self.assertEqual((overridden.findtext(".//FaultyControl") or "").strip(), "1")
+        blank = etree.fromstring(
+            str(
+                self.payslip._generate_ir_report_xml(
+                    self.payslip,
+                    self.payslip.payment_date,
+                    self.payslip.date_from,
+                    self.payslip.date_to,
+                    delivery_id="",
+                )
+            )
+        )
+        self.assertRegex((blank.findtext(".//DeliveryId") or "").strip(), uuid_delivery)
 
     def test_xml_generation_rejects_invalid_parameters(self):
         """FaultyControl and DeliveryId are checked before rendering."""

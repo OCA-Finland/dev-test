@@ -185,7 +185,7 @@ class IncomeRegisterReportHelper(models.AbstractModel):
         :param datetime.date date_from: first day of the payment period
         :param datetime.date date_to: last day of the payment period
         :param str delivery_id: DeliveryId of at most 40 characters. A new
-            UUID is used when this is empty.
+            UUID is used when this is not given or empty.
         :param bool production: ``True`` renders ProductionEnvironment as true
         :param int faulty_control: ``1`` rejects only invalid reports, ``2``
             rejects the whole record
@@ -194,7 +194,7 @@ class IncomeRegisterReportHelper(models.AbstractModel):
         """
         if not payslips:
             raise UserError(_("No payslips provided for report generation."))
-        if delivery_id is None:
+        if not delivery_id:
             delivery_id = str(uuid.uuid4())
         if len(delivery_id) > 40:
             raise UserError(

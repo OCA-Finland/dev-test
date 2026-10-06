@@ -1,0 +1,29 @@
+<odoo noupdate="1">
+    <record model="mis.report.instance.period" id="mis_report_instance_period_vat_month">
+        <field name="name">Default</field>
+        <field name="mode" eval="'relative'"/>
+        <field name="type" eval="'date_range'"/>
+        <field name="date_range_type_id" ref="account_fiscal_month.date_range_fiscal_month"/>
+        <field name="offset" eval="0"/>
+        <field name="duration" eval="1"/>
+        <field name="report_instance_id" ref="l10n_fi_vat_periods.mis_report_instance_vat_month"/>
+    </record>
+    <record model="mis.report.instance.period" id="mis_report_instance_period_vat_quarter">
+        <field name="name">Default</field>
+        <field name="mode" eval="'relative'"/>
+        <field name="type" eval="'date_range'"/>
+        <field name="date_range_type_id" ref="account_fiscal_month.date_range_fiscal_month"/>
+        <field name="offset" eval="0"/>
+        <field name="duration" eval="3"/>
+        <field name="report_instance_id" ref="l10n_fi_vat_periods.mis_report_instance_vat_quarter"/>
+    </record>
+    <record model="mis.report.instance.period" id="mis_report_instance_period_vat_year">
+        <field name="name">Default</field>
+        <field name="mode" eval="'relative'"/>
+        <field name="type" eval="'date_range'"/>
+        <field name="date_range_type_id" ref="account_fiscal_month.date_range_fiscal_month"/>
+        <field name="offset" eval="0"/>
+        <field name="duration" eval="12"/>
+        <field name="report_instance_id" ref="l10n_fi_vat_periods.mis_report_instance_vat_year"/>
+    </record>
+</odoo>

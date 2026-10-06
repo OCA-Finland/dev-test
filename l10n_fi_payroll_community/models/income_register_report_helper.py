@@ -4,7 +4,7 @@ from datetime import datetime
 
 from markupsafe import Markup
 
-from odoo import _, models
+from odoo import _, models, release
 from odoo.exceptions import UserError
 
 
@@ -104,6 +104,52 @@ class IncomeRegisterReportHelper(models.AbstractModel):
             )
             raise UserError(error_msg)
 
+    def _validate_ir_company_data(self, company):
+        """Check the company data required by an earnings payment report.
+
+        An empty business id or an incomplete contact person makes the XML
+        invalid. Every problem is collected into one error so the user can
+        fix them together.
+
+        :param res.company company: payer company of the report
+        :return: ``None``
+        :rtype: None
+        """
+        errors = []
+        if not company.company_registry:
+            errors.append(
+                self.env._(
+                    "Company %(company)s has no business ID.",
+                    company=company.display_name,
+                )
+            )
+        contact = company.l10n_fi_payroll_ir_contact_person_id
+        if not contact:
+            errors.append(
+                self.env._(
+                    "Company %(company)s has no Incomes Register contact person.",
+                    company=company.display_name,
+                )
+            )
+        else:
+            if not contact.name:
+                errors.append(
+                    self.env._("The Incomes Register contact person has no name.")
+                )
+            if not (contact.phone or contact.mobile):
+                errors.append(
+                    self.env._(
+                        "The Incomes Register contact person has no phone "
+                        "or mobile number."
+                    )
+                )
+            if not contact.email:
+                errors.append(
+                    self.env._("The Incomes Register contact person has no email.")
+                )
+        if errors:
+            raise UserError("\n".join(errors))
+
     def _generate_ir_filename(self, identifier, timestamp=None):
         """
         Generate a standardized filename for Income Register reports.
@@ -115,22 +161,64 @@ class IncomeRegisterReportHelper(models.AbstractModel):
         safe_identifier = str(identifier).replace(" ", "_").replace("/", "_")
         return f"IR_{safe_identifier}_{timestamp_str}.xml"
 
-    def _generate_ir_report_xml(self, payslips, payment_date, date_from, date_to):
-        """
-        Generate Income Register XML report for given payslips.
+    def _generate_ir_report_xml(
+        self,
+        payslips,
+        payment_date,
+        date_from,
+        date_to,
+        *,
+        delivery_id=None,
+        production=True,
+        faulty_control=2,
+    ):
+        """Generate an Incomes Register earnings payment report.
+
+        Existing buttons keep the current defaults: a new DeliveryId, the
+        production environment, and FaultyControl 2. The Incomes Register
+        module passes ``production`` from its connection, reuses
+        ``delivery_id`` so a resend stays idempotent, and chooses
+        ``faulty_control``.
+
+        :param hr.payslip payslips: payslips included in the report
+        :param datetime.date payment_date: payment date of the period
+        :param datetime.date date_from: first day of the payment period
+        :param datetime.date date_to: last day of the payment period
+        :param str delivery_id: DeliveryId of at most 40 characters. A new
+            UUID is used when this is not given or empty.
+        :param bool production: ``True`` renders ProductionEnvironment as true
+        :param int faulty_control: ``1`` rejects only invalid reports, ``2``
+            rejects the whole record
+        :return: rendered XML
+        :rtype: str
         """
         if not payslips:
             raise UserError(_("No payslips provided for report generation."))
+        if not delivery_id:
+            delivery_id = str(uuid.uuid4())
+        if len(delivery_id) > 40:
+            raise UserError(
+                self.env._(
+                    "DeliveryId must be at most %(limit)s characters.",
+                    limit=40,
+                )
+            )
+        if faulty_control not in (1, 2):
+            raise UserError(self.env._("FaultyControl must be 1 or 2."))
 
         company = payslips[0].company_id
+        for payslip in payslips:
+            payslip._l10n_fi_get_ir_report_ref()
 
         tmpl_name = "l10n_fi_payroll_community.incomes_register_report_template"
         result = self.env["ir.ui.view"]._render_template(
             tmpl_name,
             {
                 "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S") + "+00:00",
-                "source": "Odoo_v17.0",
-                "delivery_id": str(uuid.uuid4()),
+                "source": f"Odoo_{release.major_version}",
+                "delivery_id": delivery_id,
+                "production_environment": "true" if production else "false",
+                "faulty_control": faulty_control,
                 "payment_period_date_payment": payment_date.strftime("%Y-%m-%d"),
                 "payment_period_date_from": date_from.strftime("%Y-%m-%d"),
                 "payment_period_date_to": date_to.strftime("%Y-%m-%d"),

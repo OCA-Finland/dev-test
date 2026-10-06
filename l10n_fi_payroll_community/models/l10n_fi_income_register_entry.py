@@ -2,7 +2,7 @@ import base64
 import io
 import zipfile
 
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class L10nFiIncomeRegisterEntry(models.Model):
@@ -26,6 +26,14 @@ class L10nFiIncomeRegisterEntry(models.Model):
         "hr.payslip",
         string="Payslip",
     )
+    payslip_ids = fields.Many2many(
+        "hr.payslip",
+        "l10n_fi_income_register_entry_payslip_rel",
+        "entry_id",
+        "payslip_id",
+        string="Payslips",
+    )
+    payslip_count = fields.Integer(compute="_compute_payslip_count")
     payslip_run_id = fields.Many2one(
         "hr.payslip.run",
         string="Batch",
@@ -35,6 +43,16 @@ class L10nFiIncomeRegisterEntry(models.Model):
     generated_at = fields.Datetime(string="Generated On", required=True)
     report = fields.Binary(required=True, attachment=False)
     filename = fields.Char(required=True)
+
+    @api.depends("payslip_ids")
+    def _compute_payslip_count(self):
+        """Count the payslips contained in this generated XML.
+
+        :return: ``None``
+        :rtype: None
+        """
+        for entry in self:
+            entry.payslip_count = len(entry.payslip_ids)
 
     def action_bulk_download(self):
         if not self:

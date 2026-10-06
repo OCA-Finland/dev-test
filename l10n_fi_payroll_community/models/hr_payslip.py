@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from odoo import _, api, fields, models
+from odoo import Command, _, api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -32,6 +32,7 @@ class HrPayslip(models.Model):
         compute="_compute_ir_report_download",
         sanitize=False,
     )
+    l10n_fi_ir_report_ref = fields.Char(copy=False, readonly=True, index=True)
 
     exception_warning_state = fields.Selection(
         [("exception", "Exception")],
@@ -129,6 +130,24 @@ class HrPayslip(models.Model):
                     payslip.payslip_run_id.l10n_fi_payment_date
                 )
 
+    def _l10n_fi_get_ir_report_ref(self):
+        """Return the stable Incomes Register ReportId of this payslip.
+
+        The register rejects a second new report that reuses a ReportId, and
+        a replacement report needs the same reference. The value is assigned
+        once, kept on the payslip, and stays within the 40 character limit.
+
+        :return: stored report reference
+        :rtype: str
+        """
+        self.ensure_one()
+        if not self.l10n_fi_ir_report_ref:
+            dbuuid = (
+                self.env["ir.config_parameter"].sudo().get_param("database.uuid") or ""
+            )
+            self.l10n_fi_ir_report_ref = f"{dbuuid[:8]}-{self.id}"
+        return self.l10n_fi_ir_report_ref
+
     def action_incomes_register_report(self):
         if not self:
             return {"type": "ir.actions.act_window_close"}
@@ -144,6 +163,8 @@ class HrPayslip(models.Model):
 
         self._validate_payment_dates(valid_payslips)
         self._validate_date_consistency(valid_payslips)
+        for company in valid_payslips.company_id:
+            self._validate_ir_company_data(company)
 
         date_from = min(valid_payslips.mapped("date_from"))
         date_to = max(valid_payslips.mapped("date_to"))
@@ -173,9 +194,9 @@ class HrPayslip(models.Model):
             }
         )
 
-        # Upsert one income register entry per payslip
         Entry = self.env["l10n_fi.income.register.entry"]
-        for payslip in valid_payslips:
+        if len(valid_payslips) == 1:
+            payslip = valid_payslips
             existing = Entry.search(
                 [
                     ("payslip_id", "=", payslip.id),
@@ -187,6 +208,7 @@ class HrPayslip(models.Model):
                 "report_type": "individual",
                 "employee_id": payslip.employee_id.id,
                 "payslip_id": payslip.id,
+                "payslip_ids": [Command.set(payslip.ids)],
                 "date_from": date_from,
                 "date_to": date_to,
                 "generated_at": timestamp,
@@ -197,6 +219,19 @@ class HrPayslip(models.Model):
                 existing.write(vals)
             else:
                 Entry.create(vals)
+        else:
+            Entry.create(
+                {
+                    "report_type": "batch",
+                    "payslip_run_id": False,
+                    "payslip_ids": [Command.set(valid_payslips.ids)],
+                    "date_from": date_from,
+                    "date_to": date_to,
+                    "generated_at": timestamp,
+                    "report": report_binary,
+                    "filename": filename,
+                }
+            )
 
         valid_payslips[0].message_post(
             body=_(

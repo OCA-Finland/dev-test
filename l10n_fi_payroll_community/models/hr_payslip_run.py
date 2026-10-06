@@ -1,6 +1,6 @@
 import datetime
 
-from odoo import _, api, fields, models
+from odoo import Command, _, api, fields, models
 
 
 class HrPayslipRun(models.Model):
@@ -52,6 +52,9 @@ class HrPayslipRun(models.Model):
                 )
             )
 
+        for company in self.slip_ids.company_id or self.company_id:
+            self._validate_ir_company_data(company)
+
         result = self._generate_ir_report_xml(
             payslips=self.slip_ids,
             payment_date=self.l10n_fi_payment_date,
@@ -84,6 +87,7 @@ class HrPayslipRun(models.Model):
         vals = {
             "report_type": "batch",
             "payslip_run_id": self.id,
+            "payslip_ids": [Command.set(self.slip_ids.ids)],
             "date_from": self.date_start,
             "date_to": self.date_end,
             "generated_at": timestamp,

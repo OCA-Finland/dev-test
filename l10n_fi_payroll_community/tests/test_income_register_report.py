@@ -1,6 +1,10 @@
 import base64
+import re
 from datetime import date
+from pathlib import Path
 from unittest.mock import patch
+
+from lxml import etree
 
 from odoo.exceptions import UserError
 from odoo.tests.common import TransactionCase
@@ -17,8 +21,29 @@ class TestIncomeRegisterReport(TransactionCase):
 
         self.company = self.env.company
         self.company.company_registry = "1234567-8"
+        self.journal = self.env["account.journal"].search(
+            [("type", "=", "general"), ("company_id", "=", self.company.id)],
+            limit=1,
+        )
+        if not self.journal:
+            self.journal = self.env["account.journal"].create(
+                {
+                    "name": "Miscellaneous",
+                    "code": "MISC",
+                    "type": "general",
+                    "company_id": self.company.id,
+                }
+            )
         self.company.l10n_fi_payroll_ir_contact_person_id = (
-            self.env["res.partner"].create({"name": "Test Contact"}).id
+            self.env["res.partner"]
+            .create(
+                {
+                    "name": "Test Contact",
+                    "phone": "+358401234567",
+                    "email": "contact@example.com",
+                }
+            )
+            .id
         )
 
         self.employee = self.Employee.create({"name": "Test Employee"})
@@ -30,12 +55,14 @@ class TestIncomeRegisterReport(TransactionCase):
                 "wage": 1000.0,
                 "state": "open",
                 "date_start": date(2025, 1, 1),
+                "journal_id": self.journal.id,
             }
         )
 
         self.payslip_run = self.PayslipRun.create(
             {
                 "name": "Test Batch",
+                "journal_id": self.journal.id,
                 "l10n_fi_payment_date": date(2025, 5, 25),
                 "date_start": date(2025, 5, 1),
                 "date_end": date(2025, 5, 31),
@@ -67,6 +94,7 @@ class TestIncomeRegisterReport(TransactionCase):
                 "wage": 1000.0,
                 "state": "open",
                 "date_start": date(2025, 1, 1),
+                "journal_id": self.journal.id,
             }
         )
 
@@ -251,7 +279,9 @@ class TestIncomeRegisterReport(TransactionCase):
             payslip3.l10n_fi_incomes_register_report_filename,
         )
 
-        self.assertIn("3_payslips", payslip1.l10n_fi_incomes_register_report_filename)
+        self.assertIn(
+            "multiple_employees", payslip1.l10n_fi_incomes_register_report_filename
+        )
 
     def test_different_date_from_raises_error(self):
         """
@@ -421,7 +451,199 @@ class TestIncomeRegisterReport(TransactionCase):
             payslips.action_incomes_register_report()
 
         filename = payslip1.l10n_fi_incomes_register_report_filename
-        self.assertIn("2_payslips", filename)
-        self.assertIn("20250601", filename)
+        self.assertIn("multiple_employees", filename)
         self.assertTrue(filename.startswith("IR_"))
         self.assertTrue(filename.endswith(".xml"))
+
+    def _generate_payslip_xml(self, payslip):
+        """Render the earnings payment report for one payslip.
+
+        :param hr.payslip payslip: payslip to render
+        :return: rendered XML
+        :rtype: str
+        """
+        return payslip._generate_ir_report_xml(
+            payslips=payslip,
+            payment_date=payslip.payment_date,
+            date_from=payslip.date_from,
+            date_to=payslip.date_to,
+        )
+
+    def test_report_id_is_stable_and_source_matches_version(self):
+        """ReportId stays within 40 characters and Source names Odoo 18.0."""
+        self.payslip.payment_date = date(2025, 5, 25)
+        first = etree.fromstring(str(self._generate_payslip_xml(self.payslip)))
+        second = etree.fromstring(str(self._generate_payslip_xml(self.payslip)))
+        report_id = (first.findtext(".//ReportId") or "").strip()
+        source = (first.findtext(".//Source") or "").strip()
+        self.assertTrue(report_id)
+        self.assertLessEqual(len(report_id), 40)
+        self.assertEqual(report_id, self.payslip.l10n_fi_ir_report_ref)
+        self.assertEqual((second.findtext(".//ReportId") or "").strip(), report_id)
+        self.assertTrue(source)
+        self.assertLessEqual(len(source), 30)
+        self.assertIn("18.0", source)
+
+    def test_company_data_validation_lists_every_problem(self):
+        """One error lists the business id and every missing contact field."""
+        self.company.company_registry = False
+        self.company.l10n_fi_payroll_ir_contact_person_id = self.env[
+            "res.partner"
+        ].create({"name": False, "type": "other"})
+        with self.assertRaises(UserError) as missing:
+            self.payslip._validate_ir_company_data(self.company)
+        message = str(missing.exception)
+        self.assertIn("business ID", message)
+        self.assertIn("no name", message)
+        self.assertIn("phone", message)
+        self.assertIn("email", message)
+
+        self.company.l10n_fi_payroll_ir_contact_person_id = False
+        with self.assertRaises(UserError) as no_contact:
+            self.payslip._validate_ir_company_data(self.company)
+        self.assertIn("contact person", str(no_contact.exception))
+
+    def test_xml_generation_defaults_and_overrides(self):
+        """Defaults keep production and FaultyControl 2; overrides are rendered."""
+        self.payslip.payment_date = date(2025, 5, 25)
+        default_root = etree.fromstring(str(self._generate_payslip_xml(self.payslip)))
+        delivery_id = (default_root.findtext(".//DeliveryId") or "").strip()
+        uuid_delivery = re.compile(
+            r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        )
+        self.assertEqual(
+            (default_root.findtext(".//ProductionEnvironment") or "").strip(), "true"
+        )
+        self.assertEqual((default_root.findtext(".//FaultyControl") or "").strip(), "2")
+        self.assertRegex(delivery_id, uuid_delivery)
+        overridden = etree.fromstring(
+            str(
+                self.payslip._generate_ir_report_xml(
+                    self.payslip,
+                    self.payslip.payment_date,
+                    self.payslip.date_from,
+                    self.payslip.date_to,
+                    delivery_id="delivery-kept",
+                    production=False,
+                    faulty_control=1,
+                )
+            )
+        )
+        self.assertEqual(
+            (overridden.findtext(".//DeliveryId") or "").strip(), "delivery-kept"
+        )
+        self.assertEqual(
+            (overridden.findtext(".//ProductionEnvironment") or "").strip(), "false"
+        )
+        self.assertEqual((overridden.findtext(".//FaultyControl") or "").strip(), "1")
+        blank = etree.fromstring(
+            str(
+                self.payslip._generate_ir_report_xml(
+                    self.payslip,
+                    self.payslip.payment_date,
+                    self.payslip.date_from,
+                    self.payslip.date_to,
+                    delivery_id="",
+                )
+            )
+        )
+        self.assertRegex((blank.findtext(".//DeliveryId") or "").strip(), uuid_delivery)
+
+    def test_xml_generation_rejects_invalid_parameters(self):
+        """FaultyControl and DeliveryId are checked before rendering."""
+        self.payslip.payment_date = date(2025, 5, 25)
+        with self.assertRaises(UserError):
+            self.payslip._generate_ir_report_xml(
+                self.payslip,
+                self.payslip.payment_date,
+                self.payslip.date_from,
+                self.payslip.date_to,
+                faulty_control=3,
+            )
+        with self.assertRaises(UserError):
+            self.payslip._generate_ir_report_xml(
+                self.payslip,
+                self.payslip.payment_date,
+                self.payslip.date_from,
+                self.payslip.date_to,
+                delivery_id="x" * 41,
+            )
+
+    def test_single_payslip_keeps_one_individual_entry(self):
+        """Generating one payslip twice still stores a single individual entry."""
+        self.payslip.payment_date = date(2025, 5, 25)
+        Entry = self.env["l10n_fi.income.register.entry"]
+        with patch(
+            "odoo.addons.base.models.ir_ui_view.View._render_template"
+        ) as mocked:
+            mocked.return_value = "<root>Payslip XML</root>"
+            self.payslip.action_incomes_register_report()
+            self.payslip.action_incomes_register_report()
+        entries = Entry.search(
+            [
+                ("payslip_id", "=", self.payslip.id),
+                ("report_type", "=", "individual"),
+            ]
+        )
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries.payslip_ids, self.payslip)
+
+    def test_multi_selection_creates_one_entry_per_generation(self):
+        """A multi-payslip selection stores one batch entry, not one per payslip."""
+        employee = self._create_employee("Second Employee")
+        other = self._create_payslip(
+            employee, date(2025, 5, 1), date(2025, 5, 31), date(2025, 5, 25)
+        )
+        self.payslip.payment_date = date(2025, 5, 25)
+        payslips = self.payslip | other
+        Entry = self.env["l10n_fi.income.register.entry"]
+        with patch(
+            "odoo.addons.base.models.ir_ui_view.View._render_template"
+        ) as mocked:
+            mocked.return_value = "<root>Combined XML</root>"
+            payslips.action_incomes_register_report()
+        entries = Entry.search(
+            [
+                ("report_type", "=", "batch"),
+                ("payslip_run_id", "=", False),
+                ("payslip_ids", "in", payslips.ids),
+            ]
+        )
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries.payslip_ids, payslips)
+        self.assertFalse(
+            Entry.search(
+                [
+                    ("report_type", "=", "individual"),
+                    ("payslip_id", "in", payslips.ids),
+                ]
+            )
+        )
+
+    def test_batch_entry_links_slip_ids(self):
+        """A payslip batch entry contains the payslips of the batch."""
+        with patch(
+            "odoo.addons.base.models.ir_ui_view.View._render_template"
+        ) as mocked:
+            mocked.return_value = "<root>Batch XML</root>"
+            self.payslip_run.action_incomes_register_report()
+        entry = self.env["l10n_fi.income.register.entry"].search(
+            [
+                ("payslip_run_id", "=", self.payslip_run.id),
+                ("report_type", "=", "batch"),
+            ]
+        )
+        self.assertEqual(len(entry), 1)
+        self.assertEqual(entry.payslip_ids, self.payslip_run.slip_ids)
+
+    def test_generated_xml_matches_incomes_register_schema(self):
+        """The earnings payment report validates against WageReportsToIR.xsd.
+
+        Text and identifier values must not include the template indentation.
+        The schema counts that whitespace towards String30 and String40.
+        """
+        self.employee.ssnid = "010101-123A"
+        report = etree.fromstring(str(self._generate_payslip_xml(self.payslip)))
+        schema_path = Path(__file__).parent / "xsd" / "WageReportsToIR.xsd"
+        schema = etree.XMLSchema(etree.parse(str(schema_path)))
+        schema.assertValid(report)

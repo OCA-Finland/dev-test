@@ -64,6 +64,7 @@
                 <field name="date_from" string="Period From" />
                 <field name="date_to" string="Period To" />
                 <field name="generated_at" string="Generated On" />
+                <field name="payslip_count" string="Payslips" />
                 <field
                     name="report"
                     widget="binary"

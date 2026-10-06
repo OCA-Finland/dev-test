@@ -8,88 +8,60 @@
             xsi:schemaLocation="http://www.tulorekisteri.fi/2017/1/WageReportsToIR WageReportsToIR.xsd"
         >
             <DeliveryData>
-                <Timestamp>
-                    <t t-out="timestamp" />
-                </Timestamp>
-                <Source>
-                    <t t-out="source" />
-                </Source>
+                <Timestamp t-out="timestamp" />
+                <Source t-out="source" />
                 <DeliveryDataType>100</DeliveryDataType>
-                <DeliveryId>
-                    <t t-out="delivery_id" />
-                </DeliveryId>
-                <FaultyControl>2</FaultyControl>
-                <ProductionEnvironment>true</ProductionEnvironment>
+                <DeliveryId t-out="delivery_id" />
+                <FaultyControl t-out="faulty_control" />
+                <ProductionEnvironment t-out="production_environment" />
                 <DeliveryDataOwner>
                     <Type>1</Type>
-                    <Code>
-                        <t t-out="company_register_number" />
-                    </Code>
+                    <Code t-out="company_register_number" />
                 </DeliveryDataOwner>
                 <DeliveryDataCreator>
                     <Type>1</Type>
-                    <Code>
-                        <t t-out="company_register_number" />
-                    </Code>
+                    <Code t-out="company_register_number" />
                 </DeliveryDataCreator>
                 <DeliveryDataSender>
                     <Type>1</Type>
-                    <Code>
-                        <t t-out="company_register_number" />
-                    </Code>
+                    <Code t-out="company_register_number" />
                 </DeliveryDataSender>
                 <PaymentPeriod>
-                    <PaymentDate>
-                        <t t-out="payment_period_date_payment" />
-                    </PaymentDate>
-                    <StartDate>
-                        <t t-out="payment_period_date_from" />
-                    </StartDate>
-                    <EndDate>
-                        <t t-out="payment_period_date_to" />
-                    </EndDate>
+                    <PaymentDate t-out="payment_period_date_payment" />
+                    <StartDate t-out="payment_period_date_from" />
+                    <EndDate t-out="payment_period_date_to" />
                 </PaymentPeriod>
                 <ContactPersons>
                     <ContactPerson>
-                        <Name>
-                            <t t-out="contact_person.name" />
-                        </Name>
-                        <Telephone>
-                            <t t-out="contact_person.phone or contact_person.mobile" />
-                        </Telephone>
-                        <Email>
-                            <t t-out="contact_person.email" />
-                        </Email>
+                        <Name t-out="contact_person.name" />
+                        <Telephone
+                            t-out="contact_person.phone or contact_person.mobile"
+                        />
+                        <Email t-out="contact_person.email" />
                     </ContactPerson>
                 </ContactPersons>
                 <Payer>
                     <PayerIds>
                         <Id>
                             <Type>1</Type>
-                            <Code>
-                                <t t-out="company_register_number" />
-                            </Code>
+                            <Code t-out="company_register_number" />
                         </Id>
                     </PayerIds>
                 </Payer>
                 <Reports>
-                    <t t-foreach="payslips" t-as="payslip" t-key="payslip.id">
+                    <t t-foreach="payslips" t-as="payslip">
                         <t t-set="contract" t-value="payslip.contract_id" />
                         <t t-set="employee" t-value="payslip.employee_id" />
                         <Report>
                             <ReportData>
                                 <ActionCode>1</ActionCode>
-                                <ReportId>
-                                    <t t-out="'%s_%s' % (delivery_id, payslip.id)" />
-                                </ReportId>
+                                <ReportId t-out="payslip.l10n_fi_ir_report_ref" />
                             </ReportData>
                             <IncomeEarner>
                                 <IncomeEarnerIds>
                                     <Id>
                                         <Type>2</Type>
-                                        <Code>
-                                            <t t-out="employee.ssnid" />
-                                        </Code>
+                                        <Code t-out="employee.ssnid" />
                                     </Id>
                                 </IncomeEarnerIds>
                                 <Employment>
@@ -105,81 +77,66 @@
                                     </PaymentTypes>
                                     <EmploymentPeriods>
                                         <Period>
-                                            <StartDate>
-                                                <t t-out="contract.date_start" />
-                                            </StartDate>
+                                            <StartDate t-out="contract.date_start" />
                                         </Period>
                                     </EmploymentPeriods>
                                 </Employment>
                                 <Professions t-if="contract.l10n_fi_tk10_code_id">
                                     <Profession>
                                         <Type>1</Type>
-                                        <Code>
-                                            <t
-                                                t-out="contract.l10n_fi_tk10_code_id.code"
-                                            />
-                                        </Code>
-                                        <Title>
-                                            <t
-                                                t-out="contract.l10n_fi_tk10_code_id.name"
-                                            />
-                                        </Title>
+                                        <Code
+                                            t-out="contract.l10n_fi_tk10_code_id.code"
+                                        />
+                                        <Title
+                                            t-out="contract.l10n_fi_tk10_code_id.name"
+                                        />
                                     </Profession>
                                 </Professions>
                                 <PlaceOfBusiness t-if="employee.address_id">
-                                    <Street>
-                                        <t t-out="employee.address_id.street" />
-                                    </Street>
-                                    <PostalCode>
-                                        <t t-out="employee.address_id.zip" />
-                                    </PostalCode>
-                                    <PostOffice>
-                                        <t t-out="employee.address_id.city" />
-                                    </PostOffice>
+                                    <Street
+                                        t-if="employee.address_id.street"
+                                        t-out="employee.address_id.street"
+                                    />
+                                    <PostalCode
+                                        t-if="employee.address_id.zip"
+                                        t-out="employee.address_id.zip"
+                                    />
+                                    <PostOffice
+                                        t-if="employee.address_id.city"
+                                        t-out="employee.address_id.city"
+                                    />
                                 </PlaceOfBusiness>
                                 <PensionInsurance
                                     t-if="contract.l10n_fi_pension_insurance_type"
                                 >
-                                    <PensionActCode>
-                                        <t
-                                            t-out="contract.l10n_fi_pension_insurance_type"
-                                        />
-                                    </PensionActCode>
+                                    <PensionActCode
+                                        t-out="contract.l10n_fi_pension_insurance_type"
+                                    />
                                     <t t-if="contract.l10n_fi_pension_provider_id">
-                                        <PensionProvIdCode>
-                                            <t
-                                                t-out="contract.l10n_fi_pension_provider_id.code"
-                                            />
-                                        </PensionProvIdCode>
+                                        <PensionProvIdCode
+                                            t-out="contract.l10n_fi_pension_provider_id.code"
+                                        />
                                     </t>
                                     <t t-if="contract.l10n_pension_policy_no">
-                                        <PensionPolicyNo>
-                                            <t
-                                                t-out="contract.l10n_pension_policy_no"
-                                            />
-                                        </PensionPolicyNo>
+                                        <PensionPolicyNo
+                                            t-out="contract.l10n_pension_policy_no"
+                                        />
                                     </t>
                                 </PensionInsurance>
                                 <AccidentInsurance
                                     t-if="contract.l10n_fi_accident_insurance_type"
                                 >
                                     <AccInsProvId>
-                                        <Type>
-                                            <t
-                                                t-out="contract.l10n_fi_accident_insurance_type"
-                                            />
-                                        </Type>
-                                        <Code>
-                                            <t
-                                                t-out="contract.l10n_fi_accident_insurance_code"
-                                            />
-                                        </Code>
-                                    </AccInsProvId>
-                                    <AccInsPolicyNo>
-                                        <t
-                                            t-out="contract.l10n_fi_accident_insurance_policy_no"
+                                        <Type
+                                            t-out="contract.l10n_fi_accident_insurance_type"
                                         />
-                                    </AccInsPolicyNo>
+                                        <Code
+                                            t-out="contract.l10n_fi_accident_insurance_code"
+                                        />
+                                    </AccInsProvId>
+                                    <AccInsPolicyNo
+                                        t-out="contract.l10n_fi_accident_insurance_policy_no"
+                                    />
                                 </AccidentInsurance>
                                 <InsuranceExceptions
                                     t-if="contract.l10n_fi_insurance_exception_ids"
@@ -187,78 +144,61 @@
                                     <t
                                         t-foreach="contract.l10n_fi_insurance_exception_ids"
                                         t-as="exception"
-                                        t-key="exception.id"
                                     >
-                                        <ExceptionCode>
-                                            <t t-out="exception.code" />
-                                        </ExceptionCode>
+                                        <ExceptionCode t-out="exception.code" />
                                     </t>
                                 </InsuranceExceptions>
                             </IncomeEarner>
-                            <Transactions>
-                                <t
-                                    t-foreach="payslip.line_ids.filtered(lambda line: line.appears_on_payslip and line.total and str(line.l10n_fi_code).isnumeric())"
-                                    t-as="line"
-                                    t-key="line.id"
-                                >
+                            <t
+                                t-set="ir_lines"
+                                t-value="payslip.line_ids.filtered(lambda line: line.appears_on_payslip and line.total and str(line.l10n_fi_code).isnumeric())"
+                            />
+                            <Transactions t-if="ir_lines">
+                                <t t-foreach="ir_lines" t-as="line">
                                     <Transaction>
                                         <TransactionBasic>
-                                            <TransactionCode>
-                                                <t t-out="line.l10n_fi_code" />
-                                            </TransactionCode>
-                                            <Amount>
-                                                <t t-out="line.total" />
-                                            </Amount>
+                                            <TransactionCode
+                                                t-out="line.l10n_fi_code"
+                                            />
+                                            <Amount t-out="line.total" />
                                         </TransactionBasic>
                                         <EarningPeriods
                                             t-if="line.l10n_fi_code == '201'"
                                         >
                                             <EarningPeriod>
-                                                <StartDate>
-                                                    <t
-                                                        t-out="payment_period_date_from"
-                                                    />
-                                                </StartDate>
-                                                <EndDate>
-                                                    <t t-out="payment_period_date_to" />
-                                                </EndDate>
+                                                <StartDate
+                                                    t-out="payment_period_date_from"
+                                                />
+                                                <EndDate
+                                                    t-out="payment_period_date_to"
+                                                />
                                             </EarningPeriod>
                                         </EarningPeriods>
                                         <UnitWages t-if="line.code == '201_H'">
                                             <UnitWage>
-                                                <UnitPrice>
-                                                    <t
-                                                        t-out="contract.l10n_fi_hourly_rate"
-                                                    />
-                                                </UnitPrice>
-                                                <UnitAmount>
-                                                    <t
-                                                        t-out="int(line.aggregated_amount)"
-                                                    />
-                                                </UnitAmount>
+                                                <UnitPrice
+                                                    t-out="contract.l10n_fi_hourly_rate"
+                                                />
+                                                <UnitAmount
+                                                    t-out="int(line.aggregated_amount)"
+                                                />
                                                 <UnitCode>1</UnitCode>
                                             </UnitWage>
                                         </UnitWages>
                                         <KmAllowance
                                             t-if="line.aggregated_amount and line.aggregated_uom_id.name == 'km' and line.code == '311'"
                                         >
-                                            <Kilometers>
-                                                <t
-                                                    t-out="int(line.aggregated_amount)"
-                                                />
-                                            </Kilometers>
+                                            <Kilometers
+                                                t-out="int(line.aggregated_amount)"
+                                            />
                                         </KmAllowance>
                                         <CarBenefit t-if="line.code == '304'">
-                                            <CarBenefitCode>
-                                                <t
-                                                    t-out="contract.l10n_fi_benefit_car_type"
-                                                />
-                                            </CarBenefitCode>
-                                            <AgeGroupCode>
-                                                <t
-                                                    t-out="contract.l10n_fi_benefit_car_age_group"
-                                                />
-                                            </AgeGroupCode>
+                                            <CarBenefitCode
+                                                t-out="contract.l10n_fi_benefit_car_type"
+                                            />
+                                            <AgeGroupCode
+                                                t-out="contract.l10n_fi_benefit_car_age_group"
+                                            />
                                         </CarBenefit>
                                         <DailyAllowance t-if="line.code == '331'">
                                             <AllowanceCode>2</AllowanceCode>

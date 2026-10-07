@@ -151,7 +151,7 @@
                             </IncomeEarner>
                             <t
                                 t-set="ir_lines"
-                                t-value="payslip.line_ids.filtered(lambda line: line.appears_on_payslip and line.total and str(line.l10n_fi_code).isnumeric())"
+                                t-value="payslip._l10n_fi_get_ir_lines()"
                             />
                             <Transactions t-if="ir_lines">
                                 <t t-foreach="ir_lines" t-as="line">

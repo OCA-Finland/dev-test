@@ -647,3 +647,72 @@ class TestIncomeRegisterReport(TransactionCase):
         schema_path = Path(__file__).parent / "xsd" / "WageReportsToIR.xsd"
         schema = etree.XMLSchema(etree.parse(str(schema_path)))
         schema.assertValid(report)
+
+    def test_generated_xml_full_report_matches_schema(self):
+        """Every optional branch of the earnings payment report is schema-valid.
+
+        The payslip has a computed hourly line, a work address, a profession,
+        pension and accident insurance, and one insurance exception.
+        """
+        employee = self._create_employee("Full Report Employee")
+        employee.ssnid = "010101-123A"
+        employee.address_id = self.env["res.partner"].create(
+            {
+                "name": "Work site",
+                "street": "Testikatu 1",
+                "zip": "00100",
+                "city": "Helsinki",
+            }
+        )
+        structure = self.env["hr.payroll.structure"].create(
+            {"name": "Hourly IR structure"}
+        )
+        category = self.env["hr.salary.rule.category"].search(
+            [("code", "=", "Palkka")], limit=1
+        )
+        rule = self.env["hr.salary.rule"].create(
+            {
+                "name": "Hourly wage",
+                "code": "201_H",
+                "category_id": category.id,
+                "amount_select": "fix",
+                "amount_fix": 1500.0,
+                "appears_on_payslip": True,
+            }
+        )
+        structure.rule_ids = rule
+        contract = self._create_contract(employee)
+        contract.write(
+            {
+                "wage_type": "hourly",
+                "l10n_fi_hourly_rate": 15.5,
+                "struct_id": structure.id,
+                "l10n_fi_tk10_code_id": self.env["l10n.fi.payroll.tk10.code"]
+                .create({"name": "Tester", "code": "12345"})
+                .id,
+                "l10n_fi_pension_insurance_type": "1",
+                "l10n_fi_pension_provider_id": self.env.ref(
+                    "l10n_fi_payroll_community.l10n_fi_pension_provider_10"
+                ).id,
+                "l10n_pension_policy_no": "POL1234567",
+                "l10n_fi_accident_insurance_type": "1",
+                "l10n_fi_accident_insurance_code": "1234567-8",
+                "l10n_fi_accident_insurance_policy_no": "ACC1234567",
+                "l10n_fi_insurance_exception_ids": [
+                    (4, self.env.ref("l10n_fi_payroll_community.exception_1").id)
+                ],
+            }
+        )
+        payslip = self._create_payslip(
+            employee,
+            date(2025, 5, 1),
+            date(2025, 5, 31),
+            date(2025, 5, 25),
+            contract=contract,
+        )
+        payslip.struct_id = structure
+        payslip.compute_sheet()
+        report = etree.fromstring(str(self._generate_payslip_xml(payslip)))
+        schema_path = Path(__file__).parent / "xsd" / "WageReportsToIR.xsd"
+        schema = etree.XMLSchema(etree.parse(str(schema_path)))
+        schema.assertValid(report)

@@ -116,10 +116,38 @@ class TestIncomeRegisterReport(TransactionCase):
             }
         )
 
+    def _add_reportable_line(self, payslip):
+        """Give a payslip one line the Incomes Register report can include.
+
+        :param hr.payslip payslip: payslip that must have a reportable line
+        :return: created payslip line
+        :rtype: hr.payslip.line
+        """
+        rule = self.env["hr.salary.rule"].create(
+            {
+                "name": "Reportable wage",
+                "code": "201",
+                "appears_on_payslip": True,
+            }
+        )
+        return self.env["hr.payslip.line"].create(
+            {
+                "name": "Reportable wage",
+                "code": "201",
+                "slip_id": payslip.id,
+                "salary_rule_id": rule.id,
+                "employee_id": payslip.employee_id.id,
+                "contract_id": payslip.contract_id.id,
+                "appears_on_payslip": True,
+                "amount": 100.0,
+            }
+        )
+
     def test_payslip_action_incomes_register_report(self):
         """
         Test XML report generation and action return for a single payslip.
         """
+        self._add_reportable_line(self.payslip)
         with patch(
             "odoo.addons.base.models.ir_ui_view.View._render_template"
         ) as mock_render:
@@ -150,6 +178,7 @@ class TestIncomeRegisterReport(TransactionCase):
         Test XML report generation for a batch, propagation to payslips,
         and action return.
         """
+        self._add_reportable_line(self.payslip)
         with patch(
             "odoo.addons.base.models.ir_ui_view.View._render_template"
         ) as mock_render:
@@ -252,6 +281,8 @@ class TestIncomeRegisterReport(TransactionCase):
         )
 
         payslips = payslip1 | payslip2 | payslip3
+        for payslip in payslips:
+            self._add_reportable_line(payslip)
 
         with patch(
             "odoo.addons.base.models.ir_ui_view.View._render_template"
@@ -411,6 +442,7 @@ class TestIncomeRegisterReport(TransactionCase):
         payslip = self._create_payslip(
             employee, date(2025, 6, 1), date(2025, 6, 30), date(2025, 7, 5)
         )
+        self._add_reportable_line(payslip)
 
         with patch(
             "odoo.addons.base.models.ir_ui_view.View._render_template"
@@ -440,6 +472,8 @@ class TestIncomeRegisterReport(TransactionCase):
         payslip2 = self._create_payslip(
             employee2, date(2025, 6, 1), date(2025, 6, 30), date(2025, 7, 5)
         )
+        self._add_reportable_line(payslip1)
+        self._add_reportable_line(payslip2)
 
         payslips = payslip1 | payslip2
 
@@ -572,6 +606,7 @@ class TestIncomeRegisterReport(TransactionCase):
     def test_single_payslip_keeps_one_individual_entry(self):
         """Generating one payslip twice still stores a single individual entry."""
         self.payslip.payment_date = date(2025, 5, 25)
+        self._add_reportable_line(self.payslip)
         Entry = self.env["l10n_fi.income.register.entry"]
         with patch(
             "odoo.addons.base.models.ir_ui_view.View._render_template"
@@ -596,6 +631,8 @@ class TestIncomeRegisterReport(TransactionCase):
         )
         self.payslip.payment_date = date(2025, 5, 25)
         payslips = self.payslip | other
+        self._add_reportable_line(self.payslip)
+        self._add_reportable_line(other)
         Entry = self.env["l10n_fi.income.register.entry"]
         with patch(
             "odoo.addons.base.models.ir_ui_view.View._render_template"
@@ -622,6 +659,7 @@ class TestIncomeRegisterReport(TransactionCase):
 
     def test_batch_entry_links_slip_ids(self):
         """A payslip batch entry contains the payslips of the batch."""
+        self._add_reportable_line(self.payslip)
         with patch(
             "odoo.addons.base.models.ir_ui_view.View._render_template"
         ) as mocked:
@@ -716,3 +754,37 @@ class TestIncomeRegisterReport(TransactionCase):
         schema_path = Path(__file__).parent / "xsd" / "WageReportsToIR.xsd"
         schema = etree.XMLSchema(etree.parse(str(schema_path)))
         schema.assertValid(report)
+
+    def test_action_rejects_payslip_without_reportable_lines(self):
+        """A payslip with nothing to report is named in the error."""
+        self.payslip.payment_date = date(2025, 5, 25)
+        with self.assertRaises(UserError) as caught:
+            self.payslip.action_incomes_register_report()
+        self.assertIn(self.payslip.name, str(caught.exception))
+
+    def test_action_rejects_every_payslip_without_reportable_lines(self):
+        """One error lists every payslip in the selection that has no lines."""
+        self.payslip.payment_date = date(2025, 5, 25)
+        other = self._create_payslip(
+            self._create_employee("Empty Employee"),
+            date(2025, 5, 1),
+            date(2025, 5, 31),
+            date(2025, 5, 25),
+        )
+        with self.assertRaises(UserError) as caught:
+            (self.payslip | other).action_incomes_register_report()
+        message = str(caught.exception)
+        self.assertIn(self.payslip.name, message)
+        self.assertIn(other.name, message)
+        self.assertIn(other.employee_id.name, message)
+
+    def test_action_accepts_payslip_with_reportable_lines(self):
+        """A payslip with a numeric Incomes Register line can be reported."""
+        self.payslip.payment_date = date(2025, 5, 25)
+        self._add_reportable_line(self.payslip)
+        with patch(
+            "odoo.addons.base.models.ir_ui_view.View._render_template"
+        ) as mocked:
+            mocked.return_value = "<root>Payslip XML</root>"
+            self.payslip.action_incomes_register_report()
+        self.assertTrue(self.payslip.l10n_fi_incomes_register_report)

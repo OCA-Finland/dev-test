@@ -22,7 +22,12 @@ class HrPayslip(models.Model):
         default=lambda self: fields.Date.today(),
     )
     l10n_fi_incomes_register_report = fields.Binary(
-        string="Income Register Report", readonly=True
+        string="Income Register Report",
+        readonly=True,
+        help=(
+            "The file contains every payslip generated together with this one. "
+            "Upload it once, or use the Incomes Register entry list."
+        ),
     )
     l10n_fi_incomes_register_report_filename = fields.Char(
         string="IR Report", readonly=True
@@ -148,6 +153,22 @@ class HrPayslip(models.Model):
             self.l10n_fi_ir_report_ref = f"{dbuuid[:8]}-{self.id}"
         return self.l10n_fi_ir_report_ref
 
+    def _l10n_fi_get_ir_lines(self):
+        """Return payslip lines that belong on an earnings payment report.
+
+        A line is reportable when it is shown on the payslip, has a total,
+        and its Incomes Register code is numeric.
+
+        :return: reportable payslip lines
+        :rtype: hr.payslip.line recordset
+        """
+        self.ensure_one()
+        return self.line_ids.filtered(
+            lambda line: line.appears_on_payslip
+            and line.total
+            and str(line.l10n_fi_code).isnumeric()
+        )
+
     def action_incomes_register_report(self):
         if not self:
             return {"type": "ir.actions.act_window_close"}
@@ -165,6 +186,7 @@ class HrPayslip(models.Model):
         self._validate_date_consistency(valid_payslips)
         for company in valid_payslips.company_id:
             self._validate_ir_company_data(company)
+        self._validate_ir_payslip_lines(valid_payslips)
 
         date_from = min(valid_payslips.mapped("date_from"))
         date_to = max(valid_payslips.mapped("date_to"))

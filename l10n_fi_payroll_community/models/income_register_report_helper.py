@@ -150,6 +150,36 @@ class IncomeRegisterReportHelper(models.AbstractModel):
         if errors:
             raise UserError("\n".join(errors))
 
+    def _validate_ir_payslip_lines(self, payslips):
+        """Reject a report when a payslip has no lines to send.
+
+        Every payslip without a reportable line is listed in one error so
+        the user can fix the selection together.
+
+        :param hr.payslip payslips: payslips selected for the report
+        :return: ``None``
+        :rtype: None
+        :raises UserError: one or more payslips have no reportable lines
+        """
+        missing = payslips.filtered(lambda payslip: not payslip._l10n_fi_get_ir_lines())
+        if not missing:
+            return
+        details = "\n".join(
+            self.env._(
+                "%(payslip)s (%(employee)s)",
+                payslip=payslip.name,
+                employee=payslip.employee_id.name,
+            )
+            for payslip in missing
+        )
+        raise UserError(
+            self.env._(
+                "Cannot generate an Incomes Register report. "
+                "These payslips have no reportable lines:\n%(payslips)s",
+                payslips=details,
+            )
+        )
+
     def _generate_ir_filename(self, identifier, timestamp=None):
         """
         Generate a standardized filename for Income Register reports.

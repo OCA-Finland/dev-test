@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="l10n_fi_ir_submission_view_list" model="ir.ui.view">
+        <field name="name">l10n_fi.ir.submission.list</field>
+        <field name="model">l10n_fi.ir.submission</field>
+        <field name="arch" type="xml">
+            <list create="false" delete="false">
+                <field name="name" />
+                <field name="company_id" groups="base.group_multi_company" />
+                <field name="environment" />
+                <field name="delivery_id" />
+                <field name="payment_date" />
+                <field name="date_from" />
+                <field name="date_to" />
+                <field name="payslip_count" />
+                <field
+                    name="state"
+                    widget="badge"
+                    decoration-info="state in ('queued', 'sending', 'received')"
+                    decoration-success="state == 'valid'"
+                    decoration-warning="state in ('uncertain', 'needs_check', 'partially_rejected')"
+                    decoration-danger="state in ('rejected', 'error')"
+                />
+            </list>
+        </field>
+    </record>
+    <record id="l10n_fi_ir_submission_view_form" model="ir.ui.view">
+        <field name="name">l10n_fi.ir.submission.form</field>
+        <field name="model">l10n_fi.ir.submission</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false" delete="false">
+                <header>
+                    <button
+                        name="action_check_status"
+                        type="object"
+                        string="Check status"
+                        invisible="state not in ('uncertain', 'needs_check')"
+                    />
+                    <button
+                        name="action_mark_not_received"
+                        type="object"
+                        string="Mark as not received"
+                        invisible="state not in ('uncertain', 'needs_check')"
+                        groups="payroll.group_payroll_manager"
+                    />
+                    <button
+                        name="action_resend"
+                        type="object"
+                        string="Resend"
+                        invisible="state != 'not_received'"
+                    />
+                    <field
+                        name="state"
+                        widget="statusbar"
+                        statusbar_visible="queued,sending,received,valid"
+                    />
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                            name="action_open_payslips"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-money"
+                        >
+                            <field
+                                name="payslip_count"
+                                widget="statinfo"
+                                string="Payslips"
+                            />
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" />
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="backend_id" />
+                            <field
+                                name="company_id"
+                                groups="base.group_multi_company"
+                            />
+                            <field name="environment" />
+                            <field name="delivery_id" />
+                            <field name="ir_delivery_id" />
+                        </group>
+                        <group>
+                            <field name="payment_date" />
+                            <field name="date_from" />
+                            <field name="date_to" />
+                            <field name="sent_at" />
+                            <field name="http_status" />
+                            <field name="next_poll_at" />
+                            <field name="poll_count" />
+                        </group>
+                    </group>
+                    <group>
+                        <field name="error_message" />
+                        <field name="request_attachment_id" />
+                        <field name="ack_attachment_id" />
+                        <field name="status_attachment_id" />
+                    </group>
+                    <field name="line_ids">
+                        <list>
+                            <field name="payslip_id" />
+                            <field name="report_ref" />
+                            <field name="state" />
+                            <field name="payslip_locked" />
+                        </list>
+                    </field>
+                </sheet>
+                <chatter />
+            </form>
+        </field>
+    </record>
+    <record id="l10n_fi_ir_submission_view_search" model="ir.ui.view">
+        <field name="name">l10n_fi.ir.submission.search</field>
+        <field name="model">l10n_fi.ir.submission</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" />
+                <field name="delivery_id" />
+                <field name="ir_delivery_id" />
+                <filter
+                    name="open"
+                    string="In progress"
+                    domain="[('state', 'in', ['queued', 'sending', 'received', 'uncertain', 'needs_check'])]"
+                />
+                <filter
+                    name="error"
+                    string="Error"
+                    domain="[('state', '=', 'error')]"
+                />
+            </search>
+        </field>
+    </record>
+    <record id="action_l10n_fi_ir_submission" model="ir.actions.act_window">
+        <field name="name">Submissions</field>
+        <field name="res_model">l10n_fi.ir.submission</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="l10n_fi_ir_submission_view_search" />
+    </record>
+</odoo>

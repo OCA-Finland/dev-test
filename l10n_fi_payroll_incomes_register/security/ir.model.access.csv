@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_l10n_fi_ir_backend_user,l10n_fi.ir.backend.user,model_l10n_fi_ir_backend,payroll.group_payroll_user,1,0,0,0
+access_l10n_fi_ir_backend_manager,l10n_fi.ir.backend.manager,model_l10n_fi_ir_backend,payroll.group_payroll_manager,1,1,1,1
+access_l10n_fi_ir_submission_user,l10n_fi.ir.submission.user,model_l10n_fi_ir_submission,payroll.group_payroll_user,1,1,1,0
+access_l10n_fi_ir_submission_manager,l10n_fi.ir.submission.manager,model_l10n_fi_ir_submission,payroll.group_payroll_manager,1,1,1,1
+access_l10n_fi_ir_submission_line_user,l10n_fi.ir.submission.line.user,model_l10n_fi_ir_submission_line,payroll.group_payroll_user,1,1,1,0
+access_l10n_fi_ir_submission_line_manager,l10n_fi.ir.submission.line.manager,model_l10n_fi_ir_submission_line,payroll.group_payroll_manager,1,1,1,1
+access_l10n_fi_ir_send_wizard_user,l10n_fi.ir.send.wizard.user,model_l10n_fi_ir_send_wizard,payroll.group_payroll_user,1,1,1,1
+access_l10n_fi_ir_not_received_wizard_manager,l10n_fi.ir.not.received.wizard.manager,model_l10n_fi_ir_not_received_wizard,payroll.group_payroll_manager,1,1,1,1

@@ -1,2 +1,5 @@
 # generated from manifests external_dependencies
+cryptography
 python-dateutil
+xmlsig
+zeep

@@ -293,6 +293,67 @@ class TestVeroCredentials(TransactionCase):
             self.backend.write({'environment': 'production'})
         self.assertEqual(self.backend.api_root, original)
 
+    def test_unsupported_dependencies_block_install_and_upgrade(self):
+        with patch.object(c.metadata, 'version', return_value='3.2.2'):
+            with self.assertRaisesRegex(UserError, 'signxml=3.2.2'):
+                self.backend.init()
+
+    def test_old_dependencies_keep_screen_available_but_prevent_side_effects(self):
+        versions = {'signxml': '3.2.2', 'cryptography': '41.0.7',
+                    'pyOpenSSL': '23.2.0', 'lxml': '5.2.1'}
+        directory = self.backend._credential_store()
+        before = {p.name for p in directory.iterdir()}
+        with patch.object(c.metadata, 'version', side_effect=versions.__getitem__), \
+                patch.object(c, 'call_pki') as call, \
+                patch.object(c.rsa, 'generate_private_key') as generate, \
+                patch.object(type(self.backend), '_call') as api_call:
+            for operation in ('submit', 'retrieve', 'activate', 'test_connection'):
+                with self.subTest(operation=operation), self.assertRaisesRegex(c.CredentialError, 'signxml=3.2.2'):
+                    self.backend._credential_operation(operation, {'transfer_id': 'fixture-transfer', 'transfer_password': 'Password123'})
+            self.assertEqual({p.name for p in directory.iterdir()}, before)
+            info = self.backend._credential_operation('status', {})
+            self.assertEqual(info['enrollment']['phase'], 'blocked')
+            self.assertIn('cryptography=41.0.7', info['enrollment']['message'])
+            self.assertIn('requirements-vero.txt', info['enrollment']['message'])
+            call.assert_not_called()
+            generate.assert_not_called()
+            api_call.assert_not_called()
+
+    def test_dependency_error_precedes_response_parsing_and_network(self):
+        with patch.object(c.metadata, 'version', return_value='3.2.2'), \
+                patch.object(c.requests, 'Session') as session:
+            with self.assertRaisesRegex(c.CredentialError, 'dependencies'):
+                c.verified_response(b'not XML', 'SignNewCertificate', 'test')
+            with self.assertRaisesRegex(c.CredentialError, 'dependencies'):
+                c.call_pki('SignNewCertificate', [], 'test', Path(self.directory.name) / 'response.xml')
+            with self.assertRaisesRegex(c.CredentialError, 'dependencies'):
+                self.submit()
+            session.assert_not_called()
+            self.assertFalse((self.backend._credential_store() / 'enrollment.json').exists())
+
+    def test_dependency_ranges_missing_packages_and_prereleases(self):
+        versions = {name: bounds[0] for name, bounds in c.DEPENDENCY_VERSIONS.items()}
+        with patch.object(c.metadata, 'version', side_effect=versions.__getitem__):
+            c.check_dependencies()
+            for name, bounds in c.DEPENDENCY_VERSIONS.items():
+                for bad_version in (bounds[1], bounds[0] + 'rc1', 'invalid-version'):
+                    versions[name] = bad_version
+                    with self.subTest(package=name, version=bad_version), self.assertRaises(c.CredentialError):
+                        c.check_dependencies()
+                versions[name] = bounds[0]
+        with patch.object(c.metadata, 'version', side_effect=c.metadata.PackageNotFoundError('signxml')):
+            with self.assertRaisesRegex(c.CredentialError, 'signxml=-'):
+                c.check_dependencies()
+
+    def test_dependency_error_is_localized_and_matches_requirements_file(self):
+        requirements = (Path(__file__).parents[1] / 'requirements-vero.txt').read_text()
+        for name, (minimum, maximum) in c.DEPENDENCY_VERSIONS.items():
+            self.assertIn(f'{name}>={minimum},<{maximum}', requirements.splitlines())
+        with patch.object(c.metadata, 'version', return_value='3.2.2'):
+            info = self.backend.with_context(lang='fi_FI')._credential_operation('status', {})
+            self.assertIn('Python-riippuvuudet', info['enrollment']['message'])
+            self.assertIn('signxml=3.2.2', info['enrollment']['message'])
+
     def test_credentials_not_persisted_in_enrollment(self):
         with patch.object(c, 'call_pki', side_effect=self.pki):
             self.submit()

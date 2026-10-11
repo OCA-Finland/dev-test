@@ -3623,3 +3623,21 @@ msgstr ""
 "tallennettu vastaus uudelleen Päivitä tila -painikkeella. Älä poista "
 "yhteyttä tai aloita uutta pyyntöä samoilla siirtotunnuksilla. Voit edelleen "
 "hallita ohjelmisto-API-avainta ja palata yhteyden asetuksiin."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/vero_credentials.py:0
+msgid ""
+"Vero API Python dependencies are missing or unsupported: %s. Each entry "
+"shows the installed version and required range; \"-\" means not installed. "
+"Ask your administrator to install requirements-vero.txt in the Python "
+"environment used by Odoo, resolve any errors reported by python -m pip "
+"check, and restart Odoo. Keep the current certificate request and its files,"
+" then refresh its status."
+msgstr ""
+"Vero API:n Python-riippuvuudet puuttuvat tai niiden versioita ei tueta: %s. "
+"Kukin kohta näyttää asennetun version ja vaaditun versioalueen; \"-\" "
+"tarkoittaa puuttuvaa kirjastoa. Pyydä ylläpitäjää asentamaan requirements-"
+"vero.txt Odoon käyttämään Python-ympäristöön, selvittämään komennon python "
+"-m pip check ilmoittamat virheet ja käynnistämään Odoo uudelleen. Säilytä "
+"nykyinen varmennepyyntö ja sen tiedostot ja päivitä sitten sen tila."

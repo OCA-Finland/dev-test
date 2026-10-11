@@ -14,6 +14,28 @@ lähetetään itsenäisesti. Yhteenvetoilmoituksen kohde on aina kalenterikuukau
 Kaikki Vero-toiminnot edellyttävät ryhmää `account.group_account_user`;
 `account.group_account_readonly` ei riitä.
 
+## Riippuvuuksien versiotarkistus (18.0.1.4.2)
+
+Moduulin asennus ja päivitys tarkistavat Python-kirjastojen tuetut versiot.
+Sama tarkistus tehdään ennen varmenteen noutopyyntöä, vastauksen tarkistusta
+ja käyttöönottoa. Virhe kertoo löytyneet versiot ja vaaditut versiorajat.
+Väärillä kirjastoilla kertakäyttötunnuksia ei lähetetä eikä uutta avainta luoda.
+Jo käytössä olevan asennuksen avainnäkymä näyttää ohjeen tilassa
+**Vaatii selvitystä**; nykyinen noutopyyntö ja tiedostot säilytetään.
+
+Ylläpitäjä asentaa riippuvuudet Odoon käyttämään Python-ympäristöön:
+
+```sh
+/path/to/odoo-venv/bin/python -m pip install -r /path/to/account_vat_periods/requirements-vero.txt
+/path/to/odoo-venv/bin/python -m pip check
+```
+
+Polut korvataan oman asennuksen poluilla. Selvitä mahdolliset muiden moduulien
+riippuvuusristiriidat, käynnistä Odoo uudelleen ja jatka alkuperäistä noutoa
+**Päivitä tila** -painikkeella. Kirjastoja ei asenneta tai päivitetä automaattisesti.
+Tuetut versiorajat ovat `requirements-vero.txt`-tiedostossa; ne rajaavat
+tuetut kirjastosukupolvet, eivät edellytä täsmälleen yhtä korjausversiota.
+
 ## Yhteyden käyttöönoton parannukset (18.0.1.4.1)
 
 SAT API -perusosoite täyttyy automaattisesti uutta yhteyttä luotaessa ja
@@ -77,8 +99,8 @@ Odoon **Avaimet ja varmenne** -toiminnossa. Testi- ja tuotantoympäristöt on tu
 Käyttö edellyttää HTTPS:ää. Varmennetilaus ja ohjelmistorekisteröinti tehdään
 edelleen Verohallinnon palveluissa; automaattinen varmenteen uusiminen ei kuulu versioon.
 
-Palvelinriippuvuudet: Linux, OpenSSL 3, `signxml>=4.5.1,<5` ja sen kanssa
-yhteensopivat `cryptography`/`pyOpenSSL`-versiot. Kehitysympäristössä testattu:
+Palvelinriippuvuudet: Linux, OpenSSL 3 ja `requirements-vero.txt`-tiedoston
+Python-riippuvuudet. Kehitysympäristössä testattu:
 signxml 4.5.1, cryptography 46.0.7, pyOpenSSL 25.3.0, lxml 5.2.1.
 Tarkista muun Odoo-asennuksen riippuvuudet ja aja `pip check` päivityksen yhteydessä.
 Moduulin päivitys ja palvelun restart tarvitaan kerran; myöhemmät avainvaihdot

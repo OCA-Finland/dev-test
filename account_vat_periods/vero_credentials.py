@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 import fcntl
 import json
+from importlib import metadata
 import os
 from pathlib import Path
 import re
@@ -23,7 +24,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 from lxml import etree
 import requests
-from signxml import XMLVerifier, SignatureConfiguration
+from packaging.version import InvalidVersion, Version
 
 from .vero_payload import PayloadError, _
 
@@ -36,10 +37,42 @@ ENDPOINTS = {
 }
 CA_DIRECTORY = Path(__file__).parent / 'data' / 'vero_ca'
 MAX_RESPONSE = 1024 * 1024
+# Supported library families. Keep requirements-vero.txt in sync.
+DEPENDENCY_VERSIONS = {
+    'signxml': ('4.5.1', '5'),
+    'cryptography': ('46.0.7', '47'),
+    'pyOpenSSL': ('25.3.0', '26'),
+    'lxml': ('5.2.1', '7'),
+}
 
 
 class CredentialError(PayloadError):
     """Only fixed, safe messages; never third-party exception text."""
+
+
+def check_dependencies():
+    """Fail before consuming transfer credentials or parsing signed responses."""
+    incompatible = []
+    for package, (minimum, maximum) in DEPENDENCY_VERSIONS.items():
+        try:
+            installed = metadata.version(package)
+        except metadata.PackageNotFoundError:
+            installed = '-'
+        try:
+            parsed = Version(installed)
+            supported = not (parsed.is_prerelease or parsed.is_devrelease) and Version(minimum) <= parsed < Version(maximum)
+        except InvalidVersion:
+            supported = False
+        if not supported:
+            incompatible.append(f'{package}={installed} (>= {minimum}, < {maximum})')
+    if incompatible:
+        raise CredentialError(_(
+            'Vero API Python dependencies are missing or unsupported: %s. '
+            'Each entry shows the installed version and required range; "-" means not installed. '
+            'Ask your administrator to install requirements-vero.txt in the Python environment used by Odoo, '
+            'resolve any errors reported by python -m pip check, and restart Odoo. '
+            'Keep the current certificate request and its files, then refresh its status.'
+        ), '; '.join(incompatible))
 
 
 def private_directory(path):
@@ -116,6 +149,11 @@ def chain_verify(cert, environment, kind):
 
 
 def verified_response(content, operation, environment):
+    check_dependencies()
+    # Defer SignXML import so an obsolete version cannot fail during module load
+    # before the administrator sees the explicit dependency error.
+    from signxml import XMLVerifier, SignatureConfiguration
+
     if len(content) > MAX_RESPONSE or b'<!DOCTYPE' in content.upper() or b'<!ENTITY' in content.upper():
         raise CredentialError(_('The certificate service XML response is not secure.'))
     try:
@@ -146,6 +184,7 @@ def verified_response(content, operation, environment):
 
 
 def call_pki(operation, fields, environment, response_path):
+    check_dependencies()
     root = etree.Element('{%s}Envelope' % SOAP, nsmap={'soapenv': SOAP, 'cer': NS})
     etree.SubElement(root, '{%s}Header' % SOAP)
     body = etree.SubElement(root, '{%s}Body' % SOAP)
@@ -211,6 +250,7 @@ class Enrollment:
         self.save(state)
 
     def submit(self, transfer_id, password, customer_name):
+        check_dependencies()
         if self.environment not in ENDPOINTS:
             raise CredentialError(_('Sandbox does not use a certificate.'))
         if not isinstance(transfer_id, str) or not re.fullmatch(r'[A-Za-z0-9-]{1,32}', transfer_id):
@@ -239,6 +279,7 @@ class Enrollment:
         self.accept_response(state, payload)
 
     def retrieve(self):
+        check_dependencies()
         state = self.recover(self.state())
         if state.get('phase') not in ('waiting', 'ready', 'active'):
             raise CredentialError(_('The certificate request has no confirmed retrieval identifier.'))
@@ -273,5 +314,6 @@ class Enrollment:
             raise CredentialError(_('The certificate does not match the company identifier or the key generated on the server.'))
 
     def status(self):
+        check_dependencies()
         state = self.recover(self.state())
         return {key: state[key] for key in ('phase', 'message', 'expires', 'fingerprint', 'updated_at', 'updated_by', 'identity') if key in state}

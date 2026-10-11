@@ -22,6 +22,16 @@ _PATH_FIELDS = {'software_key_file', 'certificate_file', 'private_key_file', 'au
 class VeroBackendCredentials(models.Model):
     _inherit = 'vero.api.backend'
 
+    def init(self):
+        # Odoo calls model.init() on both module installation and upgrade.
+        # Do not reject an ordinary registry load: users must still be able to
+        # open the credential screen and read the actionable runtime error.
+        try:
+            credentials.check_dependencies()
+        except credentials.CredentialError as exc:
+            raise UserError(exc.translated(self.env._)) from None
+        return super().init()
+
     def _credential_access(self):
         self.ensure_one()
         check_access(self)
@@ -104,6 +114,8 @@ class VeroBackendCredentials(models.Model):
         self._credential_access()
         if operation == 'status':
             return self._credential_info()
+        if operation in ('submit', 'retrieve', 'activate', 'test_connection'):
+            credentials.check_dependencies()
         if operation == 'test_connection':
             code, data = self._call('GetVATPeriods/v1', {
                 'BusinessId': self._credential_identity(), 'FilingYear': fields.Date.today().year,

@@ -641,14 +641,14 @@ class TestVeroAPI(TransactionCase):
         for state in ('queued', 'sending', 'uncertain'):
             attempt._update(state=state, receipt=False)
             with self.subTest(state=state), self.assertRaises(UserError):
-                self.backend.with_user(self.user).write({'api_root': 'https://api-sandbox.vero.fi/Return/SAT'})
+                self.backend.with_user(self.user).write({'api_root': 'https://api-sandbox.vero.fi/Return/SAT/changed'})
 
     def test_failed_correction_does_not_unlock_received_connection(self):
         self.attempt()
         failed_correction = self.attempt(self.payload(200, 20))
         failed_correction._update(state='error', receipt=False)
         with self.assertRaises(UserError):
-            self.backend.with_user(self.user).write({'api_root': 'https://api-sandbox.vero.fi/Return/SAT'})
+            self.backend.with_user(self.user).write({'api_root': 'https://api-sandbox.vero.fi/Return/SAT/changed'})
 
     def test_multiple_environments_require_explicit_selection(self):
         single = self.period.with_user(self.user).action_do_send()

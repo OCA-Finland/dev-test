@@ -49,10 +49,21 @@ class VeroBackendCredentials(models.Model):
 
     def _credential_info(self):
         self._credential_access()
-        directory = self._credential_store()
-        enrollment = credentials.Enrollment(directory, self.environment, '', self.env.uid)
-        with credentials.locked(directory):
-            status = enrollment.status()
+        # A failed recovery must not hide the connection/key management screen.
+        # Keep verification strict: only status display catches these failures;
+        # submit/retrieve/activate continue to reject the same invalid response.
+        try:
+            directory = self._credential_store()
+            enrollment = credentials.Enrollment(directory, self.environment, '', self.env.uid)
+            with credentials.locked(directory):
+                status = enrollment.status()
+        except credentials.CredentialError as exc:
+            status = {'phase': 'blocked', 'message': exc.translated(self.env._)}
+        except (OSError, ValueError, KeyError, TypeError):
+            # Never expose file contents, paths or third-party exception text.
+            status = {'phase': 'blocked', 'message': _(
+                'The saved certificate retrieval status could not be read. Ask your administrator to check the retrieval files and their permissions.'
+            )}
         phase = status.get('phase')
         messages = {
             'uncertain': _('The request has started. If no response is available, verify the outcome with the Finnish Tax Administration before trying again.'),

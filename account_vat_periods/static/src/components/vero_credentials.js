@@ -47,6 +47,19 @@ export class VeroCredentials extends Component {
             for (const key of Object.keys(values)) {
                 values[key] = "";
             }
+            if (operation !== "status" && this.state.error) {
+                // Re-read durable state after a failed mutation. This also hides
+                // the submit form when one-use credentials may have been sent.
+                try {
+                    const info = await this.http.post(`/vero/credentials/${this.backendId}/status`, {
+                        csrf_token: odoo.csrf_token,
+                    });
+                    this.state.info = info.error ? null : info;
+                } catch {
+                    // Require a successful status refresh before further actions.
+                    this.state.info = null;
+                }
+            }
             this.state.busy = false;
         }
     }
@@ -72,7 +85,7 @@ export class VeroCredentials extends Component {
     }
 
     get phaseLabel() {
-        return { uncertain: _t("Uncertain result"), waiting: _t("Waiting for certificate"),
+        return { blocked: _t("Needs attention"), uncertain: _t("Uncertain result"), waiting: _t("Waiting for certificate"),
             ready: _t("Ready to activate"), active: _t("Activated"), rejected: _t("Rejected") }[this.state.info?.enrollment.phase] || "";
     }
 

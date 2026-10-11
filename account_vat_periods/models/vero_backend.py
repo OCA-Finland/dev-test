@@ -8,6 +8,12 @@ from odoo.exceptions import AccessError, UserError, ValidationError
 
 GROUP = 'account.group_account_user'
 INTERNAL = object()
+# Vero API portal, FileVATReturn/v2 documentation (2026-10-11).
+SAT_API_ROOTS = {
+    'sandbox': 'https://api-sandbox.vero.fi/Return/SAT',
+    'test': 'https://apitest.vero.fi/FIS/Return/SAT/Test',
+    'production': 'https://api.vero.fi/Return/SAT',
+}
 
 
 def check_access(record):
@@ -70,8 +76,9 @@ class VeroBackend(models.Model):
         string='SAT API base URL',
         help=(
             'Official HTTPS base address of the selected Vero SAT environment, without an operation '
-            'suffix such as /FileVATReturn/v2. Obtain the correct address from your software provider. '
-            'The host must match the selected environment.'
+            'suffix such as /FileVATReturn/v2. Filled automatically when creating a connection or '
+            'changing its environment. An administrator may adjust the path if needed; the host must '
+            'match the selected environment. Certificate retrieval uses a separate, automatic address.'
         ),
     )
     software_key_file = fields.Char(
@@ -178,7 +185,38 @@ class VeroBackend(models.Model):
 
     _sql_constraints = [('vero_backend_company_environment', 'unique(company_id,environment)', 'Use one Vero connection per company and environment. Update its credentials when necessary.')]
 
+    @api.model
+    def default_get(self, fields_list):
+        values = super().default_get(fields_list)
+        if 'api_root' in fields_list and not values.get('api_root'):
+            environment = values.get('environment') or self.default_get(['environment']).get('environment')
+            values['api_root'] = SAT_API_ROOTS.get(environment, False)
+        return values
+
+    @api.onchange('environment')
+    def _onchange_environment_api_root(self):
+        for record in self:
+            record.api_root = SAT_API_ROOTS.get(record.environment, False)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        default_environment = self.default_get(['environment']).get('environment')
+        vals_list = [dict(vals) for vals in vals_list]
+        for vals in vals_list:
+            if not vals.get('api_root'):
+                vals['api_root'] = SAT_API_ROOTS.get(vals.get('environment', default_environment), False)
+        return super().create(vals_list)
+
+    def copy_data(self, default=None):
+        values_list = super().copy_data(default=default)
+        if default and 'environment' in default and 'api_root' not in default:
+            for values in values_list:
+                values['api_root'] = SAT_API_ROOTS.get(default['environment'], False)
+        return values_list
+
     def write(self, vals):
+        if 'environment' in vals and 'api_root' not in vals and any(rec.environment != vals['environment'] for rec in self):
+            vals = dict(vals, api_root=SAT_API_ROOTS.get(vals['environment'], False))
         for rec in self:
             if ('environment' in vals and vals['environment'] != rec.environment) or ('company_id' in vals and vals['company_id'] != rec.company_id.id):
                 if self.env['vero.api.report'].search_count([('backend_id', '=', rec.id)]):

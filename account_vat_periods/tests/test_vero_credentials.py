@@ -17,6 +17,7 @@ from odoo.tests import TransactionCase, tagged
 from odoo.tools import config
 
 from .. import vero_credentials as c
+from ..models.vero_backend import SAT_API_ROOTS
 
 
 @tagged('post_install', '-at_install', 'vero_credentials')
@@ -200,6 +201,97 @@ class TestVeroCredentials(TransactionCase):
         with patch.object(c, 'call_pki') as call:
             self.assertEqual(enrollment.status()['phase'], 'waiting')
             call.assert_not_called()
+
+    def test_invalid_saved_response_keeps_screen_and_key_management_available(self):
+        def invalid_response(operation, fields, environment, response_path):
+            data = self.signed(operation, {'RetrievalId': 'correct-id'})
+            data = data.replace(b'correct-id', b'changed-id')
+            c.save_private(response_path, data)
+            return c.verified_response(data, operation, environment)
+
+        with patch.object(c, 'call_pki', side_effect=invalid_response):
+            with self.assertRaises(c.CredentialError):
+                self.submit()
+        enrollment = c.Enrollment(self.backend._credential_store(), 'test', '9999999-2', self.user.id)
+        state = enrollment.state()
+        directory = enrollment.generation(state)
+        saved_key = c.read_private(directory / 'private-key.pem')
+        saved_response = c.read_private(directory / 'submit-response.xml')
+        with patch.object(c, 'call_pki') as call:
+            for _attempt in range(2):
+                info = self.backend._credential_operation('status', {})
+                self.assertEqual(info['enrollment']['phase'], 'blocked')
+                self.assertEqual(info['name'], self.backend.name)
+                self.assertIn('signature or structure', info['enrollment']['message'])
+            info = self.backend._credential_operation('save_key', {'software_key': 's' * 32})
+            self.assertTrue(info['key_configured'])
+            self.assertEqual(info['enrollment']['phase'], 'blocked')
+            with self.assertRaises(c.CredentialError):
+                self.submit()
+            with self.assertRaises(c.CredentialError):
+                self.backend._credential_operation('activate', {})
+            call.assert_not_called()
+        self.assertEqual(enrollment.state(), state)
+        self.assertEqual(c.read_private(directory / 'private-key.pem'), saved_key)
+        self.assertEqual(c.read_private(directory / 'submit-response.xml'), saved_response)
+        self.assertFalse(self.backend.certificate_file)
+        # A subsequent successful verification recovers the same request without
+        # consuming the one-time credentials a second time.
+        c.save_private(directory / 'submit-response.xml', self.signed('SignNewCertificate', {'RetrievalId': 'correct-id'}))
+        with patch.object(c, 'call_pki') as call:
+            info = self.backend._credential_operation('status', {})
+            self.assertEqual(info['enrollment']['phase'], 'waiting')
+            call.assert_not_called()
+        self.assertEqual(c.read_private(directory / 'private-key.pem'), saved_key)
+
+    def test_unreadable_status_keeps_screen_available_without_disclosing_contents(self):
+        path = self.backend._credential_store() / 'enrollment.json'
+        c.save_private(path, b'{"secret-example": invalid-json')
+        info = self.backend._credential_operation('status', {})
+        self.assertEqual(info['enrollment']['phase'], 'blocked')
+        self.assertNotIn('secret-example', json.dumps(info))
+        self.assertIn('could not be read', info['enrollment']['message'])
+        with self.assertRaises(AccessError):
+            self.backend.with_user(self.reader)._credential_operation('status', {})
+
+    def test_default_urls_follow_environment_in_forms_and_create(self):
+        model = self.env['vero.api.backend']
+        self.assertEqual(model.default_get(['environment', 'api_root'])['api_root'], SAT_API_ROOTS['test'])
+        company = self.env['res.company'].create({'name': 'URL defaults fixture'})
+        for environment, url in SAT_API_ROOTS.items():
+            values = model.with_context(default_environment=environment).default_get(['api_root'])
+            self.assertEqual(values['api_root'], url)
+            record = model.create({'name': 'URL fixture', 'company_id': company.id, 'environment': environment,
+                                   'contact_name': 'Test', 'contact_phone': '+3581'})
+            self.assertEqual(record.api_root, url)
+            form = model.new({'environment': environment, 'api_root': 'old value'})
+            form._onchange_environment_api_root()
+            self.assertEqual(form.api_root, url)
+
+    def test_url_change_and_copy_preserve_explicit_overrides(self):
+        model = self.env['vero.api.backend']
+        company = self.env['res.company'].create({'name': 'URL change fixture'})
+        record = model.create({'name': 'URL fixture', 'company_id': company.id, 'environment': 'sandbox',
+                               'contact_name': 'Test', 'contact_phone': '+3581'})
+        record.write({'environment': 'production'})
+        self.assertEqual(record.api_root, SAT_API_ROOTS['production'])
+        record.write({'environment': 'test'})
+        self.assertEqual(record.api_root, SAT_API_ROOTS['test'])
+        # Flush the old environment before reusing its unique company slot.
+        record.flush_recordset(['environment', 'api_root'])
+        custom = 'https://api.vero.fi/Return/SAT/Verification'
+        duplicate = record.copy({'company_id': company.id, 'environment': 'production', 'api_root': custom})
+        self.assertEqual(duplicate.api_root, custom)
+        duplicate.write({'contact_name': 'Unrelated change'})
+        self.assertEqual(duplicate.api_root, custom)
+        self.assertEqual(record.copy({'company_id': company.id, 'environment': 'sandbox'}).api_root, SAT_API_ROOTS['sandbox'])
+
+    def test_environment_change_with_credentials_stays_blocked(self):
+        original = self.backend.api_root
+        self.backend._credential_operation('save_key', {'software_key': 's' * 32})
+        with self.assertRaises(UserError):
+            self.backend.write({'environment': 'production'})
+        self.assertEqual(self.backend.api_root, original)
 
     def test_credentials_not_persisted_in_enrollment(self):
         with patch.object(c, 'call_pki', side_effect=self.pki):

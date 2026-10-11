@@ -1538,12 +1538,16 @@ msgstr "Lokakuu"
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_backend__api_root
 msgid ""
 "Official HTTPS base address of the selected Vero SAT environment, without an"
-" operation suffix such as /FileVATReturn/v2. Obtain the correct address from"
-" your software provider. The host must match the selected environment."
+" operation suffix such as /FileVATReturn/v2. Filled automatically when "
+"creating a connection or changing its environment. An administrator may "
+"adjust the path if needed; the host must match the selected environment. "
+"Certificate retrieval uses a separate, automatic address."
 msgstr ""
 "Valitun Vero SAT -ympäristön virallinen HTTPS-perusosoite ilman toiminnon "
-"päätettä, kuten /FileVATReturn/v2. Pyydä oikea osoite "
-"ohjelmistotoimittajalta. Palvelimen on vastattava valittua ympäristöä."
+"päätettä, kuten /FileVATReturn/v2. Täytetään automaattisesti yhteyttä "
+"luotaessa tai ympäristöä vaihdettaessa. Ylläpitäjä voi tarvittaessa muuttaa "
+"polkua; palvelimen on vastattava valittua ympäristöä. Varmenteen nouto "
+"käyttää erillistä, automaattisesti valittua osoitetta."
 
 #. module: account_vat_periods
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__account_fiscal_year__vat_period_duration__1
@@ -3587,3 +3591,35 @@ msgstr "Sinulla ei ole oikeutta tähän yritykseen."
 #: code:addons/account_vat_periods/wizards/vero_wizard.py:0
 msgid "No changes."
 msgstr "Ei muutoksia."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
+msgid ""
+"The saved certificate retrieval status could not be read. Ask your "
+"administrator to check the retrieval files and their permissions."
+msgstr ""
+"Tallennettua varmenteen noutotilaa ei voitu lukea. Pyydä ylläpitäjää "
+"tarkistamaan noutotiedostot ja niiden käyttöoikeudet."
+
+#. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.js:0
+msgid "Needs attention"
+msgstr "Vaatii selvitystä"
+
+#. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
+msgid ""
+"Certificate retrieval needs attention. Keep the existing request and its "
+"files. Ask your administrator to investigate the error, then use Refresh "
+"status to retry the saved response check. Do not delete the connection or "
+"start another request with the same transfer credentials. You can still "
+"manage the software API key and return to the connection settings."
+msgstr ""
+"Varmenteen nouto vaatii selvitystä. Säilytä nykyinen pyyntö ja sen "
+"tiedostot. Pyydä ylläpitäjää selvittämään virhe ja tarkista sen jälkeen "
+"tallennettu vastaus uudelleen Päivitä tila -painikkeella. Älä poista "
+"yhteyttä tai aloita uutta pyyntöä samoilla siirtotunnuksilla. Voit edelleen "
+"hallita ohjelmisto-API-avainta ja palata yhteyden asetuksiin."

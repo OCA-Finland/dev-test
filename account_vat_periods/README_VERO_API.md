@@ -14,6 +14,25 @@ lähetetään itsenäisesti. Yhteenvetoilmoituksen kohde on aina kalenterikuukau
 Kaikki Vero-toiminnot edellyttävät ryhmää `account.group_account_user`;
 `account.group_account_readonly` ei riitä.
 
+## Yhteyden käyttöönoton parannukset (18.0.1.4.1)
+
+SAT API -perusosoite täyttyy automaattisesti uutta yhteyttä luotaessa ja
+ympäristöä vaihdettaessa. Olemassa olevia osoitteita ei muuteta päivityksessä.
+
+| Ympäristö | Perusosoite |
+| --- | --- |
+| Sandbox | `https://api-sandbox.vero.fi/Return/SAT` |
+| Testivarmenne | `https://apitest.vero.fi/FIS/Return/SAT/Test` |
+| Tuotanto | `https://api.vero.fi/Return/SAT` |
+
+Varmenteen nouto käyttää erillistä automaattista osoitetta. Jos tallennetun
+varmennepalveluvastauksen tarkistus epäonnistuu, **Avaimet ja varmenne** näyttää
+tilan **Vaatii selvitystä**. Avaimen hallinta ja paluu yhteyden asetuksiin
+toimivat edelleen. Säilytä yhteys ja noutotiedostot; älä aloita uutta pyyntöä
+samoilla kertakäyttötunnuksilla. Ylläpitäjän selvitettyä virheen **Päivitä tila**
+tarkistaa tallennetun vastauksen uudelleen lähettämättä alkuperäistä pyyntöä
+uudestaan. Virheellistä allekirjoitusta ei hyväksytä eikä varmennetta aktivoida.
+
 ## Kielet ja kenttäohjeet (18.0.1.4.0)
 
 Python-, JavaScript- ja XML-lähteiden käyttöliittymätekstit ovat englanniksi.
@@ -93,7 +112,7 @@ Kirjanpito → Asetukset / Configuration → Vero API -yhteydet (Configuration-v
 
 1. Luo yritykselle yhteys ja valitse ympäristö. Yrityksellä on yksi yhteys per
    ympäristö. Ilmoitushistorian synnyttyä yritystä ja ympäristöä ei voi vaihtaa.
-   API-perusosoitteen voi täydentää esikatselun jälkeen ja korjata, jos kaikki
+   API-perusosoite täyttyy automaattisesti. Osoitteen voi korjata, jos kaikki
    lähetysyritykset ovat varmasti epäonnistuneet. Jonossa oleva, epäselvä tai
    vastaanotettu lähetys lukitsee osoitteen. Jos yrityksellä on useita aktiivisia ympäristöjä,
    valitse yhteys itse esikatseluikkunassa.

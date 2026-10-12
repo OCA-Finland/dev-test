@@ -9,9 +9,11 @@
                     <group><field name="name"/><field name="company_id"/><field name="active"/><field name="environment"/><field name="api_root"/></group>
                     <group string="Contact details"><field name="contact_name"/><field name="contact_phone"/></group>
                     <group string="Software identification"><field name="software_id"/></group>
-                    <group string="Legacy file paths for migration only" groups="base.group_system">
-                        <field name="software_key_file"/><field name="certificate_file" invisible="environment == 'sandbox'"/><field name="private_key_file" invisible="environment == 'sandbox'"/>
-                        <field name="authorization_token_file"/>
+                    <group groups="base.group_no_one" col="1">
+                        <group string="Legacy file paths for migration only" groups="base.group_system">
+                            <field name="software_key_file"/><field name="certificate_file" invisible="environment == 'sandbox'"/><field name="private_key_file" invisible="environment == 'sandbox'"/>
+                            <field name="authorization_token_file"/>
+                        </group>
                     </group>
                     <group string="EC sales list tax grids: select untaxed sales bases">
                         <field name="goods_tag_ids" widget="many2many_tags"/><field name="services_tag_ids" widget="many2many_tags"/><field name="triangulation_tag_ids" widget="many2many_tags"/>

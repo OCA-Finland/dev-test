@@ -7,6 +7,7 @@ from babel.messages.pofile import read_po
 from odoo.tests import TransactionCase, tagged
 
 from .. import vero_credentials, vero_payload
+from .vault_fixtures import patch_vault
 
 
 @tagged('post_install', '-at_install', 'vero_translations')
@@ -120,10 +121,9 @@ class TestVeroTranslations(TransactionCase):
             'environment': 'test', 'contact_name': 'Test', 'contact_phone': '+3581',
         })
         state = {'phase': 'waiting', 'message': 'Historical enrollment message'}
-        with patch.object(type(backend), '_credential_store', return_value=Path('/tmp')):
-            with patch.object(vero_credentials, 'locked'):
-                with patch.object(vero_credentials.Enrollment, 'status', return_value=dict(state)):
-                    info = backend.with_context(lang='fi_FI')._credential_info()
+        patch_vault(self)
+        with patch.object(vero_credentials.Enrollment, 'status', return_value=dict(state)):
+            info = backend.with_context(lang='fi_FI')._credential_info()
         source = 'Request received. Wait at least 30 seconds, then retrieve the certificate.'
         self.assertEqual(info['enrollment']['message'], self.translated(source))
         self.assertEqual(state['message'], 'Historical enrollment message')

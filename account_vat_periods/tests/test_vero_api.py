@@ -64,7 +64,7 @@ class TestVeroAPI(TransactionCase):
         self.assertEqual(p.money('-1.005'), -1.01)
 
     def test_sandbox_transport_headers_without_certificate(self):
-        with patch.object(type(self.backend), '_secret', return_value='test-subscription-key'):
+        with patch.object(type(self.backend), '_transport_credentials', return_value=('test-subscription-key', None, None)):
             root, headers, cert = self.backend.with_user(self.user)._connection()
         self.assertEqual(root, 'https://api-sandbox.vero.fi/Return/SAT')
         self.assertEqual(headers['Ocp-Apim-Subscription-Key'], 'test-subscription-key')

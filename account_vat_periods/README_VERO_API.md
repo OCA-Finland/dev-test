@@ -14,6 +14,27 @@ lähetetään itsenäisesti. Yhteenvetoilmoituksen kohde on aina kalenterikuukau
 Kaikki Vero-toiminnot edellyttävät ryhmää `account.group_account_user`;
 `account.group_account_readonly` ei riitä.
 
+## Salattu tallennus (18.0.1.5.0)
+
+Ohjelmistoavain, yksityinen avain, varmenne ja noudon tila tallentuvat nyt
+Fernet-salattuina PostgreSQL-tietokantaan. Yrityskohtaisia avaintiedostoja tai
+niiden Unix-oikeuksia ei tarvita tavallisessa käyttöönotossa. Kirjanpitäjä hoitaa
+avaimet ja varmenteen edelleen Odoon käyttöliittymässä.
+
+Ylläpitäjä määrittää kerran tietokannan ulkopuolisen pääsalausavaimen kaikkien
+Odoo-prosessien käyttöön. Sen voi antaa ympäristömuuttujana tai suojattuna
+salaisuustiedostona. Varmuuskopioi avain erillään tietokannasta. Ilman sitä
+salattua tietokantavarmistusta ei voi palauttaa käyttöön.
+
+Vanhan yhteyden **Avaimet ja varmenne** -näkymässä paina **Tuo olemassa olevat
+tunnukset**. Tämä siirtää myös keskeneräisen käyttöliittymässä aloitetun noudon
+avaimineen ja vastauksineen ilman uutta varmennepyyntöä. Alkuperäiset tiedostot
+säilyvät. Tuonti on tehtävä ennen vanhan yhteyden käyttöä tässä versiossa.
+
+[Ylläpitäjän asennus-, siirto- ja palautusohje](docs/ENCRYPTED_CREDENTIALS.md).
+Aiemmat PDF-pikaohjeet kuvaavat käyttäjän painikkeet; tämä osio korvaa niiden
+mahdolliset tiedostotallennusta ja varmuuskopiointia koskevat kohdat.
+
 ## Riippuvuuksien versiotarkistus (18.0.1.4.2)
 
 Moduulin asennus ja päivitys tarkistavat Python-kirjastojen tuetut versiot.
@@ -99,17 +120,15 @@ Odoon **Avaimet ja varmenne** -toiminnossa. Testi- ja tuotantoympäristöt on tu
 Käyttö edellyttää HTTPS:ää. Varmennetilaus ja ohjelmistorekisteröinti tehdään
 edelleen Verohallinnon palveluissa; automaattinen varmenteen uusiminen ei kuulu versioon.
 
-Palvelinriippuvuudet: Linux, OpenSSL 3 ja `requirements-vero.txt`-tiedoston
+Palvelinriippuvuudet: PostgreSQL, OpenSSL 3 -komentorivityökalu ja `requirements-vero.txt`-tiedoston
 Python-riippuvuudet. Kehitysympäristössä testattu:
 signxml 4.5.1, cryptography 46.0.7, pyOpenSSL 25.3.0, lxml 5.2.1.
 Tarkista muun Odoo-asennuksen riippuvuudet ja aja `pip check` päivityksen yhteydessä.
 Moduulin päivitys ja palvelun restart tarvitaan kerran; myöhemmät avainvaihdot
 ja noudot eivät vaadi restartia.
 
-Salaisuudet ovat `data_dir/vero_credentials`-hakemistossa, eivät tietokannassa
-tai filestoressa. Hakemisto tulee ottaa mukaan suojattuun varmistukseen ja
-palautussuunnitelmaan. Linux-palvelukäyttäjä tarvitsee kirjoitusoikeuden omaan
-data_dir-hakemistoonsa. HTTP-reitti käyttää kirjautumista, CSRF-tarkistusta,
+Salaisuudet ovat salattuina tietokannassa. Varmuuskopioi tietokanta ja erikseen
+palvelimen pääsalausavain; säilytä vanhat avaintiedostot siirron tarkistukseen asti. HTTP-reitti käyttää kirjautumista, CSRF-tarkistusta,
 HTTPS-vaatimusta sekä palvelinpuolen yritys-/käyttöoikeustarkistuksia. Reitti
 ei käytä RPC:tä salaisuuksille. Reverse proxyn tulee poistaa asiakkaan omat
 Forwarded-otsakkeet, asettaa oikeat HTTPS-otsakkeet ja estää suora pääsy Odoon
@@ -146,8 +165,8 @@ Kirjanpito → Asetukset / Configuration → Vero API -yhteydet (Configuration-v
    korjata ennen yhteenvetoilmoituksen käyttöönottoa.
 5. Hanki ohjelmistoavain ja tilaa varmenne. Tallenna yhteys, avaa **Avaimet ja
    varmenne**, tallenna ohjelmistoavain ja nouda varmenne saamillasi siirtotunnuksilla.
-   Odoo luo tiedostot ja polut automaattisesti. Aiemmat palvelinpolut toimivat edelleen.
-6. Kopioi ympäristön SAT API:n perusosoite Vero-portaalista. Sallittuja palvelimia
+   Odoo tallentaa tunnukset salattuina tietokantaan. Vanhat palvelinpolut ovat vain tuontia varten.
+6. Tarkista automaattisesti täyttyvä ympäristön SAT API:n perusosoite. Sallittuja palvelimia
    ovat `apitest.vero.fi`, `api.vero.fi` ja sandboxissa `api-sandbox.vero.fi`.
    Sandbox käyttää tilausavainta ja ennalta määrättyjä esimerkkivastauksia.
    Se ei korvaa varmenteellisen testipalvelun hyväksymistestausta.

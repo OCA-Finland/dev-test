@@ -3,7 +3,7 @@
 `vero_test_certificate.py` on ylläpitäjän Linux-komentorivityökalu. Se noutaa
 aiemmin tilatun Vero API -testivarmenteen PKI-rajapinnasta. Se ei tilaa varmennetta,
 rekisteröi ohjelmistoa eikä tue tuotantovarmenteita tai automaattista uusimista.
-Odoo käyttää noudettua PEM-varmennetta nykyisillä tiedostopolkuasetuksillaan.
+Versiossa 18.0.1.5.0 valmis PEM-pari tuodaan Odoon salattuun tallennukseen vanhojen polkujen ja Tuo olemassa olevat tunnukset -painikkeen avulla. Tämän CLI-työkalun keskeneräinen noutotila ei siirry automaattisesti käyttöliittymään; jatka sitä alkuperäisellä työkalulla.
 Versiosta 18.0.1.2.0 alkaen moduulissa on myös **Avaimet ja varmenne** -näkymä,
 joka on ensisijainen käyttäjän käyttöönottoon ja tukee testi- ja tuotantovarmenteita.
 Se käyttää erillistä `vero_credentials.py`-palvelua, joka tarkistaa myös
@@ -28,7 +28,7 @@ omistama, oikeuksilla 0700, ja lähdekoodihakemiston ulkopuolella.
    XML-vastauksen allekirjoitusta eikä asiakkaan varmenteen koko CA-ketjua.
 7. Määritä Odoon Test certificate -yhteyteen `certificate.pem` ja
    `private-key.pem` sekä erillinen ohjelmistoavaimen tiedostopolku.
-   Poista käytetty noutotunnustiedosto onnistuneen noudon jälkeen.
+   Tuo valmis varmenne ja avain Avaimet ja varmenne -näkymässä. Poista käytetty noutotunnustiedosto onnistuneen noudon jälkeen.
 
 `status` näyttää noudon vaiheen paljastamatta salaisuuksia. Suojattu hakemisto
 sisältää myös CSR:n ja vastaukset vikatilanteiden selvittämiseen. Varmuuskopioi

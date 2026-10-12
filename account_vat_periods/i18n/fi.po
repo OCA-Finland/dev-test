@@ -34,6 +34,32 @@ msgstr ""
 
 #. module: account_vat_periods
 #. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
+msgid ""
+"A legacy credential file has an unsafe owner or write permissions. Ask your "
+"administrator to correct that file before migration."
+msgstr ""
+"Vanhan tunnistetiedoston omistaja tai kirjoitusoikeudet eivät ole "
+"turvalliset. Pyydä ylläpitäjää korjaamaan tiedoston oikeudet ennen siirtoa."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
+msgid "A legacy credential file is not a regular private file."
+msgstr "Vanha tunnistetiedosto ei ole tavallinen yksityinen tiedosto."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
+msgid ""
+"A legacy credential path is invalid or is a symbolic link. Ask your "
+"administrator to check it."
+msgstr ""
+"Vanhan tunnistetiedoston polku on virheellinen tai sisältää symbolisen "
+"linkin. Pyydä ylläpitäjää tarkistamaan se."
+
+#. module: account_vat_periods
+#. odoo-python
 #: code:addons/account_vat_periods/models/vero_report.py:0
 msgid ""
 "A posted vendor bill is required. Draft bills can be corrected with the "
@@ -73,40 +99,6 @@ msgstr "Vuosi"
 #: code:addons/account_vat_periods/static/src/components/vero_credentials.js:0
 msgid "API key saved."
 msgstr "API-avain tallennettu."
-
-#. module: account_vat_periods
-#: model:ir.model.fields,help:account_vat_periods.field_vero_api_backend__certificate_file
-msgid ""
-"Absolute server path to the company's PEM client certificate for the "
-"selected environment. Retrieve and activate it through Keys and certificate."
-" Test and production certificates cannot be used interchangeably."
-msgstr ""
-"Yrityksen valittuun ympäristöön kuuluvan PEM-asiakasvarmenteen absoluuttinen"
-" palvelinpolku. Nouda ja aktivoi varmenne Avaimet ja varmenne -toiminnolla. "
-"Testi- ja tuotantovarmenteita ei voi käyttää ristiin."
-
-#. module: account_vat_periods
-#: model:ir.model.fields,help:account_vat_periods.field_vero_api_backend__private_key_file
-msgid ""
-"Absolute server path to the protected private key matching the client "
-"certificate. The key is generated on the Odoo server during enrollment and "
-"must remain confidential. Only technical administrators may set this path "
-"manually."
-msgstr ""
-"Asiakasvarmennetta vastaavan suojatun yksityisen avaimen absoluuttinen "
-"palvelinpolku. Avain luodaan Odoo-palvelimella varmenteen noudossa ja on "
-"pidettävä salassa. Vain tekninen ylläpitäjä saa asettaa polun käsin."
-
-#. module: account_vat_periods
-#: model:ir.model.fields,help:account_vat_periods.field_vero_api_backend__software_key_file
-msgid ""
-"Absolute server path to the protected software API key file, or the "
-"subscription key file in Sandbox. Use Keys and certificate to save the key "
-"securely; this field contains only the path and never the secret itself."
-msgstr ""
-"Ohjelmiston API-avaimen suojatun tiedoston absoluuttinen palvelinpolku; "
-"Sandboxissa tilausavaimen tiedosto. Tallenna avain turvallisesti Avaimet ja "
-"varmenne -toiminnolla. Kenttä sisältää vain polun, ei itse salaista avainta."
 
 #. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_report__vat_period_id
@@ -156,11 +148,6 @@ msgstr ""
 "velka tai palautus."
 
 #. module: account_vat_periods
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_backend_form
-msgid "Administrator settings: server file paths"
-msgstr "Ylläpidon lisäasetukset: palvelimen tiedostopolut"
-
-#. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_account_vat_period__vero_report_ids
 msgid ""
 "All VAT returns and EC sales lists linked to this VAT period, across its "
@@ -195,7 +182,9 @@ msgstr "EU-veroruudukko voi kuulua vain yhteen myyntilajiin."
 
 #. module: account_vat_periods
 #. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
 #: code:addons/account_vat_periods/vero_credentials.py:0
+#: code:addons/account_vat_periods/vero_vault.py:0
 msgid ""
 "Another credential operation is in progress. Refresh the status shortly."
 msgstr ""
@@ -273,6 +262,13 @@ msgid "Blocked"
 msgstr "Estetty"
 
 #. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
+msgid ""
+"Both the legacy certificate and its private key are required for migration."
+msgstr "Siirtoon tarvitaan sekä vanha varmenne että sen yksityinen avain."
+
+#. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
 msgid "Calculate / refresh preview"
 msgstr "Laske / päivitä esikatselu"
@@ -296,6 +292,22 @@ msgstr "Peruttu"
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_backend__certificate_file
 msgid "Certificate file"
 msgstr "Varmenteen tiedosto"
+
+#. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
+msgid ""
+"Certificate retrieval needs attention. Keep the existing request and its "
+"files. Ask your administrator to investigate the error, then use Refresh "
+"status to retry the saved response check. Do not delete the connection or "
+"start another request with the same transfer credentials. You can still "
+"manage the software API key and return to the connection settings."
+msgstr ""
+"Varmenteen nouto vaatii selvitystä. Säilytä nykyinen pyyntö ja sen "
+"tiedostot. Pyydä ylläpitäjää selvittämään virhe ja tarkista sen jälkeen "
+"tallennettu vastaus uudelleen Päivitä tila -painikkeella. Älä poista "
+"yhteyttä tai aloita uutta pyyntöä samoilla siirtotunnuksilla. Voit edelleen "
+"hallita ohjelmisto-API-avainta ja palata yhteyden asetuksiin."
 
 #. module: account_vat_periods
 #. odoo-python
@@ -447,22 +459,15 @@ msgstr "Asetukset"
 
 #. module: account_vat_periods
 #. odoo-python
-#: code:addons/account_vat_periods/models/vero_backend.py:0
-msgid "Configure readable PEM certificate and private key files."
-msgstr ""
-"Määritä luettavissa olevat PEM-varmenteen ja yksityisen avaimen tiedostot."
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
+msgid "Configure or import the credentials through Keys and certificate."
+msgstr "Määritä tai tuo tunnukset Avaimet ja varmenne -toiminnolla."
 
 #. module: account_vat_periods
 #. odoo-python
 #: code:addons/account_vat_periods/models/vero_report.py:0
 msgid "Configure the EC goods and services tax grids on the Vero connection."
 msgstr "Määritä Vero-yhteydelle EU-tavara- ja palvelumyynnin veroruudukot."
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/models/vero_backend.py:0
-msgid "Configure the absolute server path for %s."
-msgstr "Määritä kentälle %s absoluuttinen palvelinpolku."
 
 #. module: account_vat_periods
 #. odoo-python
@@ -579,12 +584,6 @@ msgid ""
 msgstr ""
 "Luo uusi yhteys vaihtaaksesi yrityksen tai ympäristön ilmoituksen luomisen "
 "jälkeen."
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/models/vero_credentials.py:0
-msgid "Create a separate connection after starting certificate enrollment."
-msgstr "Luo erillinen yhteys varmenteen noudon aloittamisen jälkeen."
 
 #. module: account_vat_periods
 #. odoo-python
@@ -891,6 +890,31 @@ msgstr ""
 " käsittele tai selvitä keskeneräiset lähetykset ensin."
 
 #. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/vero_vault.py:0
+msgid ""
+"Encrypted Vero storage is not configured. Ask your administrator to set "
+"ODOO_VERO_ENCRYPTION_KEY, vero_encryption_key or vero_encryption_key_file in"
+" the Odoo server configuration and restart Odoo. Back up this key separately"
+" from the database."
+msgstr ""
+"Vero-tunnusten salattua tallennusta ei ole määritetty. Pyydä ylläpitäjää "
+"määrittämään ODOO_VERO_ENCRYPTION_KEY, vero_encryption_key tai "
+"vero_encryption_key_file Odoo-palvelimen asetuksiin ja käynnistämään Odoo "
+"uudelleen. Varmuuskopioi salausavain erillään tietokannasta."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
+msgid ""
+"Encrypted credentials are bound to this company and environment. Create a "
+"separate connection instead of changing its identity or legacy file paths."
+msgstr ""
+"Salatut tunnukset on sidottu tähän yritykseen ja ympäristöön. Luo erillinen "
+"yhteys sen sijaan, että muuttaisit yritystä, ympäristöä tai vanhoja "
+"tiedostopolkuja."
+
+#. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_backend__environment
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_report__environment
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_submission__environment
@@ -947,6 +971,18 @@ msgstr ""
 "Viimeisimmän esikatselun tarkka pyyntö korvausvalintoineen ja muuttuneine "
 "EU-ostajineen. Vahvistus vertaa sitä uuteen laskentaan, jotta vanhentunutta "
 "sisältöä tai muuttuneita valintoja ei lähetetä."
+
+#. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
+msgid ""
+"Existing credential files were found. Import them into encrypted database "
+"storage to continue. The original files are kept unchanged. This does not "
+"send a new certificate request."
+msgstr ""
+"Olemassa olevia tunnistetiedostoja löytyi. Jatka tuomalla ne salattuun "
+"tietokantatallennukseen. Alkuperäiset tiedostot säilyvät muuttumattomina. "
+"Toiminto ei lähetä uutta varmennepyyntöä."
 
 #. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_submission__error_message
@@ -1097,6 +1133,22 @@ msgid "Immutable Vero submission attempt"
 msgstr "Muuttumaton Vero-lähetysyritys"
 
 #. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
+msgid "Import existing credentials"
+msgstr "Tuo olemassa olevat tunnukset"
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
+msgid ""
+"Import the existing credentials into encrypted storage before changing keys "
+"or continuing certificate retrieval."
+msgstr ""
+"Tuo olemassa olevat tunnukset salattuun tallennukseen ennen avainten "
+"vaihtamista tai varmenteen noudon jatkamista."
+
+#. module: account_vat_periods
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__account_vat_period__payment_state__in_payment
 msgid "In Payment"
 msgstr "Maksussa"
@@ -1239,15 +1291,16 @@ msgstr "Avaimet ja varmenne"
 #. odoo-javascript
 #: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
 msgid ""
-"Keys are kept in a private directory on the Odoo server. The private key is "
-"never returned to the browser. Administrators must include the credential "
-"directory in secure backups. Changing credentials does not require an Odoo "
-"restart."
+"Keys and certificate retrieval data are encrypted in the database. The "
+"private key is never returned to the browser or written to a client key "
+"file. Administrators must back up the server encryption key separately from "
+"the database. Changing company credentials does not require an Odoo restart."
 msgstr ""
-"Avaimet säilyvät Odoo-palvelimen suojatussa hakemistossa. Yksityistä avainta"
-" ei palauteta selaimelle. Ylläpidon tulee sisällyttää avainhakemisto "
-"suojattuun varmuuskopiointiin. Avainten vaihtaminen ei vaadi Odoon "
-"uudelleenkäynnistystä."
+"Avaimet ja varmenteen noutotiedot tallennetaan tietokantaan salattuina. "
+"Yksityistä avainta ei palauteta selaimeen eikä kirjoiteta "
+"asiakasavaintiedostoon. Ylläpitäjän tulee varmuuskopioida palvelimen "
+"salausavain erillään tietokannasta. Yrityksen tunnusten vaihtaminen ei vaadi"
+" Odoon uudelleenkäynnistystä."
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__write_uid
@@ -1325,6 +1378,64 @@ msgstr "Viimeisin lähetysyritys"
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__latest_payload
 msgid "Latest submission content"
 msgstr "Viimeisimmän lähetyksen sisältö"
+
+#. module: account_vat_periods
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_backend_form
+msgid "Legacy file paths for migration only"
+msgstr "Vanhat tiedostopolut vain siirtoa varten"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_backend__certificate_file
+msgid ""
+"Legacy server path used only when importing an existing PEM client "
+"certificate into encrypted database storage. Import also requires its "
+"matching private key. For new connections, leave this empty and retrieve the"
+" certificate through Keys and certificate."
+msgstr ""
+"Vanha palvelinpolku, jota käytetään vain olemassa olevan PEM-"
+"asiakasvarmenteen tuomiseen salattuun tietokantatallennukseen. Tuontiin "
+"tarvitaan myös vastaava yksityinen avain. Jätä kenttä tyhjäksi uudessa "
+"yhteydessä ja nouda varmenne Avaimet ja varmenne -toiminnolla."
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_backend__software_key_file
+msgid ""
+"Legacy server path used only when importing an existing software API key or "
+"Sandbox subscription key into encrypted database storage. For new "
+"connections, leave this empty and save the key through Keys and certificate."
+" Import keeps the original file unchanged."
+msgstr ""
+"Vanha palvelinpolku, jota käytetään vain olemassa olevan ohjelmiston API-"
+"avaimen tai Sandboxin tilausavaimen tuomiseen salattuun "
+"tietokantatallennukseen. Jätä kenttä tyhjäksi uudessa yhteydessä ja tallenna"
+" avain Avaimet ja varmenne -toiminnolla. Tuonti ei muuta alkuperäistä "
+"tiedostoa."
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_backend__authorization_token_file
+msgid ""
+"Legacy server path used only when importing an optional authorization token "
+"for acting on another party's behalf. Leave empty for own-company filing. "
+"Token acquisition and renewal require a separately managed process; this "
+"module does not obtain these tokens."
+msgstr ""
+"Vanha palvelinpolku, jota käytetään vain valinnaisen puolesta-asioinnin "
+"valtuutustunnisteen tuontiin. Jätä kenttä tyhjäksi yrityksen omissa "
+"ilmoituksissa. Tunnisteen hankkiminen ja uusiminen on järjestettävä "
+"erikseen; tämä moduuli ei hanki näitä tunnisteita."
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_backend__private_key_file
+msgid ""
+"Legacy server path used only when importing the private key matching an "
+"existing client certificate. Only technical administrators may configure "
+"this path. New keys are generated and stored encrypted in the database; they"
+" are never returned to the browser."
+msgstr ""
+"Vanha palvelinpolku, jota käytetään vain olemassa olevaa asiakasvarmennetta "
+"vastaavan yksityisen avaimen tuontiin. Vain tekninen ylläpitäjä voi "
+"määrittää polun. Uudet avaimet luodaan ja tallennetaan salattuina "
+"tietokantaan; niitä ei koskaan palauteta selaimeen."
 
 #. module: account_vat_periods
 #: model:ir.model,name:account_vat_periods.model_mis_report_instance
@@ -1416,6 +1527,12 @@ msgstr ""
 "ilmoituksen yhteystietoihin ja saa olla enintään 35 merkkiä pitkä."
 
 #. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.js:0
+msgid "Needs attention"
+msgstr "Vaatii selvitystä"
+
+#. module: account_vat_periods
 #. odoo-python
 #: code:addons/account_vat_periods/models/vero_report.py:0
 msgid "Network error. Verify receipt before retrying."
@@ -1479,6 +1596,12 @@ msgstr "Varmennetta ei ole otettu käyttöön."
 #: code:addons/account_vat_periods/wizards/vero_wizard.py:0
 msgid "No changes compared with the last received return."
 msgstr "Ei muutoksia viimeiseen vastaanotettuun ilmoitukseen verrattuna."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/wizards/vero_wizard.py:0
+msgid "No changes."
+msgstr "Ei muutoksia."
 
 #. module: account_vat_periods
 #. odoo-python
@@ -1619,18 +1742,6 @@ msgstr "Avaa lasku / oikaisu"
 #: code:addons/account_vat_periods/static/src/components/vero_credentials.js:0
 msgid "Operation complete. Check the retrieval status below."
 msgstr "Toiminto valmis. Tarkista noudon tila alta."
-
-#. module: account_vat_periods
-#: model:ir.model.fields,help:account_vat_periods.field_vero_api_backend__authorization_token_file
-msgid ""
-"Optional absolute server path to a current authorization token for acting on"
-" another party's behalf. Leave empty for normal own-company filing. Token "
-"acquisition, authorization and renewal must be arranged separately."
-msgstr ""
-"Valinnainen absoluuttinen palvelinpolku voimassa olevaan puolesta-asioinnin "
-"valtuutustunnisteeseen. Jätä tyhjäksi oman yrityksen tavallisessa "
-"asioinnissa. Tunnisteen hankinta, valtuutus ja uusiminen on järjestettävä "
-"erikseen."
 
 #. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_backend__software_id
@@ -2173,6 +2284,16 @@ msgid "Retrieve an ordered certificate"
 msgstr "Tilatun varmenteen nouto"
 
 #. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
+msgid ""
+"Retrieve and activate the certificate through Keys and certificate, or "
+"import the existing credentials."
+msgstr ""
+"Nouda ja ota varmenne käyttöön Avaimet ja varmenne -toiminnolla tai tuo "
+"olemassa olevat tunnukset."
+
+#. module: account_vat_periods
 #. odoo-javascript
 #: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
 msgid "Retrieve and verify certificate"
@@ -2247,6 +2368,16 @@ msgstr "Sandbox ei käytä varmennetta."
 #: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
 msgid "Save API key"
 msgstr "Tallenna API-avain"
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/vero_vault.py:0
+msgid ""
+"Save the Vero connection before configuring its credentials, then reopen "
+"this screen."
+msgstr ""
+"Tallenna Vero-yhteys ennen sen tunnusten määrittämistä ja avaa tämä näkymä "
+"uudelleen."
 
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_backend_form
@@ -2397,6 +2528,11 @@ msgstr "Näytä Date Range -suodatin raportin widget-palkissa"
 #: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
 msgid "Software API key"
 msgstr "Ohjelmiston API-avain"
+
+#. module: account_vat_periods
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_backend_form
+msgid "Software identification"
+msgstr "Ohjelmiston tunniste"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_backend__software_id
@@ -2724,6 +2860,27 @@ msgstr ""
 
 #. module: account_vat_periods
 #. odoo-python
+#: code:addons/account_vat_periods/vero_vault.py:0
+msgid ""
+"The Vero storage encryption key file cannot be read. Ask your administrator "
+"to check the server configuration."
+msgstr ""
+"Vero-tallennuksen salausavaintiedostoa ei voi lukea. Pyydä ylläpitäjää "
+"tarkistamaan palvelimen asetukset."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/vero_vault.py:0
+msgid ""
+"The Vero storage encryption key is invalid. Ask your administrator to check "
+"the server configuration."
+msgstr ""
+"Vero-tallennuksen salausavain on virheellinen. Pyydä ylläpitäjää "
+"tarkistamaan palvelimen asetukset."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
 #: code:addons/account_vat_periods/vero_credentials.py:0
 msgid ""
 "The certificate does not match the company identifier or the key generated "
@@ -2764,6 +2921,7 @@ msgstr "Varmennepyynnölle ei ole vahvistettua noutotunnusta."
 
 #. module: account_vat_periods
 #. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
 #: code:addons/account_vat_periods/vero_credentials.py:0
 msgid "The certificate retrieval state is invalid."
 msgstr "Varmenteen noutotila on virheellinen."
@@ -2822,29 +2980,11 @@ msgstr "Yrityksen tunniste on muuttunut varmennepyynnön jälkeen."
 
 #. module: account_vat_periods
 #. odoo-python
-#: code:addons/account_vat_periods/models/vero_backend.py:0
-msgid "The configured credential file cannot be read: %s"
-msgstr "Määritettyä tunnustiedostoa ei voi lukea: %s"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/models/vero_backend.py:0
-msgid "The configured credential file is empty: %s"
-msgstr "Määritetty tunnustiedosto on tyhjä: %s"
-
-#. module: account_vat_periods
-#. odoo-python
 #: code:addons/account_vat_periods/models/vero_report.py:0
 msgid "The connection environment changed or was disabled after confirmation."
 msgstr ""
 "Yhteyden ympäristö muuttui tai yhteys poistettiin käytöstä vahvistamisen "
 "jälkeen."
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/models/vero_credentials.py:0
-msgid "The current certificate details could not be read."
-msgstr "Nykyisen varmenteen tietoja ei voitu lukea."
 
 #. module: account_vat_periods
 #. odoo-python
@@ -2906,6 +3046,16 @@ msgid ""
 msgstr ""
 "Alkuperäisen laskun on vastattava ilmoituksen yritystä, valuuttaa ja ALV-"
 "toimittajaa."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
+msgid ""
+"The original private key for the pending certificate request is missing. "
+"Restore it before migration; do not start another request."
+msgstr ""
+"Keskeneräisen varmennepyynnön alkuperäinen yksityinen avain puuttuu. Palauta"
+" se ennen siirtoa; älä aloita uutta pyyntöä."
 
 #. module: account_vat_periods
 #. odoo-python
@@ -2980,6 +3130,29 @@ msgstr ""
 
 #. module: account_vat_periods
 #. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
+msgid ""
+"The saved Vero credential data could not be read. Ask your administrator to "
+"check the encrypted storage and its backup."
+msgstr ""
+"Tallennettuja Vero-tunnistetietoja ei voitu lukea. Pyydä ylläpitäjää "
+"tarkistamaan salattu tallennus ja sen varmuuskopio."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/vero_vault.py:0
+msgid ""
+"The saved Vero credentials cannot be decrypted for this connection. Restore "
+"the original server encryption key and matching database backup. Do not "
+"overwrite the credentials or start a new certificate request."
+msgstr ""
+"Tallennettujen Vero-tunnusten salausta ei voi purkaa tälle yhteydelle. "
+"Palauta alkuperäinen palvelimen salausavain ja sitä vastaava tietokannan "
+"varmuuskopio. Älä korvaa tunnuksia tai aloita uutta varmennepyyntöä."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
 #: code:addons/account_vat_periods/vero_credentials.py:0
 msgid "The secret file is too large."
 msgstr "Salaisuustiedosto on liian suuri."
@@ -3083,6 +3256,16 @@ msgid ""
 msgstr ""
 "Yhteydellä on keskeneräinen tai epäselvä ilmoitus. Selvitä se ennen avainten"
 " vaihtoa."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
+msgid ""
+"This connection has credentials or a certificate request. Archive it instead"
+" of deleting its recovery data."
+msgstr ""
+"Tällä yhteydellä on tunnuksia tai varmennepyyntö. Arkistoi yhteys sen "
+"sijaan, että poistaisit sen palautustiedot."
 
 #. module: account_vat_periods
 #. odoo-python
@@ -3461,6 +3644,24 @@ msgid "Vero API"
 msgstr "Vero API"
 
 #. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/vero_credentials.py:0
+msgid ""
+"Vero API Python dependencies are missing or unsupported: %s. Each entry "
+"shows the installed version and required range; \"-\" means not installed. "
+"Ask your administrator to install requirements-vero.txt in the Python "
+"environment used by Odoo, resolve any errors reported by python -m pip "
+"check, and restart Odoo. Keep the current certificate request and its files,"
+" then refresh its status."
+msgstr ""
+"Vero API:n Python-riippuvuudet puuttuvat tai niiden versioita ei tueta: %s. "
+"Kukin kohta näyttää asennetun version ja vaaditun versioalueen; \"-\" "
+"tarkoittaa puuttuvaa kirjastoa. Pyydä ylläpitäjää asentamaan requirements-"
+"vero.txt Odoon käyttämään Python-ympäristöön, selvittämään komennon python "
+"-m pip check ilmoittamat virheet ja käynnistämään Odoo uudelleen. Säilytä "
+"nykyinen varmennepyyntö ja sen tiedostot ja päivitä sitten sen tila."
+
+#. module: account_vat_periods
 #: model:ir.model,name:account_vat_periods.model_vero_api_backend
 msgid "Vero API connection"
 msgstr "Vero API -yhteys"
@@ -3587,57 +3788,95 @@ msgid "You do not have access to this company."
 msgstr "Sinulla ei ole oikeutta tähän yritykseen."
 
 #. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/vero_wizard.py:0
-msgid "No changes."
-msgstr "Ei muutoksia."
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/models/vero_credentials.py:0
-msgid ""
-"The saved certificate retrieval status could not be read. Ask your "
-"administrator to check the retrieval files and their permissions."
-msgstr ""
-"Tallennettua varmenteen noutotilaa ei voitu lukea. Pyydä ylläpitäjää "
-"tarkistamaan noutotiedostot ja niiden käyttöoikeudet."
-
-#. module: account_vat_periods
-#. odoo-javascript
-#: code:addons/account_vat_periods/static/src/components/vero_credentials.js:0
-msgid "Needs attention"
-msgstr "Vaatii selvitystä"
-
-#. module: account_vat_periods
 #. odoo-javascript
 #: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
 msgid ""
 "Certificate retrieval needs attention. Keep the existing request and its "
-"files. Ask your administrator to investigate the error, then use Refresh "
-"status to retry the saved response check. Do not delete the connection or "
-"start another request with the same transfer credentials. You can still "
-"manage the software API key and return to the connection settings."
+"stored data. Ask your administrator to investigate the error, then use "
+"Refresh status to retry the saved response check. Do not delete the "
+"connection or start another request with the same transfer credentials. You "
+"can still manage the software API key and return to the connection settings."
 msgstr ""
 "Varmenteen nouto vaatii selvitystä. Säilytä nykyinen pyyntö ja sen "
-"tiedostot. Pyydä ylläpitäjää selvittämään virhe ja tarkista sen jälkeen "
+"tallennetut tiedot. Pyydä ylläpitäjää selvittämään virhe ja tarkista "
 "tallennettu vastaus uudelleen Päivitä tila -painikkeella. Älä poista "
 "yhteyttä tai aloita uutta pyyntöä samoilla siirtotunnuksilla. Voit edelleen "
-"hallita ohjelmisto-API-avainta ja palata yhteyden asetuksiin."
+"hallita ohjelmistoavainta ja palata yhteyden asetuksiin."
 
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/vero_credentials.py:0
-msgid ""
-"Vero API Python dependencies are missing or unsupported: %s. Each entry "
-"shows the installed version and required range; \"-\" means not installed. "
-"Ask your administrator to install requirements-vero.txt in the Python "
-"environment used by Odoo, resolve any errors reported by python -m pip "
-"check, and restart Odoo. Keep the current certificate request and its files,"
-" then refresh its status."
-msgstr ""
-"Vero API:n Python-riippuvuudet puuttuvat tai niiden versioita ei tueta: %s. "
-"Kukin kohta näyttää asennetun version ja vaaditun versioalueen; \"-\" "
-"tarkoittaa puuttuvaa kirjastoa. Pyydä ylläpitäjää asentamaan requirements-"
-"vero.txt Odoon käyttämään Python-ympäristöön, selvittämään komennon python "
-"-m pip check ilmoittamat virheet ja käynnistämään Odoo uudelleen. Säilytä "
-"nykyinen varmennepyyntö ja sen tiedostot ja päivitä sitten sen tila."
+#~ msgid ""
+#~ "Absolute server path to the company's PEM client certificate for the "
+#~ "selected environment. Retrieve and activate it through Keys and certificate."
+#~ " Test and production certificates cannot be used interchangeably."
+#~ msgstr ""
+#~ "Yrityksen valittuun ympäristöön kuuluvan PEM-asiakasvarmenteen absoluuttinen"
+#~ " palvelinpolku. Nouda ja aktivoi varmenne Avaimet ja varmenne -toiminnolla. "
+#~ "Testi- ja tuotantovarmenteita ei voi käyttää ristiin."
+
+#~ msgid ""
+#~ "Absolute server path to the protected private key matching the client "
+#~ "certificate. The key is generated on the Odoo server during enrollment and "
+#~ "must remain confidential. Only technical administrators may set this path "
+#~ "manually."
+#~ msgstr ""
+#~ "Asiakasvarmennetta vastaavan suojatun yksityisen avaimen absoluuttinen "
+#~ "palvelinpolku. Avain luodaan Odoo-palvelimella varmenteen noudossa ja on "
+#~ "pidettävä salassa. Vain tekninen ylläpitäjä saa asettaa polun käsin."
+
+#~ msgid ""
+#~ "Absolute server path to the protected software API key file, or the "
+#~ "subscription key file in Sandbox. Use Keys and certificate to save the key "
+#~ "securely; this field contains only the path and never the secret itself."
+#~ msgstr ""
+#~ "Ohjelmiston API-avaimen suojatun tiedoston absoluuttinen palvelinpolku; "
+#~ "Sandboxissa tilausavaimen tiedosto. Tallenna avain turvallisesti Avaimet ja "
+#~ "varmenne -toiminnolla. Kenttä sisältää vain polun, ei itse salaista avainta."
+
+#~ msgid "Administrator settings: server file paths"
+#~ msgstr "Ylläpidon lisäasetukset: palvelimen tiedostopolut"
+
+#~ msgid "Configure readable PEM certificate and private key files."
+#~ msgstr ""
+#~ "Määritä luettavissa olevat PEM-varmenteen ja yksityisen avaimen tiedostot."
+
+#~ msgid "Configure the absolute server path for %s."
+#~ msgstr "Määritä kentälle %s absoluuttinen palvelinpolku."
+
+#~ msgid "Create a separate connection after starting certificate enrollment."
+#~ msgstr "Luo erillinen yhteys varmenteen noudon aloittamisen jälkeen."
+
+#~ msgid ""
+#~ "Keys are kept in a private directory on the Odoo server. The private key is "
+#~ "never returned to the browser. Administrators must include the credential "
+#~ "directory in secure backups. Changing credentials does not require an Odoo "
+#~ "restart."
+#~ msgstr ""
+#~ "Avaimet säilyvät Odoo-palvelimen suojatussa hakemistossa. Yksityistä avainta"
+#~ " ei palauteta selaimelle. Ylläpidon tulee sisällyttää avainhakemisto "
+#~ "suojattuun varmuuskopiointiin. Avainten vaihtaminen ei vaadi Odoon "
+#~ "uudelleenkäynnistystä."
+
+#~ msgid ""
+#~ "Optional absolute server path to a current authorization token for acting on"
+#~ " another party's behalf. Leave empty for normal own-company filing. Token "
+#~ "acquisition, authorization and renewal must be arranged separately."
+#~ msgstr ""
+#~ "Valinnainen absoluuttinen palvelinpolku voimassa olevaan puolesta-asioinnin "
+#~ "valtuutustunnisteeseen. Jätä tyhjäksi oman yrityksen tavallisessa "
+#~ "asioinnissa. Tunnisteen hankinta, valtuutus ja uusiminen on järjestettävä "
+#~ "erikseen."
+
+#~ msgid "The configured credential file cannot be read: %s"
+#~ msgstr "Määritettyä tunnustiedostoa ei voi lukea: %s"
+
+#~ msgid "The configured credential file is empty: %s"
+#~ msgstr "Määritetty tunnustiedosto on tyhjä: %s"
+
+#~ msgid "The current certificate details could not be read."
+#~ msgstr "Nykyisen varmenteen tietoja ei voitu lukea."
+
+#~ msgid ""
+#~ "The saved certificate retrieval status could not be read. Ask your "
+#~ "administrator to check the retrieval files and their permissions."
+#~ msgstr ""
+#~ "Tallennettua varmenteen noutotilaa ei voitu lukea. Pyydä ylläpitäjää "
+#~ "tarkistamaan noutotiedostot ja niiden käyttöoikeudet."

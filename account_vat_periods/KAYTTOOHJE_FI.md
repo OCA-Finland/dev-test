@@ -118,7 +118,7 @@ Toiminto edellyttää **Show Full Accounting Features** -oikeutta, pääsyä kys
 
 Palvelimen tiedostopolkujen käsin muuttaminen on rajattu tekniselle ylläpitäjälle. Näin kirjanpitokäyttäjä ei voi osoittaa omaa yhteyttään toisen yrityksen avaintiedostoihin. Ohjelmistoavaimen syöttö, varmenteen nouto ja käyttöönotto onnistuvat normaalilla yllä mainitulla kirjanpito-oikeudella.
 
-**Ohjelmistoavain:** avaa tallennettu Vero API -yhteys → **Avaimet ja varmenne**. Liitä Verohallinnolta saatu ohjelmiston API-avain kenttään **Uusi API-avain** ja paina **Tallenna API-avain**. Sandboxissa syötetään sen oma subscription key. Avainkenttä tyhjennetään lähetyksen yhteydessä; tallennettua avainta ei näytetä uudelleen. Odoo muodostaa suojatun tiedoston ja tallentaa sen polun automaattisesti. Ohjelmistoavainta ei luoda tyhjästä: sen hankkiminen ja ohjelmistorekisteröinti hoidetaan edelleen Verohallinnossa.
+**Ohjelmistoavain:** avaa tallennettu Vero API -yhteys → **Avaimet ja varmenne**. Liitä Verohallinnolta saatu ohjelmiston API-avain kenttään **Uusi API-avain** ja paina **Tallenna API-avain**. Sandboxissa syötetään sen oma subscription key. Avainkenttä tyhjennetään lähetyksen yhteydessä; tallennettua avainta ei näytetä uudelleen. Odoo tallentaa avaimen tietokantaan salattuna. Palvelintiedostoa ei tarvitse luoda. Ohjelmistoavainta ei luoda tyhjästä: sen hankkiminen ja ohjelmistorekisteröinti hoidetaan edelleen Verohallinnossa.
 
 **Testi- tai tuotantovarmenteen nouto:**
 
@@ -136,23 +136,27 @@ Varmenteen viimeinen voimassaolopäivä näkyy näkymässä. **RenewCertificate-
 
 ### Salaisuuksien säilytys ja varmuuskopiointi
 
-Yksityinen avain ja ohjelmistoavain säilyvät Odoon `data_dir`-hakemiston alla olevassa erillisessä `vero_credentials`-hakemistossa. Tiedostot on eroteltu tietokannan, yrityksen, yhteyden ja ympäristön mukaan. Hakemistojen oikeudet ovat 0700 ja tiedostojen 0600. Odoon tietokantaan tallentuvat tiedostopolut; avaimet eivät ole liitteitä, raporttikenttiä tai tavallisia wizard-tietueita. Odoo-yhteyden kopiointi ei kopioi sen avainpolkuja.
+Versiosta 18.0.1.5.0 alkaen ohjelmistoavain, yksityinen avain, varmenne ja keskeneräisen noudon tiedot säilyvät salattuina tietokannassa. Tunnukset on sidottu yritykseen, yhteyteen ja ympäristöön. Ne eivät ole tavallisia luettavia Odoo-kenttiä tai liitteitä. Yhteyden kopiointi ei kopioi tunnuksia. TLS-yhteys käyttää yksityistä avainta muistissa.
 
-Ylläpidon pitää varmuuskopioida avainhakemisto suojatusti erikseen: tavallinen tietokanta-/filestore-varmistus ei välttämättä sisällä sitä. Avainta ei voi palauttaa Verohallinnolta. Palvelimen pääkäyttäjä ja Odoo-palveluprosessi voivat käyttää avaimia; tiedosto-oikeudet eivät suojaa kaapattua palvelinta vastaan. HTTPS, palvelimen päivitykset ja vain luotetut Odoo-lisämoduulit ovat osa kokonaisuutta. Avaintoimintoihin oikeutettu käyttäjä voi vaihtaa yhteyden tunnukset, joten tätä oikeutta ei pidä antaa tarpeettomasti.
+Ylläpitäjä määrittää kerran palvelimen pääsalausavaimen. Tämän jälkeen kirjanpitäjä käyttää avaintoimintoja ilman palvelinpääsyä. Jos näkymä ilmoittaa salauksen asetusten puuttumisesta, pyydä ylläpitäjää tekemään [palvelimen käyttöönotto](docs/ENCRYPTED_CREDENTIALS.md).
+
+Vanhassa yhteydessä paina **Tuo olemassa olevat tunnukset**. Toiminto siirtää olemassa olevat avaimet ja keskeneräisen käyttöliittymässä aloitetun noudon salattuun tietokantatallennukseen lähettämättä uutta varmennepyyntöä. Vanhat tiedostot säilyvät muuttumattomina. Tarkista varmenteen tiedot ja yhteyden toiminta ennen kuin ylläpitäjä poistaa vanhoja kopioita.
+
+Tietokantavarmistus sisältää nyt salatut tunnukset. Ylläpidon on varmuuskopioitava pääsalausavain erikseen ja testattava palautus yhdessä tietokannan kanssa. Kadonnutta pääsalausavainta ei voi palauttaa Verohallinnolta. Älä vaihda sitä noutovirheen korjaamiseksi. Palvelimen pääkäyttäjä ja Odoo-prosessi voivat edelleen käyttää tunnuksia: salaus ei suojaa kaapattua sovelluspalvelinta vastaan.
 
 ### Ympäristöjen ero
 
 | Ympäristö | Tunnistautuminen tässä moduulissa | Käyttötarkoitus |
 |---|---|---|
-| Sandbox | Sandboxin tilausavain tiedostossa; ei asiakasvarmennetta | Rajapinnan mallivastauksiin perustuvat kokeet keinotekoisella aineistolla |
+| Sandbox | Sandboxin tilausavain salatussa tallennuksessa; ei asiakasvarmennetta | Rajapinnan mallivastauksiin perustuvat kokeet keinotekoisella aineistolla |
 | Test certificate | Ohjelmistoavain, testivarmenne ja yksityinen avain | Varmenteellisen testiympäristön kokeet |
 | Production | Tuotannon ohjelmistoavain, varmenne ja yksityinen avain | Tuotannon ilmoitukset, kun käyttöönotto on hyväksytty |
 
-Sandboxin perusosoite on `https://api-sandbox.vero.fi/Return/SAT`. Muissa ympäristöissä ylläpitäjä antaa Vero-palvelusta tarkistetun perusosoitteen. Moduuli hyväksyy ympäristön mukaisen virallisen HTTPS-palvelimen.
+Sandboxin perusosoite on `https://api-sandbox.vero.fi/Return/SAT`. Kaikissa ympäristöissä perusosoite täyttyy automaattisesti ympäristöä valittaessa. Moduuli hyväksyy ympäristön mukaisen virallisen HTTPS-palvelimen.
 
-**Software Key File** sisältää avaintiedoston polun. Sandboxissa kyseessä on tilausavain; varmenteellisissa ympäristöissä ohjelmistoavain. **Certificate File** ja **Private Key File** osoittavat PEM-tiedostoihin. **Software ID** on erillinen valinnainen tunniste. **Authorization Token File** on tarvittaessa käytettävän puolesta-asioinnin tokenin polku; automaattinen uusiminen ei kuulu toteutukseen.
+**Software Key File**, **Certificate File**, **Private Key File** ja **Authorization Token File** ovat vain vanhojen tunnistetiedostojen tuontia varten. Uudessa yhteydessä jätä ne tyhjiksi. **Software ID** on erillinen valinnainen ohjelmistotunniste. Mahdollisen puolesta-asioinnin valtuutustunnisteen hankinta ja uusiminen on järjestettävä erikseen.
 
-Avainten sisältöä ei syötetä ilmoituksen esikatseluun. Uusi **Avaimet ja varmenne** -toiminto huolehtii tiedostoista ja oikeuksista automaattisesti. Lisäasetusten tiedostopolut säilyvät aiempien asennusten ja erikseen ylläpidettyjen salaisuuksien käyttöä varten.
+Avainten sisältöä ei syötetä ilmoituksen esikatseluun. **Avaimet ja varmenne** -toiminto tallentaa tunnukset salattuina; yrityskohtaisia tiedosto-oikeuksia ei tarvitse asettaa.
 
 Yrityksellä voi olla yksi yhteys kutakin ympäristöä kohti. Päivitä avaimet olemassa olevaan yhteyteen. Yritystä ja ympäristöä ei voi vaihtaa, kun yhteydelle on luotu ilmoitus. Perusosoitteen vaihtaminen estyy, jos yhteydellä on jonossa oleva, lähettävä, epäselvä tai vastaanotettu lähetys.
 
@@ -501,7 +505,7 @@ Jos prosessi keskeytyi ja tila jäi lähettäväksi, ajastus merkitsee yli 15 mi
 | Ei muutoksia viimeiseen vastaanotettuun ilmoitukseen | Sama sisältö on jo vastaanotettu. Uutta lähetystä ei muodosteta. |
 | Verolla on jo ilmoitus | Tarkista historia ja kausi. Jos aiempi ilmoitus tehtiin muualla, käytä sitä varten olevaa korvausvalintaa ja valitse korjauksen syy. |
 | Kausi ei vastaa Veron kautta | Tarkista alku/loppupäivä, yrityksen ilmoitusjakso ja ympäristö. Sandboxin mallipäivämäärät voivat aiheuttaa tämän virheen. |
-| Avaintiedostoa ei voi lukea / yhteysasetukset puuttuvat | Ylläpitäjä tarkistaa palvelinpolun, tiedoston sisällön olemassaolon, oikeudet ja ympäristön. Älä liitä avainta virheilmoitukseen. |
+| Avaintiedostoa ei voi lukea / yhteysasetukset puuttuvat | Tarkista Avaimet ja varmenne -näkymä. Ylläpitäjä tarkistaa salausavaimen asetukset ja tarvittaessa vanhojen tunnusten tuonnin. Älä liitä avainta virheilmoitukseen. |
 | Ilmoitus jää Jonossa-tilaan | Ylläpitäjä tarkistaa ajastuksen Vero API: process confirmed submissions, palvelun lokin ja käyttäjän oikeudet. |
 | Tulos epäselvä / lähetys on jo kesken | Noudata luvun 16 selvitysmenettelyä. Uusi napsautus ei ratkaise vastaanoton epävarmuutta. |
 | Kuitti on tallessa, mutta lasku puuttuu | Tarkista laskuviesti sekä yrityksen tili ja toimittaja. Käytä Muodosta / tarkista lasku; älä lähetä ilmoitusta uudelleen tämän vuoksi. |
@@ -538,7 +542,7 @@ Ylläpidolle toimitettavat tiedot: yritys, kausi, testi/tuotanto, ilmoituksen ja
 - Vihreä kuvake tarkoittaa vastaanottokuittausta, ei lopullista verotuspäätöstä. Tilakysely ja vastaanoton selvitys ovat erillisiä toimintoja.
 - Muualla annettua ilmoitusta ei tuoda automaattisesti Odoon muutosvertailun lähtöversioksi. EU-ilmoitukselle ei ole tässä versiossa ulkoisen lähtöversion korjaustoimintoa.
 - Laskujen maksaminen, pankkikohdistus ja palautusten kirjaaminen eivät tapahdu automaattisesti.
-- Tunnistetiedostojen uusiminen sekä mahdollisen valtuutustokenin ylläpito ovat ylläpidon tehtäviä.
+- Pääsalausavaimen varmistus sekä mahdollisen valtuutustokenin ylläpito ovat ylläpidon tehtäviä. Yrityskohtaiset avaimet ja varmenteet hallitaan Avaimet ja varmenne -näkymässä.
 
 ## 19. Liite: ilmoituskentät ja tiedon lähteet
 

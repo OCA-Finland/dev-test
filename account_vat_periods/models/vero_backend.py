@@ -1,8 +1,8 @@
 import json
-from pathlib import Path
 from urllib.parse import urlsplit
 
 import requests
+from ..vero_transport import MemoryCertificate
 from odoo import api, fields, models, _
 from odoo.exceptions import AccessError, UserError, ValidationError
 
@@ -85,36 +85,36 @@ class VeroBackend(models.Model):
         string='Software key file',
         copy=False,
         help=(
-            'Absolute server path to the protected software API key file, or the subscription key file in '
-            'Sandbox. Use Keys and certificate to save the key securely; this field contains only the '
-            'path and never the secret itself.'
+            'Legacy server path used only when importing an existing software API key or Sandbox '
+            'subscription key into encrypted database storage. For new connections, leave this empty '
+            'and save the key through Keys and certificate. Import keeps the original file unchanged.'
         ),
     )
     certificate_file = fields.Char(
         string='Certificate file',
         copy=False,
         help=(
-            "Absolute server path to the company's PEM client certificate for the selected environment. "
-            'Retrieve and activate it through Keys and certificate. Test and production certificates '
-            'cannot be used interchangeably.'
+            'Legacy server path used only when importing an existing PEM client certificate into '
+            'encrypted database storage. Import also requires its matching private key. For new '
+            'connections, leave this empty and retrieve the certificate through Keys and certificate.'
         ),
     )
     private_key_file = fields.Char(
         string='Private key file',
         copy=False,
         help=(
-            'Absolute server path to the protected private key matching the client certificate. The key '
-            'is generated on the Odoo server during enrollment and must remain confidential. Only '
-            'technical administrators may set this path manually.'
+            'Legacy server path used only when importing the private key matching an existing client '
+            'certificate. Only technical administrators may configure this path. New keys are generated '
+            'and stored encrypted in the database; they are never returned to the browser.'
         ),
     )
     authorization_token_file = fields.Char(
         string='Authorization token file',
         copy=False,
         help=(
-            "Optional absolute server path to a current authorization token for acting on another party's "
-            'behalf. Leave empty for normal own-company filing. Token acquisition, authorization and '
-            'renewal must be arranged separately.'
+            'Legacy server path used only when importing an optional authorization token for acting '
+            "on another party's behalf. Leave empty for own-company filing. Token acquisition and "
+            'renewal require a separately managed process; this module does not obtain these tokens.'
         ),
     )
     software_id = fields.Char(
@@ -235,18 +235,6 @@ class VeroBackend(models.Model):
             if rec.goods_tag_ids & rec.services_tag_ids or rec.goods_tag_ids & rec.triangulation_tag_ids or rec.services_tag_ids & rec.triangulation_tag_ids:
                 raise ValidationError(_('An EC tax grid can belong to only one sales type.'))
 
-    def _secret(self, field):
-        value = self[field]
-        if not value or not Path(value).is_absolute():
-            raise UserError(_('Configure the absolute server path for %s.') % self._fields[field]._description_string(self.env))
-        try:
-            secret = Path(value).read_text().strip()
-        except OSError:
-            raise UserError(_('The configured credential file cannot be read: %s') % self._fields[field]._description_string(self.env)) from None
-        if not secret:
-            raise UserError(_('The configured credential file is empty: %s') % self._fields[field]._description_string(self.env))
-        return secret
-
     def _connection(self):
         self.ensure_one()
         check_access(self)
@@ -255,22 +243,17 @@ class VeroBackend(models.Model):
         parts = urlsplit(root)
         if parts.scheme != 'https' or parts.hostname != host or parts.port not in (None, 443) or parts.username or parts.password or parts.query or parts.fragment:
             raise UserError(_('Configure the official HTTPS SAT API base URL for the selected environment.'))
+        software_key, authorization_token, cert = self._transport_credentials()
         headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'User-Agent': 'OdooCommunity/18.0 account_vat_periods/vero-api'}
-        headers['Ocp-Apim-Subscription-Key' if self.environment == 'sandbox' else 'Vero-SoftwareKey'] = self._secret('software_key_file')
+        headers['Ocp-Apim-Subscription-Key' if self.environment == 'sandbox' else 'Vero-SoftwareKey'] = software_key
         if self.environment == 'sandbox':
             # SAT mocks require the header's presence but do not validate its
             # value. Authentication uses only the separate subscription key.
             headers['Vero-SoftwareKey'] = 'sandbox'
         if self.software_id:
             headers['Vero-SoftwareId'] = self.software_id
-        if self.authorization_token_file:
-            headers['Vero-AuthorizationToken'] = self._secret('authorization_token_file')
-        cert = None
-        if self.environment != 'sandbox':
-            for value in (self.certificate_file, self.private_key_file):
-                if not value or not Path(value).is_absolute() or not Path(value).is_file():
-                    raise UserError(_('Configure readable PEM certificate and private key files.'))
-            cert = (self.certificate_file, self.private_key_file)
+        if authorization_token:
+            headers['Vero-AuthorizationToken'] = authorization_token
         return root, headers, cert
 
     def _call(self, operation, payload):
@@ -278,7 +261,10 @@ class VeroBackend(models.Model):
         if operation not in {'FileVATReturn/v2', 'FileECSalesList/v1', 'GetFiledVATReturn/v2', 'GetVATPeriods/v1'}:
             raise UserError(_('Unsupported Vero operation.'))
         # Never follow redirects with credentials; never retry a filing POST.
-        response = requests.post(root + '/' + operation, json=payload, headers=headers, cert=cert, timeout=(10, 45), allow_redirects=False)
+        if isinstance(cert, MemoryCertificate):
+            response = cert.post(root + '/' + operation, json=payload, headers=headers, timeout=(10, 45), allow_redirects=False)
+        else:
+            response = requests.post(root + '/' + operation, json=payload, headers=headers, cert=cert, timeout=(10, 45), allow_redirects=False)
         try:
             data = response.json()
         except (ValueError, json.JSONDecodeError):

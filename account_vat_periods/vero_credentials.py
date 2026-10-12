@@ -1,4 +1,4 @@
-"""Private Linux storage and Vero PKI enrollment, independent of ORM rollback.
+"""Vero PKI enrollment with durable encrypted storage and legacy file helpers.
 
 No transfer password is persisted. Never log inputs, HTTP bodies or exceptions.
 Only verified XML payloads are consumed; trust is limited to the bundled Vero CAs.
@@ -6,7 +6,6 @@ Only verified XML payloads are consumed; trust is limited to the bundled Vero CA
 import base64
 from contextlib import contextmanager
 from datetime import datetime, timezone
-import fcntl
 import json
 from importlib import metadata
 import os
@@ -27,6 +26,7 @@ import requests
 from packaging.version import InvalidVersion, Version
 
 from .vero_payload import PayloadError, _
+from .vero_vault import DatabasePath
 
 NS = 'http://certificates.vero.fi/2017/10/certificateservices'
 SOAP = 'http://schemas.xmlsoap.org/soap/envelope/'
@@ -76,6 +76,8 @@ def check_dependencies():
 
 
 def private_directory(path):
+    if isinstance(path, DatabasePath):
+        return path
     path = Path(path)
     path.mkdir(mode=0o700, exist_ok=True)
     info = path.lstat()
@@ -85,6 +87,8 @@ def private_directory(path):
 
 
 def read_private(path):
+    if isinstance(path, DatabasePath):
+        return path.read()
     fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
     with os.fdopen(fd, 'rb') as stream:
         info = os.fstat(stream.fileno())
@@ -97,6 +101,9 @@ def read_private(path):
 
 
 def save_private(path, data):
+    if isinstance(path, DatabasePath):
+        path.write(data)
+        return
     # New inode + atomic replacement: no writes through symlinks or hard links.
     fd, temporary = tempfile.mkstemp(prefix='.write-', dir=path.parent)
     try:
@@ -117,6 +124,11 @@ def save_private(path, data):
 
 @contextmanager
 def locked(directory):
+    if isinstance(directory, DatabasePath):
+        # The dedicated vault cursor already holds the session advisory lock.
+        yield
+        return
+    import fcntl
     fd = os.open(directory / '.lock', os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
     try:
         info = os.fstat(fd)

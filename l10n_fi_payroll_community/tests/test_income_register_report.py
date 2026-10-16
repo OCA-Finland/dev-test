@@ -682,7 +682,7 @@ class TestIncomeRegisterReport(TransactionCase):
         """
         self.employee.ssnid = "010101-123A"
         report = etree.fromstring(str(self._generate_payslip_xml(self.payslip)))
-        schema_path = Path(__file__).parent / "xsd" / "WageReportsToIR.xsd"
+        schema_path = Path(__file__).parent.parent / "xsd" / "WageReportsToIR.xsd"
         schema = etree.XMLSchema(etree.parse(str(schema_path)))
         schema.assertValid(report)
 
@@ -751,7 +751,7 @@ class TestIncomeRegisterReport(TransactionCase):
         payslip.struct_id = structure
         payslip.compute_sheet()
         report = etree.fromstring(str(self._generate_payslip_xml(payslip)))
-        schema_path = Path(__file__).parent / "xsd" / "WageReportsToIR.xsd"
+        schema_path = Path(__file__).parent.parent / "xsd" / "WageReportsToIR.xsd"
         schema = etree.XMLSchema(etree.parse(str(schema_path)))
         schema.assertValid(report)
 

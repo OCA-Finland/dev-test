@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="channel_l10n_fi_ir" model="queue.job.channel">
+        <field name="name">l10n_fi_ir</field>
+        <field name="parent_id" ref="queue_job.channel_root" />
+    </record>
+    <record id="job_function_l10n_fi_ir_submission_job_send" model="queue.job.function">
+        <field name="model_id" ref="model_l10n_fi_ir_submission" />
+        <field name="method">_job_send</field>
+        <field name="channel_id" ref="channel_l10n_fi_ir" />
+        <field name="retry_pattern" eval="{}" />
+    </record>
+    <record id="job_function_l10n_fi_ir_submission_job_poll" model="queue.job.function">
+        <field name="model_id" ref="model_l10n_fi_ir_submission" />
+        <field name="method">_job_poll</field>
+        <field name="channel_id" ref="channel_l10n_fi_ir" />
+        <field name="retry_pattern" eval="{1: 120, 2: 300, 3: 900}" />
+    </record>
+</odoo>

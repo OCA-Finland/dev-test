@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_tase_erittely_note_list" model="ir.ui.view">
+        <field name="name">tase.erittely.note.list</field>
+        <field name="model">tase.erittely.note</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="account_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_tase_erittely_note_form" model="ir.ui.view">
+        <field name="name">tase.erittely.note.form</field>
+        <field name="model">tase.erittely.note</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="account_id"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                    <field name="note"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_tase_erittely_note" model="ir.actions.act_window">
+        <field name="name">Manuaaliset erittelyt</field>
+        <field name="res_model">tase.erittely.note</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_tase_erittely_root"
+              name="Tase-erittely"
+              parent="account.menu_finance_reports"
+              sequence="50"/>
+
+    <menuitem id="menu_tase_erittely_note"
+              name="Manuaaliset erittelyt"
+              parent="menu_tase_erittely_root"
+              action="action_tase_erittely_note"
+              sequence="20"/>
+
+</odoo>

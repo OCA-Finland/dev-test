@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_tase_erittely_wizard_form" model="ir.ui.view">
+        <field name="name">tase.erittely.wizard.form</field>
+        <field name="model">tase.erittely.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                </group>
+                <footer>
+                    <button string="Tulosta"
+                            name="action_print_report"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Peruuta" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_tase_erittely_wizard" model="ir.actions.act_window">
+        <field name="name">Tase-erittely</field>
+        <field name="res_model">tase.erittely.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_tase_erittely_wizard"
+              name="Tase-erittely"
+              parent="l10n_fi_bs_specification.menu_tase_erittely_root"
+              action="action_tase_erittely_wizard"
+              sequence="10"/>
+
+</odoo>

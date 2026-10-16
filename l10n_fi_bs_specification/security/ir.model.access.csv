@@ -1,4 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_tase_erittely_note_user,tase.erittely.note.user,model_tase_erittely_note,account.group_account_invoice,1,1,1,1
-access_tase_erittely_note_readonly,tase.erittely.note.readonly,model_tase_erittely_note,account.group_account_readonly,1,0,0,0
-access_tase_erittely_wizard,tase.erittely.wizard,model_tase_erittely_wizard,account.group_account_readonly,1,1,1,1

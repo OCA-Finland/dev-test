@@ -238,6 +238,7 @@ class VeroBackend(models.Model):
     def _connection(self):
         self.ensure_one()
         check_access(self)
+        self._production_allowed()
         host = {'sandbox': 'api-sandbox.vero.fi', 'test': 'apitest.vero.fi', 'production': 'api.vero.fi'}[self.environment]
         root = (self.api_root or ('https://api-sandbox.vero.fi/Return/SAT' if self.environment == 'sandbox' else '')).rstrip('/')
         parts = urlsplit(root)

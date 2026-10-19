@@ -15,9 +15,10 @@ class TestVault(vero_vault.Vault):
         import json
         body = {'version': 1, 'binding': self.binding, 'files': self.files, 'settings': self.settings}
         encrypted = self.cipher.encrypt(json.dumps(body).encode())
-        self.cr.execute('''INSERT INTO vero_api_secret (backend_id, ciphertext) VALUES (%s,%s)
-                           ON CONFLICT (backend_id) DO UPDATE SET ciphertext=EXCLUDED.ciphertext''',
-                        [self.backend_id, encrypted])
+        self.cr.execute('''INSERT INTO vero_api_secret (backend_id, ciphertext, storage_mode) VALUES (%s,%s,%s)
+                           ON CONFLICT (backend_id) DO UPDATE SET ciphertext=EXCLUDED.ciphertext,
+                           storage_mode=EXCLUDED.storage_mode''',
+                        [self.backend_id, encrypted, self.mode])
         self.existing = True
 
 

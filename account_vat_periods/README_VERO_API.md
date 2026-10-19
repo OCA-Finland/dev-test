@@ -14,26 +14,49 @@ lähetetään itsenäisesti. Yhteenvetoilmoituksen kohde on aina kalenterikuukau
 Kaikki Vero-toiminnot edellyttävät ryhmää `account.group_account_user`;
 `account.group_account_readonly` ei riitä.
 
-## Salattu tallennus (18.0.1.5.0)
+## Automaattinen avainhallinta (18.0.1.6.0)
 
-Ohjelmistoavain, yksityinen avain, varmenne ja noudon tila tallentuvat nyt
-Fernet-salattuina PostgreSQL-tietokantaan. Yrityskohtaisia avaintiedostoja tai
-niiden Unix-oikeuksia ei tarvita tavallisessa käyttöönotossa. Kirjanpitäjä hoitaa
-avaimet ja varmenteen edelleen Odoon käyttöliittymässä.
+Uusi asennus luo tietokantakohtaisen salausavaimen automaattisesti. Vero-yhteyden
+käyttöönotto ei vaadi SSH-yhteyttä, avaintiedostoa, ympäristömuuttujaa tai conf-muutosta.
+Moduulin ja Python-riippuvuuksien asennus kuuluu edelleen ylläpitäjälle.
+Puhtaassa tietokannassa perusta ensin yrityksen suomalainen tilikartta
+Kirjanpidon käyttöönotossa. Nykyinen kausimoduuli tarvitsee sen tilit ja päiväkirjat
+jo asennusvaiheessa. Asenna `account_vat_periods` vasta sen jälkeen.
 
-Ylläpitäjä määrittää kerran tietokannan ulkopuolisen pääsalausavaimen kaikkien
-Odoo-prosessien käyttöön. Sen voi antaa ympäristömuuttujana tai suojattuna
-salaisuustiedostona. Varmuuskopioi avain erillään tietokannasta. Ilman sitä
-salattua tietokantavarmistusta ei voi palauttaa käyttöön.
+1. Tilaa yrityksen testivarmenne tai tuotantovarmenne Verohallinnon varmennepalvelussa.
+   Hanki ohjelmiston API-avain ohjelmistotoimittajalta; Sandbox käyttää tilausavainta.
+2. Luo Odoossa Vero API -yhteys oikealle yritykselle ja valitse ympäristö.
+3. Avaa **Avaimet ja varmenne** ja tallenna ohjelmiston API-avain.
+4. Syötä tilatun varmenteen siirtotunnus ja kertakäyttösalasana, aloita nouto,
+   nouda ja tarkista varmenne sekä ota se käyttöön. Sandbox ei tarvitse varmennetta.
+5. Paina **Testaa API-yhteys**. Tämä kysyy kausitietoja, eikä lähetä veroilmoitusta.
 
-Vanhan yhteyden **Avaimet ja varmenne** -näkymässä paina **Tuo olemassa olevat
-tunnukset**. Tämä siirtää myös keskeneräisen käyttöliittymässä aloitetun noudon
-avaimineen ja vastauksineen ilman uutta varmennepyyntöä. Alkuperäiset tiedostot
-säilyvät. Tuonti on tehtävä ennen vanhan yhteyden käyttöä tässä versiossa.
+Avain, tunnukset ja noudon tila sisältyvät tietokannan varmuuskopioon. Koko
+tietokantakopion haltija voi purkaa tunnukset: suojaa varmuuskopiot sen mukaisesti.
+Tavalliset Odoo-haut, viennit ja käyttöliittymä eivät paljasta tallennettuja avaimia.
 
-[Ylläpitäjän asennus-, siirto- ja palautusohje](docs/ENCRYPTED_CREDENTIALS.md).
-Aiemmat PDF-pikaohjeet kuvaavat käyttäjän painikkeet; tämä osio korvaa niiden
-mahdolliset tiedostotallennusta ja varmuuskopiointia koskevat kohdat.
+Vanha ulkoista salausavainta käyttävä yhteys jatkaa ennallaan. Tekninen ylläpitäjä,
+jolla on myös täydet kirjanpito-oikeudet, voi vaihtaa sen automaattiseen hallintaan
+**Avaimet ja varmenne → Ylläpitäjä: palautus ja avainhallinta** -kohdassa.
+Kirjoita yhteyden nimi, hyväksy seuraukset ja valitse **Ota automaattinen avainhallinta
+käyttöön / palauta**. Jos palvelimen avain on kadonnut mutta alkuperäinen avain on
+tallessa, sen voi syöttää suojattuun palautuskenttään. Varmenteen noutoa ei toisteta.
+
+Samassa kohdassa voi nollata vain tämän yhteyden tunnukset erillisellä vahvistuksella.
+Nollaus menettää myös keskeneräisen varmennehaun yksityisen avaimen ja tilan. Se ei
+peruuta varmennetta tai aiempaa pyyntöä Verohallinnossa. Älä käytä kulutettuja
+siirtotunnuksia uudelleen. Jonossa oleva tai epäselvä ilmoitus estää toimenpiteen.
+
+Eri nimelle kopioidun/palautetun tai Odoon neutraloiman tietokannan tuotantoyhteydet
+estetään. Testiyhteydet toimivat edelleen. Ylläpitäjä voi sallia tuotantoyhteydet
+erikseen samassa näkymässä vain oikeassa tuotantotietokannassa. Samanniminen käsin
+palautettu kopio on neutraloitava ylläpidossa ennen Odoon käynnistystä.
+
+Vanhoja tiedostopohjaisia tunnuksia voi edelleen tuoda **Tuo olemassa olevat
+tunnukset** -painikkeella. Uudessa tyhjässä tietokannassa tätä ei tarvita.
+
+[Tekninen tallennus- ja palautusohje](docs/ENCRYPTED_CREDENTIALS.md).
+Tämä osio korvaa vanhojen PDF-ohjeiden salausavaimen ja varmuuskopioinnin ohjeet.
 
 ## Riippuvuuksien versiotarkistus (18.0.1.4.2)
 
@@ -128,7 +151,7 @@ Moduulin päivitys ja palvelun restart tarvitaan kerran; myöhemmät avainvaihdo
 ja noudot eivät vaadi restartia.
 
 Salaisuudet ovat salattuina tietokannassa. Varmuuskopioi tietokanta ja erikseen
-palvelimen pääsalausavain; säilytä vanhat avaintiedostot siirron tarkistukseen asti. HTTP-reitti käyttää kirjautumista, CSRF-tarkistusta,
+mahdollinen ulkoinen pääsalausavain; säilytä vanhat avaintiedostot siirron tarkistukseen asti. HTTP-reitti käyttää kirjautumista, CSRF-tarkistusta,
 HTTPS-vaatimusta sekä palvelinpuolen yritys-/käyttöoikeustarkistuksia. Reitti
 ei käytä RPC:tä salaisuuksille. Reverse proxyn tulee poistaa asiakkaan omat
 Forwarded-otsakkeet, asettaa oikeat HTTPS-otsakkeet ja estää suora pääsy Odoon

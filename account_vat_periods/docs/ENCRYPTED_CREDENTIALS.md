@@ -1,128 +1,120 @@
-# Encrypted Vero credentials (18.0.1.5.0)
+# Credential storage and recovery (18.0.1.6.0)
 
-## One-time server setup
+## Automatic setup
 
-The administrator configures **one Fernet master key** for the Odoo deployment.
-Accountants then save software keys, retrieve certificates and activate them in
-**Keys and certificate**, without server access or per-company directories.
-The master key is not the Vero software API key or the certificate's private key.
+For a clean Odoo database, configure the company's Finnish chart of accounts
+before installing `account_vat_periods`. The existing period-closing XML data
+requires its accounts and journals during module installation.
 
-Install `requirements-vero.txt`, check the Python environment with `pip check`,
-update the module and configure one of these options before restarting Odoo:
+After the module and supported Python dependencies are installed, no server key
+configuration is required. Installation creates one random Fernet key in the
+internal `vero_api_master_key` table. A singleton constraint and transactional
+insert prevent competing keys. Upgrades preserve the key and do not regenerate
+it if database-managed credentials already exist but the key is missing.
 
-* `ODOO_VERO_ENCRYPTION_KEY`: environment variable containing a Fernet key.
-* `vero_encryption_key`: equivalent Odoo configuration option.
-* `ODOO_VERO_ENCRYPTION_KEY_FILE` or `vero_encryption_key_file`: absolute path
-  to a UTF-8/ASCII file containing the Fernet key. Suitable for a mounted secret.
+Create a company connection, choose the environment, open **Keys and certificate**
+and save the software API key. For test/production, first order a certificate
+through the Certificate Service, then retrieve, verify and activate it in Odoo.
+Sandbox needs its subscription key, not a certificate. **Test API connection**
+queries filing periods without submitting a return. No SSH, key file, environment
+variable or restart is required for this credential setup.
 
-A direct key takes precedence over a key file; environment settings take
-precedence over the corresponding configuration setting. Use only one source.
-All workers and scheduled jobs accessing the database must receive the same key.
-Use a different key for an unrelated deployment or test database clone.
+## Protection and backups
 
-Generate a key **once**, in a trusted administrator session using the Odoo Python
-environment. For example, after choosing a private location outside the repository:
+Credentials and enrollment state remain Fernet ciphertext in `vero_api_secret`,
+bound to connection, company and environment. The master key is in a separate
+internal table in the SAME database. Neither table has a public ORM model or
+ordinary search/export/RPC interface. Saved secrets are not returned to browsers.
+Accounting-group and company checks apply; maintenance additionally requires
+`base.group_system`.
 
-```python
-import os
-from cryptography.fernet import Fernet
+**A complete database copy includes the key needed to decrypt credentials.**
+Automatic mode does not protect against database-dump theft or database-admin
+access. Protect complete backups as credentials. Server administrators and code
+executing in Odoo can access secrets in either storage mode. Do not log credential
+HTTP bodies or database statement parameters. Master-key insertion bypasses Odoo
+SQL debug logging/profiler hooks; PostgreSQL/proxy/APM logging still needs suitable
+configuration by the hosting administrator.
 
-path = "/private/config/vero-master-key"
-fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-with os.fdopen(fd, "wb") as output:
-    output.write(Fernet.generate_key() + b"\n")
-```
+A full database backup contains both key and enrollment state. Restore them
+together. A snapshot older than a certificate request may lose the latest request
+state: reconcile its outcome before sending another one-use request.
 
-On Windows, choose an appropriate absolute path and restrict its ACL to the
-service identity and trusted administrators. In containers, mount a persistent
-secret read-only or inject it through the deployment's secret manager. Do not
-bake it into an image, Git, a public configuration file or logs. The module does
-not demand specific Unix modes on container volumes or company directories.
-The administrator remains responsible for protecting the master key source.
+## External keys and existing connections
 
-Add the **path, not the key**, to the Odoo configuration when using a file:
+Existing envelopes are marked `external` on upgrade; their key is not changed.
+A new connection also uses external storage if it is explicitly configured:
 
-```ini
-[options]
-vero_encryption_key_file = /private/config/vero-master-key
-```
+1. `ODOO_VERO_ENCRYPTION_KEY` (direct Fernet key).
+2. `vero_encryption_key` in the Odoo configuration (direct key).
+3. File path from `ODOO_VERO_ENCRYPTION_KEY_FILE`, otherwise the configuration
+   option `vero_encryption_key_file`.
 
-Do not regenerate the key on startup, module upgrade or container replacement.
-A missing or incorrect key blocks credential operations without replacing data.
-Plaintext lives in the Odoo process while needed; server administrators and code
-running inside that process can access it. Encryption does not protect a
-compromised application server. Restrict modules, logs and administrator access.
+There is no automatic path search or fallback after decryption failure. An
+envelope marked `database` always uses its database key, even if external settings
+later change. External-mode workers must share one key; back it up separately.
+Do not generate a different key for restored encrypted data.
 
-## Existing installations: explicit, reversible migration
+To migrate: **Keys and certificate → Administrator: recovery and key management**.
+Enter the exact connection name, acknowledge the consequences and choose **Use
+automatic key management / recover**. Existing contents, including pending PKI
+state, are re-encrypted atomically. No certificate request is sent. Other
+connections keep their mode. Retire the external key only after all connections
+using it have migrated.
 
-1. Back up the database and the existing credential directory/files securely.
-2. Configure and separately back up the master key, update the module and restart.
-3. Open each existing connection's **Keys and certificate** screen.
-4. Click **Import existing credentials**. This imports the configured key/cert
-   files and the current UI enrollment state, including the original private
-   key, CSR and saved service responses. It does not contact Vero or submit a
-   new certificate request. The legacy path fields are for this import only.
-5. Verify the certificate holder, expiry and status. Continue any pending request
-   with its existing retrieval identifier. Test the API connection separately.
-6. Retain the originals until migration and backup recovery have been verified.
-   The module neither changes their permissions nor deletes them. Afterwards,
-   the administrator can retire old copies under the organization's policy.
+If the original Fernet key is available but no longer configured, paste it in
+**Original encryption key** before confirming. This is not the software API key
+or certificate private key. The HTTPS/CSRF form route avoids ORM JSON-RPC logging;
+the key is not echoed or saved in configuration. Invalid keys leave data unchanged.
 
-Import is atomic and idempotent: it does not overwrite an existing vault. Missing
-private keys, mismatched certificates or unsafe source files stop import. Group
-read access alone does not block importing a regular service-owned file. Symlinks,
-hard links, group/other-writable files and unexpected file owners are rejected.
-If an old signed response is invalid, it is preserved for investigation; importing
-does not bypass signature verification or repeat the original request.
+## Explicit reset
 
-The old standalone test-certificate CLI is a legacy tool. Its finalized PEM pair
-can be imported using the legacy paths; its pending CLI state is not automatically
-converted to the UI enrollment format. Finish or investigate that request using
-the original tool rather than sending another request from Odoo.
+The same panel offers **Reset this connection's credentials**, requiring the exact
+name and acknowledgement. Queued/sending/uncertain returns block maintenance.
+Reset replaces this connection's envelope with an empty database-managed one,
+even when the original cannot be decrypted. It removes the API key, private key,
+certificate and enrollment state. Accounting data, filing history, other
+connections and legacy files remain unchanged. The empty envelope suppresses
+accidental re-import of old files.
 
-## Storage, concurrency and recovery
+Reset does NOT revoke a certificate at Vero or cancel a sent request. Never reuse
+consumed transfer credentials. Reconcile pending certificate requests with Vero
+and obtain replacement credentials if necessary. Reset is a deliberate destructive
+recovery action, never an automatic response to an error.
 
-`vero_api_secret` is a PostgreSQL table without a public ORM model. Each connection
-has an authenticated Fernet ciphertext containing credentials and enrollment
-state, bound to the connection, company and environment. No plaintext enters
-SQL parameters, generic ORM exports, attachments or RPC responses. Existing
-HTTPS, CSRF, accounting-group and company checks apply to the UI operations.
-Do not log credential HTTP request bodies in proxies, WAFs or APM systems.
+## Database copies
 
-A separate database cursor commits the generated key and pending state **before**
-the one-use PKI request. This intentionally survives rollback of the browser
-request's ORM transaction. A PostgreSQL session advisory lock remains held across
-those commits, preventing concurrent credential operations. Session pooling is
-required for this connection: PgBouncer transaction/statement pooling is not
-supported. Session locks replace the former Linux file lock for normal UI use.
+The key table records the database name approved for production. A different name
+blocks production API/PKI traffic. Odoo's standard `data/neutralize.sql` hook clears
+approval, including same-name neutralized copies. Upgrades preserve the block.
+Test and Sandbox connections remain usable. **Neutralize manually restored
+same-name copies before starting Odoo.** An identical unneutralized copy on another
+host cannot be detected automatically. Do not run multiple live copies.
 
-Client TLS keys are loaded into a per-request OpenSSL context in memory. No client
-private-key temporary file is created. Server certificate and hostname checks
-remain enabled, redirects are disabled and filing POSTs are not retried.
-The implementation uses the existing cryptography/Fernet library rather than
-depending on an OCA encryption module with incompatible library constraints.
+An accounting/technical administrator can explicitly enable production from the
+panel with confirmation. This approves all production connections in this
+database. Queued/sending/uncertain returns anywhere in the database prevent it;
+reconcile copied returns first. Enabling does not itself send anything.
 
-The normal PostgreSQL backup now includes encrypted credentials and pending
-requests. **Back up the master key separately with restricted access**, and test
-restoring it together with a matching database backup. A database alone cannot
-decrypt these credentials. Losing the key can require replacement credentials
-from the authorities. Do not reset it to address an enrollment error. Automated
-master-key rotation is not implemented; changing it requires a planned re-encryption
-migration. A database restored from before a PKI request may lack its latest state;
-reconcile that request before attempting another one-use submission.
+## Legacy files and transactions
 
-The deployment and real PostgreSQL/TLS integration tests run on Linux. Normal
-vault storage and locking no longer use `chmod`, `getuid` or `fcntl`; however,
-the existing PKI chain verification still needs the OpenSSL command-line tool.
-Windows and managed hosting require their own end-to-end deployment validation.
+**Import existing credentials** preserves original files, imports UI enrollment
+state and never resubmits a PKI request. Pending enrollment requires its original
+private key. Files must be regular, service-owned, not links or group/other-writable.
+Group read access is allowed. Clean installations need no legacy import.
+
+An independent cursor commits certificate keys and uncertain state before one-use
+PKI requests. The same per-connection session advisory lock serializes normal
+operations and maintenance across commits. PgBouncer transaction/statement pooling
+is unsupported. Client TLS keys stay in memory; hostname/CA verification remains
+enabled and filing POSTs are never automatically retried. Dependencies and the
+OpenSSL CLI requirement remain unchanged. Linux is validated; Windows and managed
+hosting require separate deployment validation.
 
 ## Verification
 
-Run the normal Odoo tests for `account_vat_periods`. They include encryption and
-identity isolation, legacy migration, missing keys, access restrictions and real
-loopback mutual TLS with positive and negative server verification cases.
-
-For actual independent commits/rollback and concurrent connections, run
-`tools/check_vault_transactions.py` through Odoo shell in a disposable database
-whose name ends in `_veroapi_test`. This check mocks the external PKI call and
-removes its own fixtures. It deliberately refuses ordinary database names.
+Run the Odoo module tests and `tools/check_vault_transactions.py` plus
+`tools/check_automatic_vault.py` via Odoo shell in an isolated database ending in
+`_veroapi_test`. Checks use fixture credentials and mocked external requests;
+no real certificate or filing is sent. They cover independent commits, recovery,
+reset, migration, key persistence, access checks and lock contention.

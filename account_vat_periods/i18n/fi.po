@@ -148,6 +148,12 @@ msgstr ""
 "velka tai palautus."
 
 #. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
+msgid "Administrator: recovery and key management"
+msgstr "Ylläpitäjä: palautus ja avainhallinta"
+
+#. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_account_vat_period__vero_report_ids
 msgid ""
 "All VAT returns and EC sales lists linked to this VAT period, across its "
@@ -230,6 +236,20 @@ msgid "Authorization token file"
 msgstr "Valtuutustunnisteen tiedosto"
 
 #. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
+msgid ""
+"Automatic key management stores the encryption key in this database. Someone"
+" with a complete database copy can decrypt the credentials. Switching "
+"storage keeps the existing API key, certificate and pending certificate "
+"request."
+msgstr ""
+"Automaattinen avainhallinta tallentaa salausavaimen tähän tietokantaan. Koko"
+" tietokantakopion haltija pystyy purkamaan tunnusten salauksen. "
+"Tallennustavan vaihto säilyttää nykyisen API-avaimen, varmenteen ja "
+"keskeneräisen varmennepyynnön."
+
+#. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_submission__content_hash
 msgid ""
 "Automatically calculated fingerprint of the confirmed report content. It "
@@ -298,16 +318,16 @@ msgstr "Varmenteen tiedosto"
 #: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
 msgid ""
 "Certificate retrieval needs attention. Keep the existing request and its "
-"files. Ask your administrator to investigate the error, then use Refresh "
-"status to retry the saved response check. Do not delete the connection or "
-"start another request with the same transfer credentials. You can still "
-"manage the software API key and return to the connection settings."
+"stored data. Ask your administrator to investigate the error, then use "
+"Refresh status to retry the saved response check. Do not delete the "
+"connection or start another request with the same transfer credentials. You "
+"can still manage the software API key and return to the connection settings."
 msgstr ""
 "Varmenteen nouto vaatii selvitystä. Säilytä nykyinen pyyntö ja sen "
-"tiedostot. Pyydä ylläpitäjää selvittämään virhe ja tarkista sen jälkeen "
+"tallennetut tiedot. Pyydä ylläpitäjää selvittämään virhe ja tarkista "
 "tallennettu vastaus uudelleen Päivitä tila -painikkeella. Älä poista "
 "yhteyttä tai aloita uutta pyyntöä samoilla siirtotunnuksilla. Voit edelleen "
-"hallita ohjelmisto-API-avainta ja palata yhteyden asetuksiin."
+"hallita ohjelmistoavainta ja palata yhteyden asetuksiin."
 
 #. module: account_vat_periods
 #. odoo-python
@@ -879,6 +899,12 @@ msgstr ""
 "korvaavan laskun kanssa."
 
 #. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
+msgid "Enable production in this database"
+msgstr "Salli tuotantoyhteydet tässä tietokannassa"
+
+#. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_backend__active
 msgid ""
 "Enable this connection for preparing and sending returns. Deactivating it "
@@ -913,6 +939,34 @@ msgstr ""
 "Salatut tunnukset on sidottu tähän yritykseen ja ympäristöön. Luo erillinen "
 "yhteys sen sijaan, että muuttaisit yritystä, ympäristöä tai vanhoja "
 "tiedostopolkuja."
+
+#. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
+msgid ""
+"Encryption key management is automatic. Credentials and their encryption key"
+" are included in the database backup. Protect the complete backup as "
+"confidential data."
+msgstr ""
+"Salausavaimen hallinta on automaattinen. Tunnukset ja niiden salausavain "
+"sisältyvät tietokannan varmuuskopioon. Suojaa koko varmuuskopio "
+"luottamuksellisena aineistona."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
+msgid ""
+"Enter the connection name exactly and acknowledge the consequences before "
+"continuing."
+msgstr ""
+"Kirjoita yhteyden nimi täsmälleen oikein ja vahvista ymmärtäväsi seuraukset "
+"ennen jatkamista."
+
+#. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
+msgid "Enter this connection's name to confirm"
+msgstr "Vahvista kirjoittamalla tämän yhteyden nimi"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_backend__environment
@@ -1024,11 +1078,6 @@ msgstr ""
 "ilmoitus ei ole automaattisesti vertailun lähtötietona."
 
 #. module: account_vat_periods
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.account_vat_period_view_tree
-msgid "File Statement"
-msgstr "Ilmoituksen tila"
-
-#. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__period_checked
 msgid "Filing period verified"
 msgstr "Verokausi tarkistettu"
@@ -1116,6 +1165,18 @@ msgstr ""
 "Luettava JSON-sisältö, joka lähetetään esikatselun vahvistamisen jälkeen. "
 "Tarkista yritys, kausi, ympäristö ja kaikki veromäärät; pelkkä esikatselun "
 "laskeminen ei lähetä ilmoitusta."
+
+#. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
+msgid ""
+"I understand the consequences of the selected operation. For a reset, I "
+"accept losing the saved credentials and will resolve any earlier certificate"
+" request with Vero."
+msgstr ""
+"Ymmärrän valitun toiminnon seuraukset. Nollatessani hyväksyn tallennettujen "
+"tunnusten menettämisen ja selvitän mahdollisen aiemman varmennepyynnön "
+"Verohallinnon kanssa."
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__id
@@ -1293,14 +1354,12 @@ msgstr "Avaimet ja varmenne"
 msgid ""
 "Keys and certificate retrieval data are encrypted in the database. The "
 "private key is never returned to the browser or written to a client key "
-"file. Administrators must back up the server encryption key separately from "
-"the database. Changing company credentials does not require an Odoo restart."
+"file. Changing company credentials does not require an Odoo restart."
 msgstr ""
 "Avaimet ja varmenteen noutotiedot tallennetaan tietokantaan salattuina. "
 "Yksityistä avainta ei palauteta selaimeen eikä kirjoiteta "
-"asiakasavaintiedostoon. Ylläpitäjän tulee varmuuskopioida palvelimen "
-"salausavain erillään tietokannasta. Yrityksen tunnusten vaihtaminen ei vaadi"
-" Odoon uudelleenkäynnistystä."
+"asiakasavaintiedostoon. Yrityksen tunnusten vaihtaminen ei vaadi Odoon "
+"uudelleenkäynnistystä."
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__write_uid
@@ -1378,6 +1437,20 @@ msgstr "Viimeisin lähetysyritys"
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__latest_payload
 msgid "Latest submission content"
 msgstr "Viimeisimmän lähetyksen sisältö"
+
+#. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
+msgid ""
+"Leave empty to use the current storage key. If it has been lost from the "
+"server configuration, enter the original Fernet encryption key to recover "
+"this connection. This is not the software API key. It is never returned to "
+"the browser."
+msgstr ""
+"Jätä tyhjäksi käyttääksesi nykyistä salausavainta. Jos avain on kadonnut "
+"palvelimen asetuksista, syötä alkuperäinen Fernet-salausavain tämän yhteyden"
+" palauttamiseksi. Kyseessä ei ole ohjelmiston API-avain. Avainta ei "
+"palauteta selaimeen."
 
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_backend_form
@@ -1710,6 +1783,12 @@ msgstr ""
 
 #. module: account_vat_periods
 #. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
+msgid "Only a technical administrator can recover or reset credentials."
+msgstr "Vain tekninen ylläpitäjä voi palauttaa tai nollata tunnukset."
+
+#. module: account_vat_periods
+#. odoo-python
 #: code:addons/account_vat_periods/models/vero_report.py:0
 msgid "Only an uncertain submission needs manual resolution."
 msgstr "Vain epäselvä lähetys tarvitsee käsin tehtävän selvityksen."
@@ -1768,6 +1847,12 @@ msgstr ""
 "siirtotunnus ja kertakäyttösalasana. Yrityksen ALV-tunnisteen pitää vastata "
 "tilauksen haltijaa. Nouto ei vaihda nykyistä varmennetta ennen erillistä "
 "käyttöönottoa."
+
+#. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
+msgid "Original encryption key (only for recovery)"
+msgstr "Alkuperäinen salausavain (vain palautusta varten)"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_submission__response_body
@@ -1938,6 +2023,30 @@ msgstr "Käsitellään. Älä lähetä samaa pyyntöä uudelleen."
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_submission__environment__production
 msgid "Production"
 msgstr "Tuotanto"
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
+msgid ""
+"Production connections are disabled in this restored or neutralized "
+"database. An administrator must explicitly enable production in Keys and "
+"certificate."
+msgstr ""
+"Tuotantoyhteydet on estetty tässä palautetussa tai neutraloidussa "
+"tietokannassa. Ylläpitäjän on sallittava tuotantoyhteydet erikseen Avaimet "
+"ja varmenne -näkymässä."
+
+#. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
+msgid ""
+"Production traffic is disabled in this database copy. Test connections "
+"remain available. Only enable production if this is the intended live "
+"database."
+msgstr ""
+"Tuotantoliikenne on estetty tässä tietokantakopiossa. Testiyhteyksiä voi "
+"käyttää. Salli tuotantoyhteydet vain, jos tämä on tarkoitettu "
+"tuotantotietokanta."
 
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.account_vat_period_view_search
@@ -2228,9 +2337,39 @@ msgid ""
 msgstr "Pyyntö vastaanotettu. Odota vähintään 30 sekuntia ja nouda varmenne."
 
 #. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
+msgid ""
+"Reset permanently removes this connection's saved API key, private key, "
+"certificate and retrieval state. It does not revoke a certificate at Vero or"
+" cancel an already sent request. Do not reuse consumed transfer credentials."
+" Other connections and accounting records are kept."
+msgstr ""
+"Nollaus poistaa pysyvästi tämän yhteyden tallennetun API-avaimen, yksityisen"
+" avaimen, varmenteen ja noudon tilan. Se ei peruuta varmennetta "
+"Verohallinnossa eikä jo lähetettyä pyyntöä. Älä käytä kulutettuja "
+"siirtotunnuksia uudelleen. Muut yhteydet ja kirjanpidon tiedot säilyvät."
+
+#. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
+msgid "Reset this connection's credentials"
+msgstr "Nollaa tämän yhteyden tunnukset"
+
+#. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_submission__resolution_note
 msgid "Resolution evidence"
 msgstr "Selvityksen perusteet"
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
+msgid ""
+"Resolve pending or uncertain returns before changing credential storage or "
+"enabling production."
+msgstr ""
+"Selvitä jonossa olevat tai tulokseltaan epäselvät ilmoitukset ennen "
+"tunnusten tallennustavan muuttamista tai tuotantoyhteyksien sallimista."
 
 #. module: account_vat_periods
 #. odoo-python
@@ -2988,6 +3127,33 @@ msgstr ""
 
 #. module: account_vat_periods
 #. odoo-python
+#: code:addons/account_vat_periods/vero_vault.py:0
+msgid ""
+"The credential storage format is unsupported. Update the module before "
+"continuing."
+msgstr "Tunnusten tallennusmuotoa ei tueta. Päivitä moduuli ennen jatkamista."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/vero_vault.py:0
+msgid ""
+"The database encryption key is invalid. Restore the original database key."
+msgstr ""
+"Tietokannan salausavain on virheellinen. Palauta alkuperäinen tietokannan "
+"avain."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/vero_vault.py:0
+msgid ""
+"The database encryption key is missing. Restore it with the database; do not"
+" generate a replacement for existing credentials."
+msgstr ""
+"Tietokannan salausavain puuttuu. Palauta se tietokannan mukana; älä luo "
+"korvaavaa avainta olemassa oleville tunnuksille."
+
+#. module: account_vat_periods
+#. odoo-python
 #: code:addons/account_vat_periods/wizards/vero_wizard.py:0
 msgid ""
 "The filing content or correction options changed. Refresh the preview before"
@@ -3100,6 +3266,12 @@ msgstr "Suojatun hakemiston oikeudet tai omistaja ovat virheelliset."
 #. module: account_vat_periods
 #. odoo-python
 #: code:addons/account_vat_periods/models/vero_credentials.py:0
+msgid "The recovery encryption key is not a valid Fernet key."
+msgstr "Palautukseen annettu salausavain ei ole kelvollinen Fernet-avain."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_credentials.py:0
 msgid ""
 "The request has started. If no response is available, verify the outcome "
 "with the Finnish Tax Administration before trying again."
@@ -3142,13 +3314,15 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_vat_periods/vero_vault.py:0
 msgid ""
-"The saved Vero credentials cannot be decrypted for this connection. Restore "
-"the original server encryption key and matching database backup. Do not "
-"overwrite the credentials or start a new certificate request."
+"The saved Vero credentials cannot be decrypted for this connection. An "
+"administrator can recover them using the original encryption key or "
+"explicitly reset this connection. Do not repeat a pending certificate "
+"request."
 msgstr ""
 "Tallennettujen Vero-tunnusten salausta ei voi purkaa tälle yhteydelle. "
-"Palauta alkuperäinen palvelimen salausavain ja sitä vastaava tietokannan "
-"varmuuskopio. Älä korvaa tunnuksia tai aloita uutta varmennepyyntöä."
+"Ylläpitäjä voi palauttaa ne alkuperäisellä salausavaimella tai nollata tämän"
+" yhteyden erillisellä vahvistuksella. Älä lähetä keskeneräistä "
+"varmennepyyntöä uudelleen."
 
 #. module: account_vat_periods
 #. odoo-python
@@ -3266,6 +3440,18 @@ msgid ""
 msgstr ""
 "Tällä yhteydellä on tunnuksia tai varmennepyyntö. Arkistoi yhteys sen "
 "sijaan, että poistaisit sen palautustiedot."
+
+#. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
+msgid ""
+"This connection uses an external encryption key. Keep that key separately "
+"with your backups, or ask an administrator to switch to automatic key "
+"management below."
+msgstr ""
+"Tämä yhteys käyttää ulkoista salausavainta. Säilytä avain erikseen "
+"varmuuskopioiden yhteydessä tai pyydä ylläpitäjää vaihtamaan alla "
+"automaattiseen avainhallintaan."
 
 #. module: account_vat_periods
 #. odoo-python
@@ -3414,6 +3600,12 @@ msgstr ""
 "asettaminen käsin vaatii teknisen ylläpitäjän."
 
 #. module: account_vat_periods
+#. odoo-javascript
+#: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
+msgid "Use automatic key management / recover"
+msgstr "Ota automaattinen avainhallinta käyttöön / palauta"
+
+#. module: account_vat_periods
 #: model:ir.model.constraint,message:account_vat_periods.constraint_vero_api_backend_vero_backend_company_environment
 msgid ""
 "Use one Vero connection per company and environment. Update its credentials "
@@ -3516,11 +3708,6 @@ msgstr "ALV-raportti Kvartaali"
 #: model:mis.report.instance,name:account_vat_periods.mis_report_instance_vat_year
 msgid "VAT Report Year"
 msgstr "ALV-raportti Vuosi"
-
-#. module: account_vat_periods
-#: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__vat_report_ok
-msgid "VAT Reported OK"
-msgstr "ALV ilmoitettu"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__vero_vat_state
@@ -3787,21 +3974,45 @@ msgstr "Sinulla ei ole oikeutta tämän yrityksen Vero API -avaimiin."
 msgid "You do not have access to this company."
 msgstr "Sinulla ei ole oikeutta tähän yritykseen."
 
-#. module: account_vat_periods
-#. odoo-javascript
-#: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
-msgid ""
-"Certificate retrieval needs attention. Keep the existing request and its "
-"stored data. Ask your administrator to investigate the error, then use "
-"Refresh status to retry the saved response check. Do not delete the "
-"connection or start another request with the same transfer credentials. You "
-"can still manage the software API key and return to the connection settings."
-msgstr ""
-"Varmenteen nouto vaatii selvitystä. Säilytä nykyinen pyyntö ja sen "
-"tallennetut tiedot. Pyydä ylläpitäjää selvittämään virhe ja tarkista "
-"tallennettu vastaus uudelleen Päivitä tila -painikkeella. Älä poista "
-"yhteyttä tai aloita uutta pyyntöä samoilla siirtotunnuksilla. Voit edelleen "
-"hallita ohjelmistoavainta ja palata yhteyden asetuksiin."
+#~ msgid ""
+#~ "Certificate retrieval needs attention. Keep the existing request and its "
+#~ "files. Ask your administrator to investigate the error, then use Refresh "
+#~ "status to retry the saved response check. Do not delete the connection or "
+#~ "start another request with the same transfer credentials. You can still "
+#~ "manage the software API key and return to the connection settings."
+#~ msgstr ""
+#~ "Varmenteen nouto vaatii selvitystä. Säilytä nykyinen pyyntö ja sen "
+#~ "tiedostot. Pyydä ylläpitäjää selvittämään virhe ja tarkista sen jälkeen "
+#~ "tallennettu vastaus uudelleen Päivitä tila -painikkeella. Älä poista "
+#~ "yhteyttä tai aloita uutta pyyntöä samoilla siirtotunnuksilla. Voit edelleen "
+#~ "hallita ohjelmisto-API-avainta ja palata yhteyden asetuksiin."
+
+#~ msgid "File Statement"
+#~ msgstr "Ilmoituksen tila"
+
+#~ msgid ""
+#~ "Keys and certificate retrieval data are encrypted in the database. The "
+#~ "private key is never returned to the browser or written to a client key "
+#~ "file. Administrators must back up the server encryption key separately from "
+#~ "the database. Changing company credentials does not require an Odoo restart."
+#~ msgstr ""
+#~ "Avaimet ja varmenteen noutotiedot tallennetaan tietokantaan salattuina. "
+#~ "Yksityistä avainta ei palauteta selaimeen eikä kirjoiteta "
+#~ "asiakasavaintiedostoon. Ylläpitäjän tulee varmuuskopioida palvelimen "
+#~ "salausavain erillään tietokannasta. Yrityksen tunnusten vaihtaminen ei vaadi"
+#~ " Odoon uudelleenkäynnistystä."
+
+#~ msgid ""
+#~ "The saved Vero credentials cannot be decrypted for this connection. Restore "
+#~ "the original server encryption key and matching database backup. Do not "
+#~ "overwrite the credentials or start a new certificate request."
+#~ msgstr ""
+#~ "Tallennettujen Vero-tunnusten salausta ei voi purkaa tälle yhteydelle. "
+#~ "Palauta alkuperäinen palvelimen salausavain ja sitä vastaava tietokannan "
+#~ "varmuuskopio. Älä korvaa tunnuksia tai aloita uutta varmennepyyntöä."
+
+#~ msgid "VAT Reported OK"
+#~ msgstr "ALV ilmoitettu"
 
 #~ msgid ""
 #~ "Absolute server path to the company's PEM client certificate for the "

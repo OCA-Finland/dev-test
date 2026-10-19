@@ -30,7 +30,8 @@ def check(registry):
             backend = environment['vero.api.backend'].browse(backend_id)
             # Force an old repeatable-read snapshot before the independent save.
             cr.execute('SELECT count(*) FROM vero_api_secret')
-            with patch.object(vero_vault, 'cipher_from_config', return_value=cipher), \
+            with patch.object(vero_vault, 'external_configured', return_value=True), \
+                    patch.object(vero_vault, 'cipher_from_config', return_value=cipher), \
                     patch.object(credentials, 'call_pki', side_effect=credentials.CredentialError('Fixture timeout')) as request:
                 try:
                     backend._credential_operation('submit', {'transfer_id': 'fixture', 'transfer_password': 'Fixture123'})

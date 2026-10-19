@@ -1,5 +1,8 @@
 # ALV-kaudet ja Vero API – käyttöohje
 
+> Versiosta 18.0.1.6.0 alkaen uusi asennus hallitsee salausavaimen automaattisesti. Katso ajantasaiset käyttöönotto-, palautus- ja varmuuskopiointiohjeet [README-ohjeesta](README_VERO_API.md#automaattinen-avainhallinta-180160). Sen ohje korvaa tämän dokumentin vanhat palvelinavaimen määritysohjeet.
+
+
 **Moduuli:** `account_vat_periods` · **Versio:** 18.0.1.3.1 · **Odoo:** 18 Community
 
 **Ohje päivitetty:** 5.10.2026
@@ -127,7 +130,7 @@ Palvelimen tiedostopolkujen käsin muuttaminen on rajattu tekniselle ylläpitäj
 3. Avaa oikean yrityksen ja ympäristön **Avaimet ja varmenne**. Syötä Verohallinnon turvasähköpostista siirtotunnus ja kertakäyttösalasana.
 4. Paina **Aloita tilatun varmenteen nouto** kerran. Odoo luo yksityisen avaimen palvelimella ja lähettää varmennepyynnön. Siirtotunnusta ja kertakäyttösalasanaa ei tallenneta Odoon tietokantaan tai levylle.
 5. Kun tila on `waiting`, odota vähintään 30 sekuntia. Paina **Nouda ja tarkista varmenne**. Odoo tarkistaa vastauksen allekirjoituksen, varmenneketjun, ympäristön, voimassaolon, yritystunnisteen ja avainparin vastaavuuden.
-6. Kun tila on `ready`, tarkista tiedot ja paina **Ota noudettu varmenne käyttöön**. Mahdollinen aiempi varmenne pysyy käytössä tähän saakka. Käyttöönotto päivittää varmenteen ja yksityisen avaimen polut yhdessä.
+6. Kun tila on `ready`, tarkista tiedot ja paina **Ota noudettu varmenne käyttöön**. Mahdollinen aiempi varmenne pysyy käytössä tähän saakka. Käyttöönotto päivittää varmenteen ja yksityisen avaimen salatussa tallennuksessa yhdessä.
 7. Paina **Testaa API-yhteys**. Se tekee kuluvan vuoden ALV-kausikyselyn eikä lähetä veroilmoitusta. Onnistunut kysely varmistaa yhteyden kyseiseen palveluun; ilmoitusten sisältö ja muut rajapintaoikeudet testataan erikseen.
 
 Jos selain tai yhteys katkeaa, avaa sama yhteys ja paina **Päivitä tila**. Tila `uncertain` tarkoittaa, että kertakäyttötunnusten lähettämisen tulos ei ole varmistunut. Moduuli säilyttää avaimen ja estää uuden pyynnön. Jos vastaanotettu allekirjoitettu vastaus on tallessa, tila palautetaan siitä automaattisesti; muussa tapauksessa selvitä pyyntö Verohallinnolta. Älä tilaa tai lähetä uutta varmennetta vain aikakatkaisun vuoksi. Tila `rejected` tarkoittaa varmennettua hylkäystä: korjaa tunnukset tai tilaus ennen uutta yritystä. Keskeneräinen ilmoitus estää käytössä olevan avaimen tai varmenteen vaihtamisen.
@@ -138,11 +141,11 @@ Varmenteen viimeinen voimassaolopäivä näkyy näkymässä. **RenewCertificate-
 
 Versiosta 18.0.1.5.0 alkaen ohjelmistoavain, yksityinen avain, varmenne ja keskeneräisen noudon tiedot säilyvät salattuina tietokannassa. Tunnukset on sidottu yritykseen, yhteyteen ja ympäristöön. Ne eivät ole tavallisia luettavia Odoo-kenttiä tai liitteitä. Yhteyden kopiointi ei kopioi tunnuksia. TLS-yhteys käyttää yksityistä avainta muistissa.
 
-Ylläpitäjä määrittää kerran palvelimen pääsalausavaimen. Tämän jälkeen kirjanpitäjä käyttää avaintoimintoja ilman palvelinpääsyä. Jos näkymä ilmoittaa salauksen asetusten puuttumisesta, pyydä ylläpitäjää tekemään [palvelimen käyttöönotto](docs/ENCRYPTED_CREDENTIALS.md).
+Versiosta 18.0.1.6.0 alkaen uusi asennus luo salausavaimen automaattisesti tietokantaan. Kirjanpitäjä hoitaa Vero-käyttöönoton käyttöliittymässä ilman palvelinpääsyä. Vanha ulkoista avainta käyttävä yhteys säilyy ennallaan; ylläpitäjä voi siirtää sen automaattiseen hallintaan avainnäkymän palautus- ja avainhallintaosiossa. Katso [tallennus- ja palautusohje](docs/ENCRYPTED_CREDENTIALS.md).
 
 Vanhassa yhteydessä paina **Tuo olemassa olevat tunnukset**. Toiminto siirtää olemassa olevat avaimet ja keskeneräisen käyttöliittymässä aloitetun noudon salattuun tietokantatallennukseen lähettämättä uutta varmennepyyntöä. Vanhat tiedostot säilyvät muuttumattomina. Tarkista varmenteen tiedot ja yhteyden toiminta ennen kuin ylläpitäjä poistaa vanhoja kopioita.
 
-Tietokantavarmistus sisältää nyt salatut tunnukset. Ylläpidon on varmuuskopioitava pääsalausavain erikseen ja testattava palautus yhdessä tietokannan kanssa. Kadonnutta pääsalausavainta ei voi palauttaa Verohallinnolta. Älä vaihda sitä noutovirheen korjaamiseksi. Palvelimen pääkäyttäjä ja Odoo-prosessi voivat edelleen käyttää tunnuksia: salaus ei suojaa kaapattua sovelluspalvelinta vastaan.
+Automaattisessa avainhallinnassa tietokantavarmistus sisältää sekä salatut tunnukset että salausavaimen. Koko tietokantakopion haltija pystyy purkamaan tunnukset, joten suojaa varmuuskopiot luottamuksellisina. Valinnaisessa ulkoisen avaimen mallissa avain varmuuskopioidaan edelleen erikseen. Palvelimen pääkäyttäjä ja Odoo-prosessi voivat käyttää tunnuksia kummassakin mallissa. Noutovirhettä ei korjata vaihtamalla salausavainta: käytä ylläpitäjän palautus- tai erikseen vahvistettavaa nollaustoimintoa.
 
 ### Ympäristöjen ero
 

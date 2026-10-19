@@ -14,6 +14,9 @@ export class VeroCredentials extends Component {
         this.key = useRef("softwareKey");
         this.transfer = useRef("transferId");
         this.password = useRef("transferPassword");
+        this.recoveryKey = useRef("recoveryKey");
+        this.confirmation = useRef("confirmation");
+        this.acknowledge = useRef("acknowledge");
         this.state = useState({ info: null, busy: false, error: "", success: "" });
         this.backendId = this.props.action.params.backend_id;
         onWillStart(() => this.run("status"));
@@ -68,6 +71,18 @@ export class VeroCredentials extends Component {
         const values = { software_key: this.key.el.value.trim() };
         this.key.el.value = "";
         return this.run("save_key", values);
+    }
+
+    maintenance(operation) {
+        const values = {
+            confirmation: this.confirmation.el.value,
+            acknowledge: this.acknowledge.el.checked ? "yes" : "no",
+            encryption_key: this.recoveryKey.el.value.trim(),
+        };
+        this.recoveryKey.el.value = "";
+        this.confirmation.el.value = "";
+        this.acknowledge.el.checked = false;
+        return this.run(operation, values);
     }
 
     submit() {

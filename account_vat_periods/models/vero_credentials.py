@@ -10,6 +10,7 @@ import re
 import stat
 
 from cryptography import x509
+from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import serialization
 from cryptography.x509.oid import NameOID
 from odoo import api, fields, models, _
@@ -40,6 +41,7 @@ class VeroBackendCredentials(models.Model):
         self.env.cr.execute('''CREATE TABLE IF NOT EXISTS vero_api_secret (
             backend_id integer PRIMARY KEY REFERENCES vero_api_backend(id) ON DELETE CASCADE,
             ciphertext bytea NOT NULL)''')
+        vero_vault.initialize(self.env.cr)
 
     def _credential_access(self):
         self.ensure_one()
@@ -56,10 +58,65 @@ class VeroBackendCredentials(models.Model):
     @contextmanager
     def _open_credential_vault(self):
         self._credential_access()
-        cipher = vero_vault.cipher_from_config(config, credentials.CredentialError)
         with vero_vault.open_vault(self.env.registry, self.id, self.company_id.id, self.environment,
-                                   cipher, credentials.CredentialError) as vault:
+                                   None, credentials.CredentialError, config=config) as vault:
             yield vault
+
+    def _production_allowed(self):
+        if self.environment != 'production':
+            return
+        with self.env.registry.cursor() as cr:
+            cr.execute('SELECT production_database = current_database() FROM vero_api_master_key WHERE id=1')
+            row = cr.fetchone()
+        if not row or not row[0]:
+            raise credentials.CredentialError(_('Production connections are disabled in this restored or neutralized database. An administrator must explicitly enable production in Keys and certificate.'))
+
+    def _credential_maintenance(self, operation, values):
+        """Explicit administrator recovery, with the same lock as PKI operations."""
+        self._credential_access()
+        if not self.env.user.has_group('base.group_system'):
+            raise AccessError(_('Only a technical administrator can recover or reset credentials.'))
+        if values.get('confirmation') != self.name or values.get('acknowledge') != 'yes':
+            raise credentials.CredentialError(_('Enter the connection name exactly and acknowledge the consequences before continuing.'))
+        with vero_vault.open_vault(self.env.registry, self.id, self.company_id.id, self.environment,
+                                   None, credentials.CredentialError, maintenance=True) as cr:
+            # Use this fresh snapshot, not the outer HTTP transaction's snapshot.
+            cr.execute('''SELECT 1 FROM vero_api_submission s JOIN vero_api_report r ON r.id=s.report_id
+                          WHERE (r.backend_id=%s OR %s) AND s.state IN ('queued','sending','uncertain') LIMIT 1''',
+                       [self.id, operation == 'enable_production'])
+            if cr.fetchone():
+                raise credentials.CredentialError(_('Resolve pending or uncertain returns before changing credential storage or enabling production.'))
+            if operation == 'enable_production':
+                cr.execute('UPDATE vero_api_master_key SET production_database=current_database() WHERE id=1')
+                cr.commit()
+            elif operation == 'reset_credentials':
+                # Keep an empty, valid envelope to suppress legacy file re-import.
+                # Neither delete legacy files nor contact the certificate service.
+                cipher = vero_vault.database_cipher(cr, credentials.CredentialError)
+                cr.execute('DELETE FROM vero_api_secret WHERE backend_id=%s', [self.id])
+                vault = vero_vault.Vault(cr, self.id, self.company_id.id, self.environment,
+                                        cipher, credentials.CredentialError, 'database')
+                vault.settings = {'reset_by': self.env.uid}
+                vault.save()
+            else:
+                supplied = values.get('encryption_key', '').strip()
+                if supplied:
+                    # A recovery key must not be overridden by process settings.
+                    try:
+                        cipher = Fernet(supplied.encode('ascii'))
+                    except (ValueError, UnicodeError):
+                        raise credentials.CredentialError(_('The recovery encryption key is not a valid Fernet key.')) from None
+                    mode = 'external'
+                else:
+                    cipher, mode = vero_vault.select_cipher(cr, self.id, config, credentials.CredentialError)
+                vault = vero_vault.Vault(cr, self.id, self.company_id.id, self.environment,
+                                        cipher, credentials.CredentialError, mode)
+                vault.cipher = vero_vault.database_cipher(cr, credentials.CredentialError)
+                vault.mode = 'database'
+                vault.save()
+            _logger.info('Vero credential maintenance=%s backend=%s company=%s user=%s',
+                         operation, self.id, self.company_id.id, self.env.uid)
+        return self._credential_info()
 
     def _credential_identity(self):
         try:
@@ -134,10 +191,18 @@ class VeroBackendCredentials(models.Model):
         self._credential_access()
         result = {'name': self.name, 'company': self.company_id.display_name, 'environment': self.environment,
                   'vat': self.company_id.vat or '', 'key_configured': False, 'certificate_configured': False,
-                  'legacy_available': False, 'storage_ready': False, 'enrollment': {}}
+                  'legacy_available': False, 'storage_ready': False, 'enrollment': {},
+                  'can_manage_storage': self.env.user.has_group('base.group_system'), 'storage_mode': '',
+                  'production_blocked': False}
+        if self.environment == 'production':
+            try:
+                self._production_allowed()
+            except credentials.CredentialError:
+                result['production_blocked'] = True
         try:
             with self._open_credential_vault() as vault:
                 result['storage_ready'] = True
+                result['storage_mode'] = vault.mode
                 result['legacy_available'] = not vault.existing and self._has_legacy_credentials()
                 result['key_configured'] = vault.configured('active/software-key')
                 result['certificate_configured'] = vault.configured('active/certificate.pem') and vault.configured('active/private-key.pem')
@@ -172,6 +237,10 @@ class VeroBackendCredentials(models.Model):
         self._credential_access()
         if operation == 'status':
             return self._credential_info()
+        if operation in ('use_database_key', 'reset_credentials', 'enable_production'):
+            return self._credential_maintenance(operation, values)
+        if operation in ('submit', 'retrieve', 'activate', 'test_connection'):
+            self._production_allowed()
         if operation in ('submit', 'retrieve', 'activate', 'test_connection', 'migrate'):
             credentials.check_dependencies()
         if operation == 'test_connection':

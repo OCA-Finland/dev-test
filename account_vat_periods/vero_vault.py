@@ -17,6 +17,47 @@ from .vero_payload import _
 LOCK_NAMESPACE = 1447383631
 
 
+def initialize(cr):
+    """Create one database key atomically; never replace it during upgrades."""
+    cr.execute("ALTER TABLE vero_api_secret ADD COLUMN IF NOT EXISTS storage_mode varchar NOT NULL DEFAULT 'external'")
+    cr.execute('''CREATE TABLE IF NOT EXISTS vero_api_master_key (
+        id integer PRIMARY KEY CHECK (id=1), key bytea NOT NULL,
+        production_database varchar NOT NULL)''')
+    # Do not pass the plaintext master key through Odoo's SQL debug logger or
+    # profiler hooks. The driver participates in the same install transaction.
+    # Database-side statement/parameter logging must also exclude secret writes.
+    cr._obj.execute('''INSERT INTO vero_api_master_key (id,key,production_database)
+                  SELECT 1,%s,current_database()
+                  WHERE NOT EXISTS (SELECT 1 FROM vero_api_secret WHERE storage_mode='database')
+                  ON CONFLICT (id) DO NOTHING''',
+               [Fernet.generate_key()])
+
+
+def external_configured(config):
+    return any(os.environ.get(name) for name in ('ODOO_VERO_ENCRYPTION_KEY', 'ODOO_VERO_ENCRYPTION_KEY_FILE')) or any(
+        config.get(name) for name in ('vero_encryption_key', 'vero_encryption_key_file'))
+
+
+def database_cipher(cr, error):
+    cr.execute('SELECT key FROM vero_api_master_key WHERE id=1')
+    row = cr.fetchone()
+    if not row:
+        raise error(_('The database encryption key is missing. Restore it with the database; do not generate a replacement for existing credentials.'))
+    try:
+        return Fernet(bytes(row[0]))
+    except (ValueError, TypeError):
+        raise error(_('The database encryption key is invalid. Restore the original database key.')) from None
+
+
+def select_cipher(cr, backend_id, config, error):
+    cr.execute('SELECT storage_mode FROM vero_api_secret WHERE backend_id=%s', [backend_id])
+    row = cr.fetchone()
+    mode = row[0] if row else ('external' if external_configured(config) else 'database')
+    if mode not in ('external', 'database'):
+        raise error(_('The credential storage format is unsupported. Update the module before continuing.'))
+    return (database_cipher(cr, error) if mode == 'database' else cipher_from_config(config, error)), mode
+
+
 def cipher_from_config(config, error):
     key = os.environ.get('ODOO_VERO_ENCRYPTION_KEY') or config.get('vero_encryption_key')
     key_file = os.environ.get('ODOO_VERO_ENCRYPTION_KEY_FILE') or config.get('vero_encryption_key_file')
@@ -61,9 +102,10 @@ class DatabasePath:
 
 
 class Vault:
-    def __init__(self, cr, backend_id, company_id, environment, cipher, error):
+    def __init__(self, cr, backend_id, company_id, environment, cipher, error, mode='external'):
         self.cr, self.backend_id, self.cipher, self.error = cr, backend_id, cipher, error
         self.binding = [backend_id, company_id, environment]
+        self.mode = mode
         self.files = {}
         self.settings = {}
         cr.execute('SELECT ciphertext FROM vero_api_secret WHERE backend_id=%s', [backend_id])
@@ -80,17 +122,18 @@ class Vault:
             except (InvalidToken, ValueError, KeyError, TypeError):
                 raise error(_(
                     'The saved Vero credentials cannot be decrypted for this connection. '
-                    'Restore the original server encryption key and matching database backup. '
-                    'Do not overwrite the credentials or start a new certificate request.'
+                    'An administrator can recover them using the original encryption key or explicitly reset this connection. '
+                    'Do not repeat a pending certificate request.'
                 )) from None
         self.root = DatabasePath(self)
 
     def save(self):
         body = {'version': 1, 'binding': self.binding, 'files': self.files, 'settings': self.settings}
         ciphertext = self.cipher.encrypt(json.dumps(body, separators=(',', ':')).encode())
-        self.cr.execute('''INSERT INTO vero_api_secret (backend_id, ciphertext)
-                           VALUES (%s, %s) ON CONFLICT (backend_id)
-                           DO UPDATE SET ciphertext=EXCLUDED.ciphertext''', [self.backend_id, ciphertext])
+        self.cr.execute('''INSERT INTO vero_api_secret (backend_id, ciphertext, storage_mode)
+                           VALUES (%s, %s, %s) ON CONFLICT (backend_id)
+                           DO UPDATE SET ciphertext=EXCLUDED.ciphertext, storage_mode=EXCLUDED.storage_mode''',
+                        [self.backend_id, ciphertext, self.mode])
         self.cr.commit()
         self.existing = True
 
@@ -105,7 +148,7 @@ class Vault:
 
 
 @contextmanager
-def open_vault(registry, backend_id, company_id, environment, cipher, error):
+def open_vault(registry, backend_id, company_id, environment, cipher, error, config=None, maintenance=None):
     with registry.cursor() as cr:
         cr.execute('SELECT pg_try_advisory_lock(%s, %s)', [LOCK_NAMESPACE, backend_id])
         if not cr.fetchone()[0]:
@@ -114,7 +157,13 @@ def open_vault(registry, backend_id, company_id, environment, cipher, error):
             cr.execute('SELECT company_id, environment FROM vero_api_backend WHERE id=%s', [backend_id])
             if cr.fetchone() != (company_id, environment):
                 raise error(_('Save the Vero connection before configuring its credentials, then reopen this screen.'))
-            yield Vault(cr, backend_id, company_id, environment, cipher, error)
+            if maintenance:
+                yield cr
+            else:
+                mode = 'external'
+                if cipher is None:
+                    cipher, mode = select_cipher(cr, backend_id, config or {}, error)
+                yield Vault(cr, backend_id, company_id, environment, cipher, error, mode)
         finally:
             cr.rollback()
             cr.execute('SELECT pg_advisory_unlock(%s, %s)', [LOCK_NAMESPACE, backend_id])

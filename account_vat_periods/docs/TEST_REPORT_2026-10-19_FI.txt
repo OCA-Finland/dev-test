@@ -1,0 +1,110 @@
+VERO API – PUHTAAN ASENNUKSEN JA ILMOITUSKETJUN TESTI
+19.10.2026
+
+LOPPUTULOS
+Uuden testivarmenteen nouto sekä ilmoitusten lähetys ja korjaus onnistuivat
+kokonaan uudessa Odoo 18 Community -tietokannassa. 19 työnkulun tarkistusta
+läpäisi. Erillisessä regressioajossa kaikki 105 testiä läpäisivät.
+
+YMPÄRISTÖ JA RAJAUS
+- Tietokanta: vero_e2e_20261019_veroapi_test
+- Moduuli: account_vat_periods 18.0.1.6.0
+- Tyhjä PostgreSQL-tietokanta, ei kopio commu-kannasta eikä demodataa.
+- Suomen tilikartta, suomen kieli, kuukausittaiset ALV-kaudet ja uudet testilaskut.
+- Uusi Vero TEST -varmenne käyttäjän tilaamilla kertakäyttötunnuksilla.
+- Varmenteen haltija 7020347-9, voimassa 18.10.2028 asti.
+- Ohjelmistokohtainen API-avain käytettiin olemassa olevasta testiyhteydestä.
+  Vanhaa varmennetta, yksityistä avainta tai hakutilaa ei kopioitu.
+- Salausavain muodostui automaattisesti uuteen tietokantaan. Tälle kannalle
+  ei asetettu salausavaimen ympäristömuuttujaa eikä avaintiedoston polkua.
+- Yhteys: https://apitest.vero.fi/FIS/Return/SAT/Test
+- Tuotantoyhteydet estettiin. Alkuperäistä commu-kantaa ei korvattu.
+
+VARMENTEEN KÄYTTÖÖNOTTO
+Ohjelmistoavaimen tallennus, varmennepyyntö, nouto ja aktivointi suoritettiin
+Odoon kirjautumista ja CSRF-suojausta käyttävän avainnäkymän HTTP-reittien
+kautta. Varmennepyyntö lähetettiin täsmälleen kerran. Vastaus tarkistettiin
+ja uusi varmenne aktivoitiin onnistuneesti.
+
+Ensimmäinen heti aktivoinnin jälkeen tehty API-yhteystesti epäonnistui.
+Sen tarkka HTTP-vastaus ei tallentunut testiraporttiin, joten juurisyytä ei
+vahvistettu. Seuraavat lukevat yhteystestit onnistuivat samoilla tunnuksilla
+ilman asetusten muuttamista. Myös uuden HTTP-prosessin käynnistyksen jälkeen
+avaimen ja varmenteen luku sekä oikea API-yhteys onnistuivat.
+
+KIRJANPITO JA LÄHETYKSET
+Kirjanpitotapahtumat ja ilmoitusten käsittely testattiin Odoon mallimetodien
+kautta. Ilmoituksia käsitteli normaali cron-toiminto erikseen käynnistettynä;
+ajastin oli pois käytöstä, jotta testi eteni hallituissa vaiheissa. Tämä oli
+automaattinen integraatiotesti, ei jokaisen vaiheen selaimella tehty klikkaustesti.
+
+1. Yhteenvetoilmoitus lähetettiin ennen ALV-kauden sulkemista.
+   Tavaramyynti EU:hun 500 euroa, palvelumyynti 100 euroa.
+2. Kotimaan myynti 1 000 euroa, myynnin hyvitys 200 euroa ja osto 200 euroa:
+   myynnin ALV 204 euroa, vähennettävä ALV 51 euroa, maksettava ALV 153 euroa.
+   MIS-esikatselu vastasi laskuja ja pysyi samana sulkukirjauksen jälkeen.
+3. ALV-kauden sulku muodosti kirjanpitoviennin ja verolukituksen.
+4. Veron ilmoittama aiempi käsitelty ilmoitus esti tahattoman ensilähetyksen.
+5. Korvaavana lähetetty 153 euron ALV-ilmoitus sai vastaanottokuittauksen
+   ja muodosti luonnosostolaskun.
+6. Identtinen uusi lähetys estettiin. Uusi cron-ajo ei lähettänyt uudelleen
+   eikä muodostanut toista laskua.
+7. Veron tilakysely onnistui ja vastaus tallentui.
+8. EU-myynnin hyvitys muutti tavaramyynnin 400 euroon. Yhteenvetoilmoituksen
+   korjaus lähetettiin; palvelumyynti säilyi 100 eurossa.
+9. ALV-korjaus nosti maksettavan veron 204 euroon. Vanha luonnoslasku
+   peruttiin ja uusi muodostettiin.
+10. Uusi ALV-lasku kirjattiin ja maksettiin testikirjanpidon pankkiviennillä.
+    Mitään oikeaa pankkimaksua ei tehty.
+11. Uusi ostolasku laski ALV:n 178,50 euroon. Ilmoituksen korjaus onnistui.
+    Maksettua laskua ei muutettu automaattisesti; erillinen oikaisu muodosti
+    204 euron hyvityksen ja 178,50 euron laskun.
+12. Oikaisun jälkeen alkuperäinen maksu ja täsmäytys säilyivät. Hyvitystä jäi
+    25,50 euroa ja ALV:n selvittelytili 2939 täsmäsi nollaan.
+13. Huhtikuun palautettava ALV -255 euroa lähetettiin ilman maksettavaa laskua.
+14. Toukokuun nollailmoitus lähetettiin ilman maksettavaa laskua.
+15. Toisen yrityksen tunnuksiin pääsy estettiin rajatulta kirjanpitokäyttäjältä.
+    Readonly-käyttäjä ei voinut käynnistää ilmoittamista.
+16. Uuden HTTP-prosessin kautta luetut kausien tilat näyttivät maaliskuun,
+    huhtikuun ja toukokuun ALV-ilmoitukset sekä maaliskuun yhteenvetoilmoituksen
+    vastaanotettuina.
+
+API-KUTSUT
+Työnkulkuun kuului 20 oikeaa kutsua Veron TEST-rajapintaan:
+- FileVATReturn/v2: 5
+- FileECSalesList/v1: 2
+- GetVATPeriods/v1: 12
+- GetFiledVATReturn/v2: 1
+Näiden lisäksi tehtiin varmenteen nouto ja erilliset yhteystestit.
+Kaikki seitsemän ilmoituslähetystä palauttivat HTTP 200:n ja moduulin
+edellyttämän vastaanottokuittauksen.
+
+ERILLISET AUTOMATISOIDUT TESTIT
+commu_veroapi_test: 0 failed, 0 errors, 105 tests.
+Näihin kuuluvat muun muassa simuloidut aikakatkaisut ja epävarman tuloksen
+käsittely. Oikeita ilmoituslähetyksiä ei tahallisesti katkaistu verkosta.
+
+HAVAINNOT JA TULOSTEN RAJAT
+- ALV-kausien nykyinen muodostaja käyttää fi_FI-kieltä suoraan. Ilman suomen
+  kielen asentamista tilikauden luonti epäonnistui. Kielen normaali asennus
+  ratkaisi asian. Tämä on puhtaan asennuksen huomioitava esivaatimus.
+- Ensimmäisen varmenteen aktivoinnin jälkeisen yhteystestin virhe jäi syyltään
+  avoimeksi. Myöhemmät yhteystestit ja kaikki ilmoituslähetykset onnistuivat.
+- Veron testiympäristö palautti valitut kaudet Processed-tilassa. Siksi kaikki
+  viisi ALV-lähetystä olivat korvaavia ilmoituksia. Ensimmäisen ilmoituksen
+  todellista vastaanottoa Missing-tilassa olevalle kaudelle ei tällä aineistolla
+  voitu osoittaa. Moduulin esto ja korvaavan ilmoituksen valinta testattiin.
+- TEST-ympäristön kuittaukset ja tilakysely eivät osoita tuotannon hyväksyntää
+  eivätkä itsessään todista, että testipalvelu säilyttää ja palauttaa viimeksi
+  lähetetyt tiedot tuotannon tavoin.
+- Ohjelmakoodia ei muutettu tämän testiajon vuoksi.
+
+TALLENNETTU AINEISTO
+Seuraavat tekniset tulostiedostot säilyvät paikallisessa testiaineistossa;
+niitä ei julkaista tässä Git-repositoriossa:
+flow-results.json: testit, lähetysten ja kirjanpitotositteiden tunnisteet,
+                 API-pyynnöt ja testipalvelun vastaukset.
+http-final-results.json: uuden prosessin yhteys- ja tilatarkistus.
+Uusi tietokanta ja varmenne säilytettiin palvelimella jatkotestausta varten.
+Raporttitiedostot eivät sisällä API-avainta, salausavainta, yksityistä avainta
+tai varmenteen kertakäyttöisiä siirtotunnuksia.

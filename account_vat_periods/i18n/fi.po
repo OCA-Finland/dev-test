@@ -23,6 +23,13 @@ msgid ". Valid until:"
 msgstr ". Voimassa asti:"
 
 #. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/wizards/vero_wizard.py:0
+#: model:ir.model.constraint,message:account_vat_periods.constraint_vero_api_report_vero_vat_period_required
+msgid "A VAT return requires a VAT period."
+msgstr "ALV-ilmoitus edellyttää ALV-kautta."
+
+#. module: account_vat_periods
 #. odoo-javascript
 #: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
 msgid ""
@@ -101,17 +108,15 @@ msgid "API key saved."
 msgstr "API-avain tallennettu."
 
 #. module: account_vat_periods
-#: model:ir.model.fields,help:account_vat_periods.field_vero_api_report__vat_period_id
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__vat_period_id
 msgid ""
-"Accounting VAT period associated with this return. VAT returns cover the "
-"exact period; EC sales lists cover one selected calendar month within it. "
-"VAT submission requires this period to be closed, but EC submission does "
-"not."
+"Accounting period required for VAT returns. EC sales lists are prepared "
+"independently by company and calendar month and do not require a closed VAT "
+"period."
 msgstr ""
-"Ilmoitukseen liittyvä kirjanpidon ALV-kausi. ALV-ilmoitus kattaa täsmälleen "
-"kauden; EU-yhteenveto kattaa yhden siihen kuuluvan kalenterikuukauden. ALV-"
-"lähetys vaatii suljetun kauden, EU-lähetys ei."
+"ALV-ilmoituksen edellyttämä kirjanpidon verokausi. EU-yhteenvetoilmoitukset "
+"laaditaan erikseen yrityksittäin ja kalenterikuukausittain, eivätkä ne "
+"edellytä suljettua ALV-kautta."
 
 #. module: account_vat_periods
 #. odoo-javascript
@@ -425,6 +430,8 @@ msgstr "Yritykset"
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_backend__company_id
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_report__company_id
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_submission__company_id
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__company_id
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_ec_month_search
 msgid "Company"
 msgstr "Yritys"
 
@@ -446,6 +453,17 @@ msgstr ""
 "Yritys, jolle yhteys tai ilmoitus kuuluu. Kirjanpitoaineisto, tunnukset ja "
 "käyttöoikeuksien tarkistukset rajataan tähän yritykseen; valitse yritys, "
 "jonka omia verotietoja ilmoitetaan."
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__company_id
+msgid ""
+"Company whose calendar month is being reported. Select an allowed company "
+"and its Vero connection. The EC month is independent of this company's VAT "
+"filing frequency."
+msgstr ""
+"Yritys, jonka kalenterikuukausi ilmoitetaan. Valitse sallittu yritys ja sen "
+"Vero-yhteys. EU-ilmoituskuukausi ei riipu yrityksen ALV-verokauden "
+"pituudesta."
 
 #. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_report__backend_id
@@ -819,9 +837,24 @@ msgid "EC action state"
 msgstr "EU-toiminnon tila"
 
 #. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_report__ec_due_date
+msgid "EC filing deadline"
+msgstr "EU-ilmoituksen määräpäivä"
+
+#. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_backend__goods_tag_ids
 msgid "EC goods tax grids"
 msgstr "EU-tavaramyynnin veroruudukot"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_report__ec_checked_at
+msgid "EC last checked at"
+msgstr "EU-laskenta tarkistettu"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_report__ec_status
+msgid "EC month status"
+msgstr "EU-kuukauden tila"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__vero_ec_received
@@ -857,24 +890,10 @@ msgid "EC triangulation tax grids"
 msgstr "EU-kolmikantamyynnin veroruudukot"
 
 #. module: account_vat_periods
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_period_list
-msgid "EC: reports"
-msgstr "EU: ilmoitukset"
-
-#. module: account_vat_periods
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_period_list
-msgid "EC: resolve status"
-msgstr "EU: selvitä tila"
-
-#. module: account_vat_periods
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_period_list
-msgid "EC: submission status"
-msgstr "EU: lähetyksen tila"
-
-#. module: account_vat_periods
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_period_list
-msgid "EC: view error"
-msgstr "EU: näytä virhe"
+#: model:ir.actions.act_window,name:account_vat_periods.vero_ec_month_action
+#: model:ir.ui.menu,name:account_vat_periods.vero_ec_month_menu
+msgid "EU sales lists"
+msgstr "EU-yhteenvetoilmoitukset"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__history_ids
@@ -973,11 +992,13 @@ msgstr "Vahvista kirjoittamalla tämän yhteyden nimi"
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_report__environment
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_submission__environment
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__environment
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_ec_month_search
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
 msgid "Environment"
 msgstr "Ympäristö"
 
 #. module: account_vat_periods
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_report__ec_status__error
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_report__state__error
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_submission__state__error
 msgid "Error"
@@ -1362,6 +1383,12 @@ msgstr ""
 "uudelleenkäynnistystä."
 
 #. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_report__ec_preparation
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__ec_preparation
+msgid "Last EC calculation"
+msgstr "Viimeisin EU-laskenta"
+
+#. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__write_uid
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_backend__write_uid
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_report__write_uid
@@ -1574,6 +1601,11 @@ msgid "Missing or invalid numeric report value."
 msgstr "Numeerinen raporttiarvo puuttuu tai on virheellinen."
 
 #. module: account_vat_periods
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_ec_month_list
+msgid "Month"
+msgstr "Kuukausi"
+
+#. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__latest_id
 msgid ""
 "Most recently created submission attempt for this report. Its data is shown "
@@ -1683,6 +1715,22 @@ msgid "No related bill exists."
 msgstr "Ilmoitukseen liittyvää laskua ei ole."
 
 #. module: account_vat_periods
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
+msgid ""
+"No reportable EU sales were found in the posted entries for this month. No "
+"initial sales list is needed. Recalculate after changing the bookkeeping."
+msgstr ""
+"Kuukauden kirjatuista tapahtumista ei löytynyt ilmoitettavaa EU-myyntiä. "
+"Ensimmäistä yhteenvetoilmoitusta ei tarvita. Laske tiedot uudelleen "
+"kirjanpidon muuttamisen jälkeen."
+
+#. module: account_vat_periods
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_report__ec_preparation__empty
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_report__ec_status__empty
+msgid "No reportable sales"
+msgstr "Ei ilmoitettavaa myyntiä"
+
+#. module: account_vat_periods
 #. odoo-python
 #: code:addons/account_vat_periods/vero_payload.py:0
 msgid "Non-finite report value."
@@ -1698,6 +1746,12 @@ msgstr "Pohjois-Irlannin EU-yhteenveto koskee tavaroita, ei palveluja."
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__account_vat_period__payment_state__not_paid
 msgid "Not Paid"
 msgstr "Maksamatta"
+
+#. module: account_vat_periods
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_report__ec_preparation__unchecked
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_report__ec_status__unchecked
+msgid "Not checked"
+msgstr "Ei tarkistettu"
 
 #. module: account_vat_periods
 #. odoo-python
@@ -1929,15 +1983,11 @@ msgstr ""
 "vastaanotettu."
 
 #. module: account_vat_periods
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_ec_month_list
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_report_form
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_report_list
 msgid "Prepare / correct"
 msgstr "Valmistele / korjaa"
-
-#. module: account_vat_periods
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_period_list
-msgid "Prepare EC sales list"
-msgstr "Tee EU-ilmoitus"
 
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_period_list
@@ -2069,6 +2119,7 @@ msgid "Query error"
 msgstr "Kyselyvirhe"
 
 #. module: account_vat_periods
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_report__ec_status__queued
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_report__state__queued
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_submission__state__queued
 msgid "Queued"
@@ -2123,6 +2174,12 @@ msgstr ""
 #: code:addons/account_vat_periods/static/src/components/vero_credentials.js:0
 msgid "Ready to activate"
 msgstr "Valmis käyttöönottoon"
+
+#. module: account_vat_periods
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_report__ec_preparation__ready
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_report__ec_status__ready
+msgid "Ready to submit"
+msgstr "Valmis lähetettäväksi"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__replacement_reason
@@ -2189,6 +2246,7 @@ msgid "Receivable"
 msgstr "Saatavaa"
 
 #. module: account_vat_periods
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_report__ec_status__accepted
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_report__state__accepted
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_submission__state__accepted
 msgid "Received"
@@ -2337,6 +2395,17 @@ msgid ""
 msgstr "Pyyntö vastaanotettu. Odota vähintään 30 sekuntia ja nouda varmenne."
 
 #. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_report__vat_period_id
+msgid ""
+"Required accounting period for a VAT return. EC sales lists use their own "
+"calendar month and do not require a VAT period or its closing. Existing EC "
+"reports retain their historical period link for reference only."
+msgstr ""
+"ALV-ilmoituksen pakollinen kirjanpidon verokausi. EU-yhteenvetoilmoituksilla"
+" on oma kalenterikuukautensa, eivätkä ne edellytä ALV-kautta tai sen "
+"sulkemista. Vanhojen EU-ilmoitusten kausilinkki säilyy historiatietona."
+
+#. module: account_vat_periods
 #. odoo-javascript
 #: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
 msgid ""
@@ -2389,6 +2458,7 @@ msgid "Resolved by"
 msgstr "Selvittäjä"
 
 #. module: account_vat_periods
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_report__ec_status__not_received
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_report__state__not_received
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_submission__state__not_received
 msgid "Resolved: not received"
@@ -2398,6 +2468,30 @@ msgstr "Selvitetty: ei vastaanotettu"
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_submission_form
 msgid "Response"
 msgstr "Vastaus"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_report__ec_preparation
+msgid ""
+"Result of the latest EC preview calculation. No reportable sales means no "
+"initial return is needed based on the posted entries checked at that time. "
+"Recalculate after changing the bookkeeping. This is not a receipt from the "
+"Finnish Tax Administration."
+msgstr ""
+"Viimeisimmän EU-esikatselun laskentatulos. Ei ilmoitettavaa myyntiä "
+"tarkoittaa, ettei tarkistushetken kirjattujen tapahtumien perusteella "
+"tarvita ensimmäistä ilmoitusta. Laske tiedot uudelleen kirjanpidon "
+"muuttamisen jälkeen. Tämä ei ole Verohallinnon vastaanottokuittaus."
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__ec_preparation
+msgid ""
+"Result of the latest EC preview. An empty initial month does not need a "
+"submission. Refresh after bookkeeping changes; corrections to earlier "
+"submissions remain separate."
+msgstr ""
+"Viimeisimmän EU-esikatselun tulos. Tyhjältä, aiemmin ilmoittamattomalta "
+"kuukaudelta ei tarvitse lähettää ilmoitusta. Päivitä tiedot kirjanpidon "
+"muutosten jälkeen; aiempien ilmoitusten korjaukset käsitellään erikseen."
 
 #. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_submission__bill_message
@@ -2544,8 +2638,14 @@ msgstr "Valitse kauden yritykselle kuuluva Vero-yhteys."
 #. module: account_vat_periods
 #. odoo-python
 #: code:addons/account_vat_periods/wizards/vero_wizard.py:0
-msgid "Select a month within this VAT period."
-msgstr "Valitse tähän ALV-kauteen kuuluva kuukausi."
+msgid "Select a report type."
+msgstr "Valitse ilmoitustyyppi."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/wizards/vero_wizard.py:0
+msgid "Select an allowed company."
+msgstr "Valitse yritys, johon sinulla on käyttöoikeus."
 
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_period_list
@@ -2555,13 +2655,18 @@ msgstr "Valitse ALV-ilmoituksen toinen yhteys / ympäristö"
 #. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__month
 msgid ""
-"Select any date in the calendar month to report. The whole month is included"
-" and the selected date must fall within the VAT period. Prepare each "
-"required month separately even for quarterly or annual VAT periods."
+"Select any date in the calendar month to report. The entire calendar month "
+"is included. Prepare each required month separately, including when VAT is "
+"reported quarterly or annually."
 msgstr ""
-"Valitse mikä tahansa ilmoitettavan kalenterikuukauden päivä. Mukaan tulee "
-"koko kuukausi ja valitun päivän on kuuluttava ALV-kauteen. Valmistele kukin "
-"tarvittava kuukausi erikseen myös neljännesvuosi- ja vuosikausilla."
+"Valitse mikä tahansa ilmoitettavan kalenterikuukauden päivä. Laskentaan "
+"sisältyy koko kalenterikuukausi. Laadi kukin tarvittava kuukausi erikseen "
+"myös silloin, kun ALV ilmoitetaan neljännesvuosittain tai vuosittain."
+
+#. module: account_vat_periods
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_ec_month_list
+msgid "Select month"
+msgstr "Valitse kuukausi"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__no_activity
@@ -2575,9 +2680,10 @@ msgstr ""
 "esikatselu valinnan muuttamisen jälkeen."
 
 #. module: account_vat_periods
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_period_list
-msgid "Select the EC sales list month or another connection"
-msgstr "Valitse EU-ilmoituksen kuukausi tai toinen yhteys"
+#. odoo-python
+#: code:addons/account_vat_periods/wizards/vero_wizard.py:0
+msgid "Select the EC sales list month."
+msgstr "Valitse EU-yhteenvetoilmoituksen kuukausi."
 
 #. module: account_vat_periods
 #. odoo-python
@@ -2591,6 +2697,7 @@ msgid "Send Report"
 msgstr "Lähetä raportti"
 
 #. module: account_vat_periods
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_report__ec_status__sending
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_report__state__sending
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_submission__state__sending
 msgid "Sending / check status"
@@ -2642,6 +2749,7 @@ msgstr "Näytä Date Range -suodatin"
 #. module: account_vat_periods
 #. odoo-python
 #: code:addons/account_vat_periods/models/vero_backend.py:0
+#: code:addons/account_vat_periods/models/vero_report.py:0
 #: code:addons/account_vat_periods/models/vero_vat_period.py:0
 #: code:addons/account_vat_periods/wizards/vero_wizard.py:0
 msgid "Show Full Accounting Features is required."
@@ -2729,6 +2837,7 @@ msgid "Status"
 msgstr "Tila"
 
 #. module: account_vat_periods
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_ec_month_list
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_report_form
 msgid "Status and responses"
 msgstr "Tila ja vastaukset"
@@ -2804,6 +2913,18 @@ msgstr "Lähetyshistoria on muuttumaton."
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_submission__state
 msgid "Submission status"
 msgstr "Lähetyksen tila"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_report__ec_status
+msgid ""
+"Submission status for this individual company, connection and calendar "
+"month. Before any submission, shows the last calculation result. A receipt "
+"belongs only to this month and does not confirm any other month or the VAT "
+"return."
+msgstr ""
+"Tämän yrityksen, yhteyden ja kalenterikuukauden lähetystila. Ennen "
+"ensimmäistä lähetystä näyttää viimeisimmän laskentatuloksen. Kuittaus koskee"
+" vain tätä kuukautta eikä vahvista muita kuukausia tai ALV-ilmoitusta."
 
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
@@ -3390,6 +3511,17 @@ msgid "The submitting user has been disabled."
 msgstr "Lähetyksen vahvistanut käyttäjä on poistettu käytöstä."
 
 #. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_report__ec_due_date
+msgid ""
+"The twentieth day of the following month, moved to the next Finnish working "
+"day when necessary. This is the EC filing deadline, independent of the VAT "
+"period and payment date."
+msgstr ""
+"Seuraavan kuukauden 20. päivä, tarvittaessa siirrettynä seuraavaan "
+"suomalaiseen arkipäivään. Tämä on EU-yhteenvetoilmoituksen määräpäivä, joka "
+"ei riipu ALV-kaudesta tai veron maksupäivästä."
+
+#. module: account_vat_periods
 #. odoo-python
 #: code:addons/account_vat_periods/models/vero_report.py:0
 msgid ""
@@ -3469,6 +3601,17 @@ msgstr "Tälle yhteydelle ja kaudelle on jo ilmoitus."
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__res_company__vat_period_duration__3
 msgid "Three months"
 msgstr "Kolme kuukautta"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_report__ec_checked_at
+msgid ""
+"Time of the most recent EC preview calculation. Entries posted or changed "
+"after this time are not covered by that check. Refresh the preview before "
+"confirming the month."
+msgstr ""
+"Viimeisimmän EU-esikatselulaskennan ajankohta. Sen jälkeen kirjatut tai "
+"muutetut tapahtumat eivät sisälly tarkistukseen. Päivitä esikatselu ennen "
+"kuukauden vahvistamista."
 
 #. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_submission__resolved_at
@@ -3554,6 +3697,7 @@ msgstr ""
 #. module: account_vat_periods
 #. odoo-javascript
 #: code:addons/account_vat_periods/static/src/components/vero_credentials.js:0
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_report__ec_status__uncertain
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_report__state__uncertain
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_submission__state__uncertain
 msgid "Uncertain result"
@@ -3598,6 +3742,17 @@ msgid ""
 msgstr ""
 "Määritä tunnukset Avaimet ja varmenne -toiminnolla. Palvelinpolkujen "
 "asettaminen käsin vaatii teknisen ylläpitäjän."
+
+#. module: account_vat_periods
+#: model_terms:ir.actions.act_window,help:account_vat_periods.vero_ec_month_action
+msgid ""
+"Use Select month to prepare an EU sales list. Each calendar month is handled"
+" independently of VAT periods. Previously prepared months and their "
+"submission history appear here."
+msgstr ""
+"Laadi EU-yhteenvetoilmoitus Valitse kuukausi -painikkeesta. Kukin "
+"kalenterikuukausi käsitellään ALV-kausista riippumatta. Aiemmin valmistellut"
+" kuukaudet ja niiden lähetyshistoria näkyvät tässä."
 
 #. module: account_vat_periods
 #. odoo-javascript
@@ -3682,8 +3837,6 @@ msgid "VAT Period List"
 msgstr "ALV-kausien lista"
 
 #. module: account_vat_periods
-#: model:ir.actions.act_window,name:account_vat_periods.account_vat_period_action
-#: model:ir.ui.menu,name:account_vat_periods.account_vat_period_menu_action
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.res_config_settings_view_form
 msgid "VAT Periods"
 msgstr "ALV-kaudet"
@@ -3730,6 +3883,12 @@ msgstr "ALV-laskun oikaisu"
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__vat_period_id
 msgid "VAT period"
 msgstr "ALV-kausi"
+
+#. module: account_vat_periods
+#: model:ir.actions.act_window,name:account_vat_periods.account_vat_period_action
+#: model:ir.ui.menu,name:account_vat_periods.account_vat_period_menu_action
+msgid "VAT periods and returns"
+msgstr "ALV-kaudet ja ilmoitukset"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__vero_vat_received
@@ -3942,11 +4101,6 @@ msgstr "Veroilmoitus"
 
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_period_list
-msgid "View EC sales list"
-msgstr "Näytä EU-ilmoitus"
-
-#. module: account_vat_periods
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_period_list
 msgid "View VAT return"
 msgstr "Näytä ALV-ilmoitus"
 
@@ -3963,6 +4117,11 @@ msgid "Waiting for certificate"
 msgstr "Odottaa varmennetta"
 
 #. module: account_vat_periods
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_ec_month_search
+msgid "Year"
+msgstr "Vuosi"
+
+#. module: account_vat_periods
 #. odoo-python
 #: code:addons/account_vat_periods/controllers/credentials.py:0
 msgid "You do not have access to this company's Vero API credentials."
@@ -3973,6 +4132,49 @@ msgstr "Sinulla ei ole oikeutta tämän yrityksen Vero API -avaimiin."
 #: code:addons/account_vat_periods/models/vero_backend.py:0
 msgid "You do not have access to this company."
 msgstr "Sinulla ei ole oikeutta tähän yritykseen."
+
+#~ msgid ""
+#~ "Accounting VAT period associated with this return. VAT returns cover the "
+#~ "exact period; EC sales lists cover one selected calendar month within it. "
+#~ "VAT submission requires this period to be closed, but EC submission does "
+#~ "not."
+#~ msgstr ""
+#~ "Ilmoitukseen liittyvä kirjanpidon ALV-kausi. ALV-ilmoitus kattaa täsmälleen "
+#~ "kauden; EU-yhteenveto kattaa yhden siihen kuuluvan kalenterikuukauden. ALV-"
+#~ "lähetys vaatii suljetun kauden, EU-lähetys ei."
+
+#~ msgid "EC: reports"
+#~ msgstr "EU: ilmoitukset"
+
+#~ msgid "EC: resolve status"
+#~ msgstr "EU: selvitä tila"
+
+#~ msgid "EC: submission status"
+#~ msgstr "EU: lähetyksen tila"
+
+#~ msgid "EC: view error"
+#~ msgstr "EU: näytä virhe"
+
+#~ msgid "Prepare EC sales list"
+#~ msgstr "Tee EU-ilmoitus"
+
+#~ msgid "Select a month within this VAT period."
+#~ msgstr "Valitse tähän ALV-kauteen kuuluva kuukausi."
+
+#~ msgid ""
+#~ "Select any date in the calendar month to report. The whole month is included"
+#~ " and the selected date must fall within the VAT period. Prepare each "
+#~ "required month separately even for quarterly or annual VAT periods."
+#~ msgstr ""
+#~ "Valitse mikä tahansa ilmoitettavan kalenterikuukauden päivä. Mukaan tulee "
+#~ "koko kuukausi ja valitun päivän on kuuluttava ALV-kauteen. Valmistele kukin "
+#~ "tarvittava kuukausi erikseen myös neljännesvuosi- ja vuosikausilla."
+
+#~ msgid "Select the EC sales list month or another connection"
+#~ msgstr "Valitse EU-ilmoituksen kuukausi tai toinen yhteys"
+
+#~ msgid "View EC sales list"
+#~ msgstr "Näytä EU-ilmoitus"
 
 #~ msgid ""
 #~ "Certificate retrieval needs attention. Keep the existing request and its "

@@ -14,6 +14,22 @@ lähetetään itsenäisesti. Yhteenvetoilmoituksen kohde on aina kalenterikuukau
 Kaikki Vero-toiminnot edellyttävät ryhmää `account.group_account_user`;
 `account.group_account_readonly` ei riitä.
 
+## Erilliset ALV- ja EU-näkymät (18.0.1.7.0)
+
+**ALV-kaudet ja ilmoitukset** säilyttää kausien sulkemisen, ALV-ilmoitukset ja
+maksulaskut. **EU-yhteenvetoilmoitukset** näyttää yhden rivin kalenterikuukaudelle
+ja Vero-yhteydelle. Valitse kuukausi -painike avaa yrityksen, yhteyden ja kuukauden
+valinnan ilman ALV-kautta. Kuukausilla on omat määräpäivät, laskentatilat ja
+lähetyshistoriat. Ei ilmoitettavaa myyntiä tarkoittaa viimeisimmän tarkistuksen
+tulosta, ei Verohallinnon kuittausta. Kirjanpidon muuttuessa tiedot lasketaan uudelleen.
+
+Nykyiset EU-ilmoitukset näkyvät uudessa listassa. Niiden ALV-kausilinkit säilyvät
+historiatietona. Saman yhteyden saman kuukauden ilmoitusta käytetään uudelleen;
+korjaukset ja jonossa olevien lähetysten estot säilyvät. Uusia tyhjiä kuukausirivejä
+ei generoida automaattisesti: listalla näkyvät valmistellut kuukaudet.
+Katso [päivitetty EU-työnkulku](KAYTTOOHJE_FI.md#11-eu-yhteenvetoilmoitus).
+Se korvaa vanhan PDF-käyttöohjeen EU-ilmoituksen aloituskohdan.
+
 ## Automaattinen avainhallinta (18.0.1.6.0)
 
 Uusi asennus luo tietokantakohtaisen salausavaimen automaattisesti. Vero-yhteyden
@@ -114,11 +130,11 @@ virheilmoitukset sekä tilatekstien päivittymisen käyttäjän kielen mukaan.
 
 ## Ilmoitusten tila ja kaksoislähetyksen esto (18.0.1.3.0)
 
-Kausilista näyttää ALV- ja EU-ilmoitukset erikseen ympäristöineen ja kuukausineen.
+ALV-kausilista näyttää ALV-ilmoitukset; EU-kuukaudet näkyvät omassa EU-listassaan.
 Rivin toiminto avaa olemassa olevan lähetyksen tilan. Vastaanotetun ilmoituksen
 korjaus aloitetaan erikseen; jonossa, lähetyksessä tai epäselvänä oleva ilmoitus
-estää uuden esikatselun ja lähetyksen. Yhteyden tai EU-kuukauden voi valita
-listan erillisistä kuvakkeista. Useiden ilmoitusten tiloja ei yhdistetä yhdeksi
+estää uuden esikatselun ja lähetyksen. ALV-yhteyden voi valita kausilistan
+vaihtonuolikuvakkeesta. EU-kuukausi valitaan EU-listan Valitse kuukausi -painikkeesta. Useiden ilmoitusten tiloja ei yhdistetä yhdeksi
 vihreäksi kuittaukseksi, jos jokin niistä on kesken.
 
 ALV-esikatselu tekee GetVATPeriods/v1-kyselyn. Kausivirhe tai yhteyden epäonnistuminen
@@ -214,8 +230,9 @@ testitietokannassa: hyväksytyn testilähetyksenkin laskuvaihe toimii normaalist
 ## Käyttö
 
 Kausirivin ALV-painike avaa esikatselun. ALV-kausi pitää sulkea ennen lähettämistä.
-EU-yhteenveto-painike avaa itsenäisen kuukausivalinnan; se ei vaadi ALV-kauden
-sulkemista tai ALV-ilmoituksen lähettämistä. Laskenta ei tarvitse API-varmennetta.
+EU-yhteenvetoilmoitukset-valikon Valitse kuukausi -painike avaa itsenäisen
+kuukausivalinnan. Se ei vaadi ALV-kauden luomista, sulkemista tai ALV-ilmoituksen
+lähettämistä. Laskenta ei tarvitse API-varmennetta.
 
 Esikatselu näyttää varsinaisen lähetettävän JSON-sisällön ja kenttäkohtaiset
 muutokset viimeiseen vastaanotettuun versioon. Lähetys laskee tiedot uudelleen
@@ -232,8 +249,8 @@ vastaukset ja kuittaukset. ALV:lle voi tehdä `GetFiledVATReturn/v2`-tilakyselyn
 EU-yhteenvedolle julkisessa SAT-rajapinnassa ei ole vastaavaa hakutoimintoa.
 
 Vihreä kuvake tarkoittaa tallennettua vastaanottokuittausta, ei lopullista
-verotuspäätöstä. Testi/tuotanto näkyy erikseen. EU-kuvake koskee luotuja
-kuukausi-ilmoituksia: se ei väitä, että kaikki vuosineljänneksen kuukaudet on annettu.
+verotuspäätöstä. Testi/tuotanto näkyy erikseen. EU-kuukauden tila koskee kyseistä
+kuukautta: se ei väitä, että kaikki vuosineljänneksen kuukaudet on annettu.
 Vanhaa `sent`-merkintää ei tulkita Vero-kuittaukseksi.
 
 ## Aikakatkaisu ja kirjanpito

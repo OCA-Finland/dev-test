@@ -14,13 +14,17 @@ class VeroWizard(models.TransientModel):
     _name = 'vero.api.wizard'
     _description = 'Preview, submit and inspect Vero returns'
 
+    company_id = fields.Many2one(
+        'res.company', string='Company', default=lambda self: self.env.company, required=True,
+        help='Company whose calendar month is being reported. Select an allowed company and its Vero '
+             'connection. The EC month is independent of this company\'s VAT filing frequency.',
+    )
     vat_period_id = fields.Many2one(
         'account.vat.period',
         string='VAT period',
         help=(
-            'Accounting VAT period associated with this return. VAT returns cover the exact period; EC '
-            'sales lists cover one selected calendar month within it. VAT submission requires this period '
-            'to be closed, but EC submission does not.'
+            'Accounting period required for VAT returns. EC sales lists are prepared independently '
+            'by company and calendar month and do not require a closed VAT period.'
         ),
     )
     backend_id = fields.Many2one(
@@ -43,9 +47,8 @@ class VeroWizard(models.TransientModel):
     month = fields.Date(
         string='EC sales list month',
         help=(
-            'Select any date in the calendar month to report. The whole month is included and the '
-            'selected date must fall within the VAT period. Prepare each required month separately even '
-            'for quarterly or annual VAT periods.'
+            'Select any date in the calendar month to report. The entire calendar month is included. '
+            'Prepare each required month separately, including when VAT is reported quarterly or annually.'
         ),
     )
     report_id = fields.Many2one(
@@ -56,6 +59,11 @@ class VeroWizard(models.TransientModel):
             'VAT return or EC sales list to which this record belongs. A report keeps its company, period '
             'and environment, while corrections create new submission attempts in the same history.'
         ),
+    )
+    ec_preparation = fields.Selection(
+        related='report_id.ec_preparation', string='Last EC calculation', readonly=True,
+        help='Result of the latest EC preview. An empty initial month does not need a submission. '
+             'Refresh after bookkeeping changes; corrections to earlier submissions remain separate.',
     )
     status_only = fields.Boolean(
         string='Show status only',
@@ -264,9 +272,15 @@ class VeroWizard(models.TransientModel):
             if vals.get('report_id'):
                 report = self.env['vero.api.report'].browse(vals['report_id'])
                 check_access(report)
-                vals.update(kind=report.kind, vat_period_id=report.vat_period_id.id,
+                vals.update(kind=report.kind, company_id=report.company_id.id, vat_period_id=report.vat_period_id.id,
                             backend_id=report.backend_id.id, month=report.date_start)
         return super().create(vals_list)
+
+    @api.onchange('company_id')
+    def _onchange_company(self):
+        if not self.report_id:
+            backends = self.env['vero.api.backend'].search([('company_id', '=', self.company_id.id)], limit=2)
+            self.backend_id = backends if len(backends) == 1 else False
 
     def _compute_query(self):
         for rec in self:
@@ -294,6 +308,10 @@ class VeroWizard(models.TransientModel):
         return self._action()
 
     def action_choose(self):
+        if self.kind == 'ec':
+            report = self._get_report()
+            check_access(report)
+            return self.env['vero.api.report'].with_company(report.company_id).action_new_ec_month()
         return self.vat_period_id._vero_open(self.kind, choose=True)
 
     def _action(self):
@@ -309,20 +327,28 @@ class VeroWizard(models.TransientModel):
             check_access(self.report_id)
             return self.report_id
         period = self.vat_period_id
-        company = period._vero_company()
+        if self.kind not in ('vat', 'ec'):
+            raise UserError(_('Select a report type.'))
+        if self.kind == 'vat' and not period:
+            raise UserError(_('A VAT return requires a VAT period.'))
+        company = period._vero_company() if period else self.company_id
+        if not company or company not in self.env.companies:
+            raise AccessError(_('Select an allowed company.'))
+        self.company_id = company
         backend = self.backend_id
         if not backend or backend.company_id != company:
             raise UserError(_('Select a Vero connection for the period company.'))
         check_access(backend)
         start, end = period.date_range_id.date_start, period.date_range_id.date_end
         if self.kind == 'ec':
-            if not self.month or not start <= self.month <= end:
-                raise UserError(_('Select a month within this VAT period.'))
+            if not self.month:
+                raise UserError(_('Select the EC sales list month.'))
             start = self.month.replace(day=1)
             end = start.replace(day=calendar.monthrange(start.year, start.month)[1])
         report_model = self.env['vero.api.report']
-        # Serialize report creation for two simultaneous previews on the period.
-        self.env.cr.execute("UPDATE account_vat_period SET write_date=timezone('UTC', now()) WHERE id=%s", [period.id])
+        # Use the same lock for legacy period actions and independent EC previews.
+        # Under REPEATABLE READ a concurrent update triggers transaction retry.
+        self.env.cr.execute("UPDATE vero_api_backend SET write_date=timezone('UTC', now()) WHERE id=%s", [backend.id])
         report = report_model.search([('backend_id', '=', backend.id), ('kind', '=', self.kind), ('date_end', '=', end)], limit=1)
         if not report:
             report = report_model.with_context(_vero_internal=INTERNAL).create({
@@ -342,6 +368,11 @@ class VeroWizard(models.TransientModel):
         previous = report._accepted()
         diff = payloads.differences(previous.snapshot if previous else {}, snapshot)
         body = self._request_body(report, snapshot, previous)
+        if report.kind == 'ec':
+            report.with_context(_vero_internal=INTERNAL).write({
+                'ec_preparation': 'ready' if body['Buyers'] or previous else 'empty',
+                'ec_checked_at': fields.Datetime.now(),
+            })
         self.write({'snapshot': snapshot, 'preview_body': body, 'payload_text': json.dumps(body, ensure_ascii=False, indent=2),
                     'diff_text': json.dumps(diff, ensure_ascii=False, indent=2) if diff else _('No changes.'),
                     'status_only': False, 'period_checked': False, 'preview_warning': False})

@@ -68,7 +68,8 @@ Vero API -ilmoituksen laskenta rajataan ilmoituksen yritykseen. Yhteyden valinna
 
 | Toiminto | Sijainti |
 |---|---|
-| ALV-kaudet | Kirjanpito → Kauden Päättäminen / Period Closing → ALV-kaudet / VAT Periods |
+| ALV-kaudet | Kirjanpito → Kauden Päättäminen / Period Closing → ALV-kaudet ja ilmoitukset |
+| EU-kuukaudet | Kirjanpito → Kauden Päättäminen / Period Closing → EU-yhteenvetoilmoitukset |
 | Vero-ilmoitusten yhteinen lista | Kirjanpito → Kauden Päättäminen → Vero API -ilmoitukset |
 | Vero-yhteydet | Kirjanpito → Asetukset / Configuration → Vero API -yhteydet; Configuration-valikko edellyttää kirjanpidon ylläpitäjän oikeuksia. Aiempi Connector-valikon oikopolku säilyy. |
 | Yrityskohtaiset ALV-oletukset | Kirjanpidon asetukset → ALV-kaudet / VAT Periods |
@@ -196,16 +197,15 @@ Listan oletussuodatin on **Nykyinen tilikausi / This Fiscal Year**. Poista se ha
 | Sulje / Close | Muodostaa kauden sulkukirjauksen ja verolukituksen. Harmaa painike voi tarkoittaa, että aiempi kausi pitää sulkea ensin. |
 | Suljettu / Closed | Kertoo suljetusta kaudesta. Painike on myös toiminto, joka poistaa kausirivin sulkemismerkinnän; älä paina sitä vain tilan tarkistamiseksi. |
 | Avaa Raportti / Open Report | Avaa yrityksen MIS-raportin kauden alun perusteella. Ei lähetä mitään. |
-| ALV-ilmoitus ja EU-yhteenveto | Erilliset tilat. Teksti kertoo SANDBOX-, TESTI- tai TUOTANTO-ympäristön sekä ilmoituksen kuukauden. |
-| Tee ALV-ilmoitus / Tee EU-ilmoitus | Aloittaa ilmoituksen valmistelun. Jos valitulla yhteydellä ja kuukaudella on jo lähetys, avautuu sen tila. |
-| ALV/EU: lähetyksen tila | Jonossa tai lähetyksessä oleva ilmoitus. Uutta lähetystä ei tarjota. |
-| Näytä ALV/EU-ilmoitus | Vastaanotettu ilmoitus, lähetysaika, kuitti, lähetetty sisältö ja vastaus. Korjaus aloitetaan erillisellä **Tee korjaus** -painikkeella. |
-| ALV/EU: näytä virhe | Viimeisimmän yrityksen virhe ja lähetyshistoria. **Valmistele ilmoitus** avaa uuden esikatselun. |
-| ALV/EU: selvitä tila | Epäselvä vastaanotto. Uusi lähetys on estetty, kunnes tulos on selvitetty. |
-| ALV/EU: ilmoitukset | Kaudella on useita eri tiloja tai selvitetty epäonnistunut lähetys. Avaa ilmoituskohtaiset tiedot. |
-| Kalenteri-plus-kuvake | Valitse EU-ilmoituksen toinen kuukausi tai yhteys. Tärkeä neljännesvuoden ALV-kaudella. |
+| ALV-ilmoitus | Teksti kertoo SANDBOX-, TESTI- tai TUOTANTO-ympäristön sekä ilmoituksen kauden. EU-kuukausien tilat ovat EU-yhteenvetoilmoitukset-näkymässä. |
+| Tee ALV-ilmoitus | Aloittaa ilmoituksen valmistelun. Jos valitulla yhteydellä ja kuukaudella on jo lähetys, avautuu sen tila. |
+| ALV: lähetyksen tila | Jonossa tai lähetyksessä oleva ilmoitus. Uutta lähetystä ei tarjota. |
+| Näytä ALV-ilmoitus | Vastaanotettu ilmoitus, lähetysaika, kuitti, lähetetty sisältö ja vastaus. Korjaus aloitetaan erillisellä **Tee korjaus** -painikkeella. |
+| ALV: näytä virhe | Viimeisimmän yrityksen virhe ja lähetyshistoria. **Valmistele ilmoitus** avaa uuden esikatselun. |
+| ALV: selvitä tila | Epäselvä vastaanotto. Uusi lähetys on estetty, kunnes tulos on selvitetty. |
+| ALV: ilmoitukset | Kaudella on useita eri tiloja tai selvitetty epäonnistunut lähetys. Avaa ilmoituskohtaiset tiedot. |
 | Vaihtonuolikuvake | Valitse ALV-ilmoituksen toinen yhteys / ympäristö. Testi-ilmoitus ei ole tuotantoilmoitus. |
-| Historiakuvake | Kauden kaikki ALV- ja EU-ilmoitukset. |
+| Historiakuvake | Kauteen liitetyt ilmoitukset. Uudet itsenäiset EU-kuukaudet löytyvät EU-yhteenvetoilmoitukset-näkymästä. |
 | Kirjaus / Journal Entry | Linkki sulkukirjaukseen. |
 | Sulkemispäivämäärä | Päivä, jolloin kausi suljettiin. Sulkukirjauksen päivä on kauden loppupäivä. |
 | Maksun tyyppi | Alkuperäisen moduulin sulkukirjauksesta päättelemä maksettavaa/saatavaa-merkintä. Tarkista euromäärä raportilta ja laskulta. |
@@ -214,7 +214,7 @@ Listan oletussuodatin on **Nykyinen tilikausi / This Fiscal Year**. Poista se ha
 
 Kausilista ja ilmoituslista päivittyvät noin 10 sekunnin välein, kun ne ovat näkyvissä eikä dialogia tai rivivalintaa ole auki. Avoin esikatselu säilyy muuttumattomana. Tiladialogissa käytä **Päivitä lähetyksen tila** -painiketta.
 
-Vanha lähetysmerkintä ja VAT Reported OK -sarake on poistettu tästä näkymästä. Vihreä **Vastaanotettu Verohallinnossa** tarkoittaa tallennettua vastaanottokuittausta, ei lopullista verotuspäätöstä. EU-tilassa mainitut kuukaudet ovat juuri ne, joille ilmoitus on luotu; tila ei väitä kaikkia kauden kuukausia ilmoitetuiksi.
+Vanha lähetysmerkintä ja VAT Reported OK -sarake on poistettu tästä näkymästä. Vihreä **Vastaanotettu Verohallinnossa** tarkoittaa tallennettua vastaanottokuittausta, ei lopullista verotuspäätöstä. EU-kuukausien vastaanottotilat näkyvät omassa EU-näkymässään.
 
 ## 7. MIS-raportti ja summien tarkistus
 
@@ -321,22 +321,27 @@ Palautussaatavan kirjanpito tarkistetaan sulkukirjaukselta ja palautuksen toteut
 
 ## 11. EU-yhteenvetoilmoitus
 
+Versiosta **18.0.1.7.0** alkaen EU-ilmoitukset tehdään omassa näkymässään.
+Tämä luku korvaa vanhan PDF-käyttöohjeen ALV-kausiriviltä alkavan EU-työnkulun.
+
 1. Tarkista, että EU-myynnit ja hyvitykset on kirjattu oikeille päiville ja niillä on oikeat myyntiperusteen veroruudukot.
 2. Tarkista ostajayritysten ALV-tunnisteet. Laskenta käyttää kaupallisen pääkumppanin tunnistetta, joten pelkän alayhteystiedon tunniste ei aina riitä.
-3. Paina ALV-kausirivillä **Tee EU-ilmoitus**. Jos kaudella on aiempia EU-ilmoituksia, valitse uusi kuukausi kalenteri-plus-kuvakkeesta.
-4. Valitse Vero-yhteys.
-5. Valitse **Yhteenvetoilmoituksen kuukausi**. Päivämäärästä käytetään koko kyseistä kalenterikuukautta, ja valitun päivän pitää kuulua kausirivin jaksoon.
+3. Avaa **Kirjanpito → Kirjanpito → Kauden sulkeminen → EU-yhteenvetoilmoitukset** ja paina **Valitse kuukausi**. Valikon Kauden sulkeminen -otsikko voi näkyä myös englanniksi **Period Closing**.
+4. Valitse yritys ja sen Vero-yhteys. Tarkista ympäristö.
+5. Valitse **Yhteenvetoilmoituksen kuukausi**. Voit valita minkä tahansa päivän: mukaan otetaan koko kyseinen kalenterikuukausi. ALV-kautta ei tarvitse olla luotuna.
 6. Paina **Laske / päivitä esikatselu**.
 7. Tarkista kuukausi, vuosi, ostajien maat ja ALV-tunnisteet sekä tavara-, palvelu- ja kolmikantamyynnit.
 8. Paina **Vahvista ja lähetä** ja tarkista vastaanottokuitti historiasta.
 
 Ilmoitus muodostetaan kirjatuista pääkirjariveistä, joilla on yhteyden asetuksissa valitut verottomien myyntiperusteiden tunnisteet. Hyvitykset vähentävät myyntiä kirjauksen etumerkin perusteella. Summat ryhmitellään ostajan maan ja ALV-tunnisteen mukaan.
 
-Kolmen kuukauden ALV-kaudelta tehdään tarvittaessa kolme erillistä EU-kuukausi-ilmoitusta. Vuosikaudelta valitaan kukin tarvittava kuukausi erikseen. Avaa dialogi uudelleen toiselle kuukaudelle, jotta et jatka aiemmin luodun kuukauden ilmoituksen käsittelyä.
+Kolmen kuukauden ALV-kaudelta tehdään tarvittaessa kolme erillistä EU-kuukausi-ilmoitusta. Vuosikaudelta valitaan kukin tarvittava kuukausi erikseen. Käytä **Valitse kuukausi** -painiketta seuraavalle kuukaudelle. Jos samalla yhteydellä on jo ilmoitus valitulle kuukaudelle, ohjelma avaa sen; uutta rinnakkaista ilmoitusta ei luoda.
 
 EU-ilmoitus ei edellytä ALV-kauden sulkemista. Se ei luo ALV-maksulaskua. Tyhjää ostajalistaa ei lähetetä, ja ohjelma ilmoittaa, jos ilmoitettavaa tai muuttuneita ostajia ei ole. Puuttuva tai virheellinen ostajan ALV-tunniste estää laskennan; virheilmoitus auttaa löytämään tositteen. Tunnisteen muodon tarkistus ei ole VIES-palvelusta tehty voimassaolon tarkistus.
 
-**Vihreä EU-kuvake koskee vain Odoossa luotuja EU-ilmoituksia.** Se ei tarkista, että kaikki ALV-kauden kalenterikuukaudet on käsitelty. Tarkista kuukaudet ilmoituslistasta.
+Kuukausilistalla näkyvät **EU-ilmoituksen määräpäivä**, **EU-kuukauden tila** ja viimeisen laskennan aika. **Ei tarkistettu** erotetaan tilasta **Ei ilmoitettavaa myyntiä**. Jälkimmäinen perustuu viimeksi tarkistettuihin kirjattuihin tapahtumiin: laske tiedot uudelleen, jos kirjanpito muuttuu. Aiemmin lähetetyn myynnin poistaminen käsitellään korjauksena, vaikka uusi kokonaissumma olisi nolla.
+
+Määräpäivä on seuraavan kuukauden 20. päivä, tarvittaessa siirrettynä seuraavaan arkipäivään. ALV-kausi ja sen määräpäivä eivät vaikuta EU-kuukauteen. **Vastaanotettu** koskee vain kyseistä kuukautta ja ympäristöä. Listalla näkyvät valmistellut kuukaudet; puuttuva rivi ei todista, ettei ilmoitusvelvollisuutta ole. Aiemmat ilmoitukset ja niiden kuittaukset säilyvät samassa historiassa.
 
 ## 12. Tilat, vastaukset ja tilakysely
 

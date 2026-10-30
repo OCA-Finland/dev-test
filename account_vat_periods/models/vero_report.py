@@ -1,6 +1,7 @@
 import json
 from datetime import timedelta
 from decimal import Decimal
+from dateutil.easter import easter
 
 import requests
 from odoo import api, fields, models, _, SUPERUSER_ID
@@ -53,12 +54,11 @@ class VeroReport(models.Model):
     vat_period_id = fields.Many2one(
         'account.vat.period',
         string='VAT period',
-        required=True,
         ondelete='restrict',
         help=(
-            'Accounting VAT period associated with this return. VAT returns cover the exact period; EC '
-            'sales lists cover one selected calendar month within it. VAT submission requires this period '
-            'to be closed, but EC submission does not.'
+            'Required accounting period for a VAT return. EC sales lists use their own calendar month '
+            'and do not require a VAT period or its closing. Existing EC reports retain their historical '
+            'period link for reference only.'
         ),
     )
     kind = fields.Selection(
@@ -152,7 +152,70 @@ class VeroReport(models.Model):
         ),
     )
 
-    _sql_constraints = [('vero_report_unique', 'unique(backend_id,kind,date_end)', 'This report already exists for this connection and period.')]
+    ec_preparation = fields.Selection(
+        [('unchecked', 'Not checked'), ('ready', 'Ready to submit'), ('empty', 'No reportable sales')],
+        string='Last EC calculation', default='unchecked', readonly=True,
+        help='Result of the latest EC preview calculation. No reportable sales means no initial return '
+             'is needed based on the posted entries checked at that time. Recalculate after changing '
+             'the bookkeeping. This is not a receipt from the Finnish Tax Administration.',
+    )
+    ec_checked_at = fields.Datetime(
+        string='EC last checked at', readonly=True,
+        help='Time of the most recent EC preview calculation. Entries posted or changed after this '
+             'time are not covered by that check. Refresh the preview before confirming the month.',
+    )
+    ec_status = fields.Selection(
+        [('unchecked', 'Not checked'), ('ready', 'Ready to submit'), ('empty', 'No reportable sales'),
+         ('queued', 'Queued'), ('sending', 'Sending / check status'), ('accepted', 'Received'),
+         ('error', 'Error'), ('uncertain', 'Uncertain result'), ('not_received', 'Resolved: not received')],
+        string='EC month status', compute='_compute_ec_status',
+        help='Submission status for this individual company, connection and calendar month. Before '
+             'any submission, shows the last calculation result. A receipt belongs only to this month '
+             'and does not confirm any other month or the VAT return.',
+    )
+    ec_due_date = fields.Date(
+        string='EC filing deadline', compute='_compute_ec_due_date',
+        help='The twentieth day of the following month, moved to the next Finnish working day when '
+             'necessary. This is the EC filing deadline, independent of the VAT period and payment date.',
+    )
+
+    _sql_constraints = [
+        ('vero_report_unique', 'unique(backend_id,kind,date_end)', 'This report already exists for this connection and period.'),
+        ('vero_vat_period_required', "CHECK(kind != 'vat' OR vat_period_id IS NOT NULL)", 'A VAT return requires a VAT period.'),
+    ]
+
+    @api.depends('state', 'ec_preparation')
+    def _compute_ec_status(self):
+        for rec in self:
+            rec.ec_status = rec.ec_preparation if rec.state == 'draft' else rec.state
+
+    @api.depends('date_end', 'kind')
+    def _compute_ec_due_date(self):
+        for rec in self:
+            rec.ec_due_date = False
+            if rec.kind != 'ec' or not rec.date_end:
+                continue
+            day = (rec.date_end + timedelta(days=1)).replace(day=20)
+            spring = easter(day.year)
+            holidays = {spring - timedelta(days=2), spring + timedelta(days=1), spring + timedelta(days=39)}
+            while (day.weekday() >= 5 or day in holidays
+                   or (day.month, day.day) in {(1, 1), (1, 6), (5, 1), (12, 6), (12, 24), (12, 25), (12, 26)}
+                   or (day.month == 6 and day.weekday() == 4 and 19 <= day.day <= 25)):
+                day += timedelta(days=1)
+            rec.ec_due_date = day
+
+    @api.model
+    def action_new_ec_month(self):
+        if not self.env.user.has_group('account.group_account_user'):
+            raise AccessError(_('Show Full Accounting Features is required.'))
+        company = self.env.company
+        backends = self.env['vero.api.backend'].search([('company_id', '=', company.id)], limit=2)
+        wizard = self.env['vero.api.wizard'].create({
+            'kind': 'ec', 'company_id': company.id,
+            'backend_id': backends.id if len(backends) == 1 else False,
+            'month': fields.Date.context_today(self).replace(day=1) - timedelta(days=1),
+        })
+        return wizard._action()
 
     @api.depends_context('lang')
     @api.depends('kind', 'date_end')

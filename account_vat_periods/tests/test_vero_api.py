@@ -867,5 +867,145 @@ class TestVeroAPI(TransactionCase):
         self.assertFalse(arch.xpath("//button[@name='action_do_cancel_send']"))
         self.assertFalse(arch.xpath("//button[@string='Send Report']"))
         self.assertTrue(arch.xpath("//field[@name='vero_vat_status']"))
-        self.assertTrue(arch.xpath("//field[@name='vero_ec_status']"))
+        self.assertFalse(arch.xpath("//field[@name='vero_ec_status']"))
+        self.assertFalse(arch.xpath("//button[@name='action_vero_ec']"))
         self.assertEqual(arch.get('js_class'), 'vero_status_list')
+
+    def _independent_ec(self, month):
+        return self.env['vero.api.wizard'].with_user(self.user).create({
+            'kind': 'ec', 'company_id': self.company.id,
+            'backend_id': self.backend.id, 'month': month,
+        })
+
+    def test_three_ec_months_with_open_quarterly_vat_period(self):
+        self.company.tax_lock_date = False
+        self.period.date_range_id.date_start = date(2026, 1, 1)
+        self.report.with_context(_vero_internal=INTERNAL).write({'date_start': date(2026, 1, 1)})
+        self.period.closed = False
+        goods, services = self.env['account.account.tag'].create([
+            {'name': 'Quarterly EC goods', 'applicability': 'taxes'},
+            {'name': 'Quarterly EC services', 'applicability': 'taxes'}])
+        self.backend.write({'goods_tag_ids': [Command.set(goods.ids)], 'services_tag_ids': [Command.set(services.ids)]})
+        partner = self.env['res.partner'].with_context(no_vat_validation=True).create({
+            'name': 'Quarterly EU buyer', 'vat': 'SE123456789001'})
+        account = self.env['account.account'].search([('company_ids', 'in', self.company.id), ('account_type', '=', 'income')], limit=1)
+        journal = self.env['account.journal'].search([('company_id', '=', self.company.id), ('type', '=', 'general')], limit=1)
+        reports = self.env['vero.api.report']
+        for month, amount in ((1, 100), (2, 200), (3, 300)):
+            day = date(2026, month, 15)
+            move = self.env['account.move'].create({'journal_id': journal.id, 'date': day, 'line_ids': [
+                Command.create({'name': 'Monthly sale', 'account_id': account.id, 'partner_id': partner.id,
+                                'credit': amount, 'tax_tag_ids': [Command.set(goods.ids)]}),
+                Command.create({'name': 'Balance', 'account_id': self.company.vat_account_id.id, 'debit': amount})]})
+            move.action_post()
+            wizard = self._independent_ec(day)
+            with patch.object(type(self.backend), '_call', side_effect=AssertionError('EC preview must not query VAT periods')):
+                wizard.action_refresh()
+            self.assertFalse(wizard.report_id.vat_period_id)
+            self.assertEqual(wizard.preview_body['Buyers'][0]['SalesOfGoods'], amount)
+            self.assertEqual(wizard.report_id.ec_status, 'ready')
+            with patch.object(type(self.backend), '_connection', return_value=('', {}, None)):
+                wizard.action_submit()
+                with self.assertRaises(UserError):
+                    wizard.action_submit()
+            self.assertEqual(wizard.report_id.ec_status, 'queued')
+            reports |= wizard.report_id
+        self.assertEqual(len(reports), 3)
+        self.assertFalse(self.period.closed)
+        self.assertFalse(self.report.submission_ids)
+        self.assertEqual(self.report.state, 'draft')
+        self.assertFalse(self.period.payment_move_id)
+        vat = self.env['vero.api.wizard'].with_user(self.user).create({'report_id': self.report.id})
+        with patch.object(type(self.report), '_payload', return_value=self.payload()), \
+             patch.object(type(self.backend), '_connection', return_value=('', {}, None)):
+            self._preview(vat)
+            with self.assertRaises(UserError):
+                vat.action_submit()
+            self.period.closed = True
+            vat.action_submit()
+        self.assertEqual(self.report.date_start, date(2026, 1, 1))
+        self.assertEqual(self.report.date_end, date(2026, 3, 31))
+        self.assertEqual(self.report.state, 'queued')
+        self.assertEqual(len(reports.mapped('submission_ids')), 3)
+
+    def test_ec_without_vat_period_empty_month_and_later_sales(self):
+        wizard = self._independent_ec('2026-07-15')
+        with patch.object(type(self.report), '_ec_buyers', return_value=[]):
+            wizard.action_refresh()
+        self.assertFalse(wizard.report_id.vat_period_id)
+        self.assertEqual(wizard.report_id.ec_status, 'empty')
+        self.assertTrue(wizard.report_id.ec_checked_at)
+        with patch.object(type(self.backend), '_connection', return_value=('', {}, None)), \
+             patch.object(type(self.report), '_ec_buyers', return_value=[]), self.assertRaises(UserError):
+            wizard.action_submit()
+        self.assertFalse(wizard.report_id.submission_ids)
+        rows = [{'CountryCode': 'SE', 'VATIdentifier': '123456789001', 'SalesOfGoods': 10,
+                 'SalesOfServices': 0, 'TriangulationSales': 0}]
+        with patch.object(type(self.report), '_ec_buyers', return_value=rows):
+            wizard.action_refresh()
+        self.assertEqual(wizard.report_id.ec_status, 'ready')
+
+    def test_independent_ec_reuses_legacy_report_and_receipt(self):
+        legacy = self.env['vero.api.report'].with_context(_vero_internal=INTERNAL).create({
+            'company_id': self.company.id, 'backend_id': self.backend.id, 'vat_period_id': self.period.id,
+            'kind': 'ec', 'date_start': '2026-03-01', 'date_end': '2026-03-31'})
+        body = p.ec_payload([{'CountryCode': 'SE', 'VATIdentifier': '123456789001', 'SalesOfGoods': 100,
+                             'SalesOfServices': 0, 'TriangulationSales': 0}],
+                            '9999999-2', date(2026, 3, 1), p.contact('Test', '+3581'))
+        receipt = self.env['vero.api.submission'].with_context(_vero_internal=INTERNAL).create({
+            'report_id': legacy.id, 'requested_by_id': self.user.id, 'environment': 'sandbox',
+            'snapshot': body, 'request_body': body, 'content_hash': p.digest(body),
+            'state': 'accepted', 'receipt': 'legacy-ec-receipt'})
+        wizard = self._independent_ec('2026-03-20')
+        with patch.object(type(self.report), '_payload', side_effect=AssertionError('Open history first')):
+            wizard.action_refresh()
+        self.assertEqual(wizard.report_id, legacy)
+        self.assertTrue(wizard.status_only)
+        self.assertEqual(wizard.latest_receipt, 'legacy-ec-receipt')
+        self.assertEqual(legacy.submission_ids, receipt)
+        # Removing all sales still creates a correction clearing the old buyer.
+        wizard.action_edit()
+        with patch.object(type(self.report), '_ec_buyers', return_value=[]):
+            wizard.action_refresh()
+            self.assertEqual(wizard.preview_body['Buyers'][0]['SalesOfGoods'], 0)
+            self.assertEqual(legacy.ec_preparation, 'ready')
+            with patch.object(type(self.backend), '_connection', return_value=('', {}, None)):
+                wizard.action_submit()
+        self.assertEqual(len(legacy.submission_ids), 2)
+        self.assertEqual(receipt.receipt, 'legacy-ec-receipt')
+
+    def test_ec_new_month_action_security_and_deadlines(self):
+        with self.assertRaises(AccessError):
+            self.env['vero.api.report'].with_user(self.reader).action_new_ec_month()
+        action = self.env['vero.api.report'].with_user(self.user).action_new_ec_month()
+        wizard = self.env['vero.api.wizard'].browse(action['res_id'])
+        self.assertEqual(wizard.kind, 'ec')
+        self.assertFalse(wizard.vat_period_id)
+        for month, deadline in (('2026-01-01', '2026-02-20'), ('2026-05-01', '2026-06-22'),
+                                ('2026-08-01', '2026-09-21'), ('2026-12-01', '2027-01-20')):
+            report = self._independent_ec(month)._get_report()
+            self.assertEqual(str(report.ec_due_date), deadline)
+        other = self.env['res.company'].create({'name': 'Independent EC forbidden company'})
+        forbidden = self._independent_ec('2026-07-01')
+        forbidden.company_id = other
+        with self.assertRaises(AccessError):
+            forbidden._get_report()
+        with self.assertRaises(UserError):
+            self.env['vero.api.wizard'].with_user(self.user).create({
+                'kind': 'vat', 'backend_id': self.backend.id})._get_report()
+
+    def test_ec_navigation_and_monthly_view(self):
+        wizard = self._independent_ec('2026-07-01')
+        wizard._get_report()
+        # A writable transient field must not broaden company access on navigation.
+        other = self.env['res.company'].create({'name': 'EC navigation forbidden company'})
+        wizard.company_id = other
+        action = wizard.action_choose()
+        next_wizard = self.env['vero.api.wizard'].browse(action['res_id'])
+        self.assertEqual(next_wizard.company_id, self.company)
+        self.assertFalse(next_wizard.vat_period_id)
+        view = self.env['vero.api.report'].with_user(self.user).get_view(
+            view_id=self.env.ref('account_vat_periods.vero_ec_month_list').id, view_type='list')
+        self.assertIn('action_new_ec_month', view['arch'])
+        self.assertIn('ec_due_date', view['arch'])
+        self.assertNotIn('action_do_close', view['arch'])

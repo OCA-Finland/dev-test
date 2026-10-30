@@ -101,7 +101,7 @@ class TestVeroTranslations(TransactionCase):
         with patch.object(type(wizard), '_get_report', return_value=report), \
                 patch.object(type(report), '_payload', return_value={}), \
                 patch.object(type(report), '_accepted', return_value=self.env['vero.api.submission']), \
-                patch.object(type(wizard), '_request_body', return_value={}):
+                patch.object(type(wizard), '_request_body', return_value={'Buyers': []}):
             for lang in ('en_US', 'fi_FI'):
                 wizard.with_context(lang=lang).action_refresh()
                 expected = 'No changes.' if lang == 'en_US' else self.translated('No changes.')

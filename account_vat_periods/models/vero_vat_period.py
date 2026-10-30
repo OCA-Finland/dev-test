@@ -130,7 +130,7 @@ class VeroVatPeriod(models.Model):
         # Require an explicit environment choice when several are configured.
         backend = backends if len(backends) == 1 else self.env['vero.api.backend']
         wizard = self.env['vero.api.wizard'].create({
-            'vat_period_id': self.id, 'kind': kind, 'backend_id': backend.id,
+            'vat_period_id': self.id, 'company_id': company.id, 'kind': kind, 'backend_id': backend.id,
             'month': self.date_range_id.date_start,
         })
         return wizard._action()

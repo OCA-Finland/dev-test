@@ -204,8 +204,9 @@ class VeroReport(models.Model):
                 day += timedelta(days=1)
             rec.ec_due_date = day
 
-    @api.model
     def action_new_ec_month(self):
+        # List-header object buttons pass the selected record IDs through RPC.
+        # Keep this a record method; an empty selection is valid.
         if not self.env.user.has_group('account.group_account_user'):
             raise AccessError(_('Show Full Accounting Features is required.'))
         company = self.env.company

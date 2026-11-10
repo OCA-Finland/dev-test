@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 
 import requests
 
-from odoo import Command
+from odoo import Command, api
 from odoo.exceptions import AccessError, UserError
 from odoo.tests import TransactionCase, tagged
 
@@ -1009,3 +1009,16 @@ class TestVeroAPI(TransactionCase):
         self.assertIn('action_new_ec_month', view['arch'])
         self.assertIn('ec_due_date', view['arch'])
         self.assertNotIn('action_do_close', view['arch'])
+
+    def test_ec_month_list_button_rpc_dispatch(self):
+        model = self.env['vero.api.report'].with_user(self.user)
+        # Match the actual list-header button payload, including the IDs argument.
+        for ids in ([], self.report.ids):
+            action = api.call_kw(model, 'action_new_ec_month', [ids], {})
+            wizard = self.env['vero.api.wizard'].browse(action['res_id'])
+            self.assertEqual(action['res_model'], 'vero.api.wizard')
+            self.assertEqual(wizard.kind, 'ec')
+            self.assertEqual(wizard.company_id, self.company)
+            self.assertFalse(wizard.vat_period_id)
+        with self.assertRaises(AccessError):
+            api.call_kw(model.with_user(self.reader), 'action_new_ec_month', [[]], {})

@@ -18,7 +18,7 @@ patch(MisReportWidget.prototype, {
     },
 
     async willStart() {
-        super.willStart();
+        await super.willStart();
 
         const [resultShowDateRange] = await this.orm.read(
             "mis.report.instance",

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="date_range_vat_period" model="date.range.type">
+        <field name="name">VAT period</field>
+        <field name="company_id" eval="False"/>
+        <field name="allow_overlap" eval="False"/>
+    </record>
+</odoo>

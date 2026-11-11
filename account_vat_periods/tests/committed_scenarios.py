@@ -16,6 +16,7 @@ from odoo.exceptions import UserError
 
 from .. import vero_payload as p
 from ..models.vero_backend import INTERNAL
+from .closing_fixtures import record_test_closing
 
 
 def run(env):
@@ -35,7 +36,8 @@ def run(env):
         start, end = date(2026, month, 1), date(2026, month, calendar.monthrange(2026, month)[1])
         dr = env['date.range'].create({'name': 'Mock %s' % month, 'type_id': range_type.id,
             'company_id': company.id, 'date_start': start, 'date_end': end})
-        period = env['account.vat.period'].create({'date_range_id': dr.id, 'closed': True})
+        period = env['account.vat.period'].create({'date_range_id': dr.id})
+        record_test_closing(period)
         report = env['vero.api.report'].with_context(_vero_internal=INTERNAL).create({
             'company_id': company.id, 'backend_id': backend.id, 'vat_period_id': period.id,
             'kind': 'vat', 'date_start': start, 'date_end': end})

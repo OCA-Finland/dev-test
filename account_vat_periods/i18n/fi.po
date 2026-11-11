@@ -24,10 +24,32 @@ msgstr ". Voimassa asti:"
 
 #. module: account_vat_periods
 #. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid ""
+"A VAT period with accounting or reporting history cannot be deleted or moved"
+" to another company, date range or fiscal year."
+msgstr ""
+"ALV-kautta, jolla on kirjanpito- tai ilmoitushistoriaa, ei voi poistaa eikä "
+"siirtää toiseen yritykseen, päivämääräväliin tai tilikauteen."
+
+#. module: account_vat_periods
+#. odoo-python
 #: code:addons/account_vat_periods/wizards/vero_wizard.py:0
 #: model:ir.model.constraint,message:account_vat_periods.constraint_vero_api_report_vero_vat_period_required
 msgid "A VAT return requires a VAT period."
 msgstr "ALV-ilmoitus edellyttää ALV-kautta."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid "A closed VAT period cannot be reopened from this module."
+msgstr "Suljettua ALV-kautta ei voi avata uudelleen tästä moduulista."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid "A closing entry already exists. Review the accounting."
+msgstr "Sulkukirjaus on jo olemassa. Tarkista kirjanpito."
 
 #. module: account_vat_periods
 #. odoo-javascript
@@ -193,6 +215,24 @@ msgstr "EU-veroruudukko voi kuulua vain yhteen myyntilajiin."
 
 #. module: account_vat_periods
 #. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid "An accounting lock prevents closing this period."
+msgstr "Kirjanpidon lukitus estää kauden sulkemisen."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid "An earlier period is still open."
+msgstr "Aiempi kausi sulkematta."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid "Another VAT period overlaps this period."
+msgstr "Toinen ALV-kausi on päällekkäinen tämän kauden kanssa."
+
+#. module: account_vat_periods
+#. odoo-python
 #: code:addons/account_vat_periods/models/vero_credentials.py:0
 #: code:addons/account_vat_periods/vero_credentials.py:0
 #: code:addons/account_vat_periods/vero_vault.py:0
@@ -202,38 +242,9 @@ msgstr ""
 "Toinen avain- tai varmenneoperaatio on kesken. Päivitä tila hetken kuluttua."
 
 #. module: account_vat_periods
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
-msgid "Another month / connection"
-msgstr "Toinen kuukausi / yhteys"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "Apr (short)"
-msgstr "Huhti"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "April"
-msgstr "Huhtikuu"
-
-#. module: account_vat_periods
 #: model:ir.model,name:account_vat_periods.model_vero_api_resolution
 msgid "Audited manual resolution of an uncertain submission"
 msgstr "Epäselvän lähetyksen jäljitettävä selvitys"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "Aug (short)"
-msgstr "Elo"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "August"
-msgstr "Elokuu"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_backend__authorization_token_file
@@ -277,6 +288,16 @@ msgid "Bill adjustment"
 msgstr "Laskun oikaisu"
 
 #. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_submission__can_prepare_bill_adjustment
+msgid "Bill adjustment available"
+msgstr "Laskun oikaisu mahdollinen"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_submission__can_retry_bill
+msgid "Bill creation available"
+msgstr "Laskun luonti mahdollinen"
+
+#. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_submission__bill_message
 msgid "Bill processing message"
 msgstr "Laskunkäsittelyn viesti"
@@ -302,6 +323,11 @@ msgstr "Laske / päivitä esikatselu"
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_wizard__replacement_reason__clc
 msgid "Calculation or entry error"
 msgstr "Lasku- tai täyttövirhe"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__closeable
+msgid "Can close period"
+msgstr "Kauden voi sulkea"
 
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_resolution_form
@@ -358,6 +384,12 @@ msgstr "Tarkista kertakäyttösalasana (enintään 16 merkkiä)."
 
 #. module: account_vat_periods
 #. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid "Check the period dates."
+msgstr "Tarkista kauden päivämäärät."
+
+#. module: account_vat_periods
+#. odoo-python
 #: code:addons/account_vat_periods/vero_credentials.py:0
 msgid "Check the transfer identifier (maximum 32 characters)."
 msgstr "Tarkista siirtotunnus (enintään 32 merkkiä)."
@@ -380,18 +412,28 @@ msgid "Close"
 msgstr "Sulje"
 
 #. module: account_vat_periods
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_period_list
+msgid "Close period"
+msgstr "Sulje kausi"
+
+#. module: account_vat_periods
 #. odoo-python
-#: code:addons/account_vat_periods/wizards/vero_wizard.py:0
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
 msgid "Close the VAT period before submitting the VAT return."
 msgstr "Sulje ALV-kausi ennen ALV-ilmoituksen lähettämistä."
 
 #. module: account_vat_periods
-#: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__closeable
-msgid "Closeable"
-msgstr "Suljettava"
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_period_list
+msgid ""
+"Close this VAT period? This posts the closing entry and updates the company "
+"tax lock date. The period cannot be reopened from this module."
+msgstr ""
+"Suljetaanko tämä ALV-kausi? Toiminto kirjaa sulkukirjauksen ja päivittää "
+"yrityksen verolukituspäivän. Kautta ei voi avata uudelleen tästä moduulista."
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__closed
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__account_vat_period__closing_state__closed
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.account_vat_period_view_tree
 msgid "Closed"
 msgstr "Suljettu"
@@ -400,6 +442,22 @@ msgstr "Suljettu"
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__closing_date
 msgid "Closing Date"
 msgstr "Sulkemispäivämäärä"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__closing_block_reason
+msgid "Closing information"
+msgstr "Sulkemisen lisätieto"
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid "Closing permission required."
+msgstr "Sulkemisoikeus puuttuu."
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__closing_state
+msgid "Closing status"
+msgstr "Sulkemistila"
 
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.account_vat_period_view_tree
@@ -432,6 +490,7 @@ msgstr "Yritykset"
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_submission__company_id
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__company_id
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_ec_month_search
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_report_search
 msgid "Company"
 msgstr "Yritys"
 
@@ -509,9 +568,16 @@ msgstr "Määritä Vero-yhteydelle EU-tavara- ja palvelumyynnin veroruudukot."
 
 #. module: account_vat_periods
 #. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_workflow.py:0
 #: code:addons/account_vat_periods/models/vero_report.py:0
 msgid "Configure the company VAT MIS report template."
 msgstr "Määritä yrityksen ALV:n MIS-raporttipohja."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid "Configure the company VAT closing template."
+msgstr "Määritä yrityksen ALV-sulkupohja."
 
 #. module: account_vat_periods
 #. odoo-python
@@ -586,6 +652,19 @@ msgstr "Yhteyshenkilön puhelin"
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_submission__content_hash
 msgid "Content fingerprint"
 msgstr "Sisällön sormenjälki"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_account_vat_period__closeable
+msgid ""
+"Controls whether Close period is available to the current user. The period "
+"must have ended, earlier periods of the same company must be closed, and the"
+" closing settings, accounting locks and user permissions must permit "
+"closing. The server checks again on use."
+msgstr ""
+"Määrittää, näkyykö Sulje kausi nykyiselle käyttäjälle. Kauden on oltava "
+"päättynyt ja saman yrityksen aiempien kausien suljettuja. Sulkuasetusten, "
+"kirjanpidon lukitusten ja käyttöoikeuksien on sallittava sulkeminen. "
+"Palvelin tarkistaa ehdot uudelleen toimintoa käytettäessä."
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__edit_requested
@@ -672,6 +751,11 @@ msgid "Current certificate"
 msgstr "Nykyinen varmenne"
 
 #. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__is_fiscal_start_date
+msgid "Current fiscal year"
+msgstr "Nykyinen tilikausi"
+
+#. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_report__state
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_submission__state
 msgid ""
@@ -705,18 +789,6 @@ msgstr "Date Range -generaattori"
 #: model:ir.model.fields,field_description:account_vat_periods.field_mis_report_instance__date_range_name
 msgid "Date Range Name"
 msgstr "Date Rangen Nimi"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "Dec (short)"
-msgstr "Joulu"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "December"
-msgstr "Joulukuu"
 
 #. module: account_vat_periods
 #: model:mis.report.instance.period,name:account_vat_periods.mis_report_instance_period_vat_month
@@ -826,7 +898,6 @@ msgid "Due date"
 msgstr "Eräpäivä"
 
 #. module: account_vat_periods
-#: model:ir.model.fields,help:account_vat_periods.field_account_fiscal_year__vat_period_duration
 #: model:ir.model.fields,help:account_vat_periods.field_res_config_settings__vat_period_duration
 msgid "Duration of the Fiscal Year's VAT Periods"
 msgstr "Tilikauden ALV-kausien pituus"
@@ -993,6 +1064,7 @@ msgstr "Vahvista kirjoittamalla tämän yhteyden nimi"
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_submission__environment
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__environment
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_ec_month_search
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_report_search
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
 msgid "Environment"
 msgstr "Ympäristö"
@@ -1060,6 +1132,46 @@ msgstr ""
 "Toiminto ei lähetä uutta varmennepyyntöä."
 
 #. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_report__query_error
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__query_error
+msgid ""
+"Explains an unsuccessful HTTP response or an invalid status response from "
+"the filed VAT return query. The raw response remains available for "
+"diagnosis, and submission receipts and the ability to retry uncertain "
+"submissions are not changed by this query."
+msgstr ""
+"Kertoo annetun ALV-ilmoituksen kyselyn HTTP-virheestä tai virheellisestä "
+"tilavastauksesta. Alkuperäinen vastaus säilytetään selvitystä varten. Kysely"
+" ei muuta vastaanottokuitteja eikä salli epäselvän lähetyksen lähettämistä "
+"uudelleen."
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_account_vat_period__closing_block_reason
+msgid ""
+"Explains why an unclosed period cannot currently be closed, for example an "
+"earlier open period, an accounting lock, missing settings or insufficient "
+"permissions. A closed period has no blocking message. This information "
+"concerns accounting closing, not API submission."
+msgstr ""
+"Kertoo, miksi sulkematonta kautta ei voi juuri nyt sulkea. Syynä voi olla "
+"aiempi avoin kausi, kirjanpidon lukitus, puuttuvat asetukset tai riittämätön"
+" käyttöoikeus. Suljetulla kaudella ei näytetä estettä. Tieto koskee "
+"kirjanpidon sulkemista, ei API-ilmoituksen lähettämistä."
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__submission_block_reason
+msgid ""
+"Explains why this preview cannot yet be submitted, such as an open VAT "
+"period, an unchanged correction or options changed after calculation. "
+"Resolve the reason and recalculate the preview when requested; this message "
+"does not send anything."
+msgstr ""
+"Kertoo, miksi tätä esikatselua ei voi vielä lähettää. Syynä voi olla avoin "
+"ALV-kausi, muuttumaton korjaus tai laskennan jälkeen muutettu valinta. "
+"Korjaa ilmoitettu syy ja laske esikatselu tarvittaessa uudelleen. Tämä tieto"
+" ei itsessään lähetä mitään."
+
+#. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_submission__error_message
 msgid ""
 "Explanation of a failed check, failed request or uncertain network outcome. "
@@ -1071,23 +1183,6 @@ msgstr ""
 "kirjattuina; selvitä epäselvä vastaanotto ennen uutta valmistelua."
 
 #. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "Feb (short)"
-msgstr "Helmi"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "February"
-msgstr "Helmikuu"
-
-#. module: account_vat_periods
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
-msgid "Fetch data from the Finnish Tax Administration"
-msgstr "Hae tiedot Verohallinnosta"
-
-#. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__diff_text
 msgid ""
 "Field-by-field comparison with the last received snapshot stored in Odoo. An"
@@ -1097,6 +1192,28 @@ msgstr ""
 "Kenttäkohtainen vertailu viimeiseen Odoossa tallennettuun vastaanotettuun "
 "kokonaiskuvaan. Ensimmäinen ilmoitus näyttää lisäyksiä. Muualla annettu "
 "ilmoitus ei ole automaattisesti vertailun lähtötietona."
+
+#. module: account_vat_periods
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
+msgid "Filed return query"
+msgstr "Annetun ilmoituksen kysely"
+
+#. module: account_vat_periods
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
+msgid "Filing period check"
+msgstr "Verokauden tarkistus"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_report__last_period_query_at
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__last_period_query_at
+msgid "Filing period checked at"
+msgstr "Verokausi tarkistettu"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_report__period_status
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__period_status
+msgid "Filing period status"
+msgstr "Verokauden kyselytila"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__period_checked
@@ -1210,6 +1327,19 @@ msgid "ID"
 msgstr "Tunniste"
 
 #. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__history_only
+msgid ""
+"Identifies a dialog opened from the shared Vero API reporting list. It "
+"displays submission history and status without preparation, correction or "
+"connection-selection actions. Prepare and correct returns from the VAT "
+"periods or EU sales lists screen."
+msgstr ""
+"Tunnistaa yhteisestä Vero API -ilmoitukset -raportista avatun "
+"seurantanäkymän. Se näyttää lähetyshistorian ja tilan ilman valmistelu-, "
+"korjaus- tai yhteydenvalintatoimintoja. Valmistele ja korjaa ilmoitukset "
+"ALV-kausien tai EU-yhteenvetoilmoitusten näytöllä."
+
+#. module: account_vat_periods
 #: model:ir.model,name:account_vat_periods.model_vero_api_submission
 msgid "Immutable Vero submission attempt"
 msgstr "Muuttumaton Vero-lähetysyritys"
@@ -1234,6 +1364,19 @@ msgstr ""
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__account_vat_period__payment_state__in_payment
 msgid "In Payment"
 msgstr "Maksussa"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_submission__can_open_bill
+msgid ""
+"Indicates that a VAT bill or adjustment credit note is available for this "
+"submission. Opening it does not post or pay anything. Historical attempts "
+"open their own linked documents rather than an unrelated bill from a later "
+"correction."
+msgstr ""
+"Kertoo, että tähän lähetykseen liittyy ALV-ostolasku tai oikaisun "
+"hyvityslasku. Avaaminen ei kirjaa eikä maksa laskuja. Vanha lähetys avaa "
+"siihen liittyvät tositteet, joten myöhemmän korjauksen erillinen lasku ei "
+"sekoitu vanhan lähetyksen tietoihin."
 
 #. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__period_checked
@@ -1267,6 +1410,45 @@ msgstr ""
 "Ilmaisee, että ikkuna lisäsi juuri vahvistetun lähetyksen jonoon. Näkyvä "
 "vahvistus kertoo, että ikkunan voi sulkea ja saman yrityksen käsittelyä "
 "seurata uuden lähetyksen sijasta."
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_submission__can_retry_bill
+msgid ""
+"Indicates whether the latest received VAT return still needs its payable "
+"bill created or a draft bill checked. EC sales lists have no VAT bill. A "
+"posted bill with a changed amount requires an adjustment instead of another "
+"bill creation attempt."
+msgstr ""
+"Kertoo, tarvitseeko viimeisin vastaanotettu ALV-ilmoitus vielä maksettavan "
+"veron ostolaskun luonnin tai luonnoslaskun tarkistuksen. EU-"
+"yhteenvetoilmoituksella ei ole ALV-laskua. Jos kirjattuun laskuun kohdistuva"
+" summa on muuttunut, lasku pitää oikaista erillisellä toiminnolla."
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_submission__can_prepare_bill_adjustment
+msgid ""
+"Indicates whether this latest received VAT correction can prepare an "
+"adjustment for an existing posted VAT bill. The amount must have changed and"
+" the original bill must match the company, currency and VAT vendor without "
+"an existing active credit note."
+msgstr ""
+"Kertoo, voidaanko viimeisimmän vastaanotetun ALV-korjauksen perusteella "
+"valmistella aiemmin kirjatun ALV-laskun oikaisu. Summan on oltava muuttunut."
+" Alkuperäisen laskun yrityksen, valuutan ja veronsaajan on vastattava "
+"asetuksia, eikä laskulla saa jo olla voimassa olevaa hyvityslaskua."
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_account_vat_period__is_fiscal_start_date
+msgid ""
+"Indicates whether this period belongs to its company's fiscal year "
+"containing today's date. The filter is evaluated when the list is opened, so"
+" a new fiscal year or a change of selected companies does not leave a stale "
+"saved flag on the period."
+msgstr ""
+"Kertoo, kuuluuko kausi sen yrityksen tilikauteen, joka sisältää tämän "
+"päivän. Suodatin lasketaan listaa avattaessa. Tilikauden vaihtuminen tai "
+"valittujen yritysten muuttuminen ei siten jätä kaudelle vanhentunutta "
+"tallennettua tilatietoa."
 
 #. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_account_vat_period__vero_ec_state
@@ -1314,55 +1496,20 @@ msgid "Invalid numeric report value: %s"
 msgstr "Virheellinen numeerinen raporttiarvo: %s"
 
 #. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_report.py:0
+msgid "Invalid response"
+msgstr "Virheellinen vastaus"
+
+#. module: account_vat_periods
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__account_vat_period__payment_state__invoicing_legacy
 msgid "Invoicing App Legacy"
 msgstr "Vanha laskutussovellus"
 
 #. module: account_vat_periods
-#: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__is_fiscal_start_date
-msgid "Is Fiscal Start Date"
-msgstr "Nykyisen tilikauden alku"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "Jan (short)"
-msgstr "Tammi"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "January"
-msgstr "Tammikuu"
-
-#. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__move_id
 msgid "Journal Entry"
 msgstr "Kirjaus"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "Jul (short)"
-msgstr "Heinä"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "July"
-msgstr "Heinäkuu"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "Jun (short)"
-msgstr "Kesä"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "June"
-msgstr "Kesäkuu"
 
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_backend_form
@@ -1441,6 +1588,16 @@ msgid "Latest attempt"
 msgstr "Viimeisin yritys"
 
 #. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__period_query_text
+msgid "Latest filing period check"
+msgstr "Viimeisin verokauden tarkistus"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_report__last_period_query
+msgid "Latest filing period response"
+msgstr "Viimeisin verokauden vastaus"
+
+#. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
 msgid "Latest queried status"
 msgstr "Viimeisimmän kyselyn tilatieto"
@@ -1454,6 +1611,11 @@ msgstr "Viimeisin kyselyvastaus"
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__query_text
 msgid "Latest status query"
 msgstr "Viimeisin tilakysely"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__last_query_at
+msgid "Latest status query time"
+msgstr "Viimeisimmän tilakyselyn ajankohta"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__latest_at
@@ -1538,6 +1700,19 @@ msgstr ""
 "tietokantaan; niitä ei koskaan palauteta selaimeen."
 
 #. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_account_fiscal_year__vat_period_duration
+msgid ""
+"Length of the VAT periods generated when this fiscal year is created. The "
+"periods belong to this fiscal year's company and never extend beyond its "
+"end. Verify the filing frequency with the Finnish Tax Administration; the "
+"API checks the official period before submission."
+msgstr ""
+"Tämän tilikauden luonnissa muodostettavien ALV-kausien pituus. Kaudet "
+"kuuluvat tilikauden yritykselle eivätkä ulotu tilikauden päättymisen yli. "
+"Tarkista ilmoitusrytmi Verohallinnolta. API tarkistaa virallisen verokauden "
+"ennen ilmoituksen lähettämistä."
+
+#. module: account_vat_periods
 #: model:ir.model,name:account_vat_periods.model_mis_report_instance
 msgid "MIS Report Instance"
 msgstr "MIS-raportin instanssi"
@@ -1551,30 +1726,6 @@ msgstr "Tee korjaus"
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_submission_form
 msgid "Manual resolution of an uncertain submission"
 msgstr "Epäselvän lähetyksen käsin tehty selvitys"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "Mar (short)"
-msgstr "Maalis"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "March"
-msgstr "Maaliskuu"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "May"
-msgstr "Toukokuu"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "May (short)"
-msgstr "Touko"
 
 #. module: account_vat_periods
 #. odoo-javascript
@@ -1678,6 +1829,12 @@ msgstr ""
 "sulkukirjaukselta."
 
 #. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid "No access to the period company."
+msgstr "Ei pääsyä kauden yritykseen."
+
+#. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__no_activity
 msgid "No activity"
 msgstr "Ei toimintaa"
@@ -1761,30 +1918,6 @@ msgid "Not sent"
 msgstr "Ei lähetetty"
 
 #. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "Nov (short)"
-msgstr "Marras"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "November"
-msgstr "Marraskuu"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "Oct (short)"
-msgstr "Loka"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "October"
-msgstr "Lokakuu"
-
-#. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_backend__api_root
 msgid ""
 "Official HTTPS base address of the selected Vero SAT environment, without an"
@@ -1859,6 +1992,12 @@ msgstr "Vain uusin vastaanotettu ilmoitus voi päivittää laskun."
 msgid "Only the latest received VAT return can prepare a bill adjustment."
 msgstr ""
 "Vain uusin vastaanotettu ALV-ilmoitus voi valmistella laskun oikaisun."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_report.py:0
+msgid "Only the latest received VAT return can update the bill."
+msgstr "Vain viimeisin vastaanotettu ALV-ilmoitus voi päivittää laskua."
 
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.account_vat_period_view_tree
@@ -1984,8 +2123,6 @@ msgstr ""
 
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_ec_month_list
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_report_form
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_report_list
 msgid "Prepare / correct"
 msgstr "Valmistele / korjaa"
 
@@ -2000,6 +2137,15 @@ msgid "Prepare bill adjustment"
 msgstr "Valmistele laskun oikaisu"
 
 #. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/wizards/vero_wizard.py:0
+msgid ""
+"Prepare or correct returns from the VAT periods or EU sales lists screen."
+msgstr ""
+"Valmistele tai korjaa ilmoitukset ALV-kausien tai EU-yhteenvetoilmoitusten "
+"näytöllä."
+
+#. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
 msgid "Prepare return"
 msgstr "Valmistele ilmoitus"
@@ -2008,6 +2154,15 @@ msgstr "Valmistele ilmoitus"
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__preview_body
 msgid "Prepared submission data"
 msgstr "Valmisteltu lähetyssisältö"
+
+#. module: account_vat_periods
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
+msgid ""
+"Preparing a correction. The previous received return remains in the history."
+" Recalculate and check the changes before confirming."
+msgstr ""
+"Korjausta valmistellaan. Aiemmin vastaanotettu ilmoitus säilyy historiassa. "
+"Laske esikatselu uudelleen ja tarkista muutokset ennen vahvistamista."
 
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
@@ -2137,6 +2292,19 @@ msgstr ""
 " vastaanottoa."
 
 #. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_report__last_period_query
+msgid ""
+"Raw response, HTTP status and request parameters from the latest filing "
+"period check. This checks the selected period before submission and is "
+"independent of the filed return query. A test response is simulated data, "
+"not evidence of a previous filing."
+msgstr ""
+"Viimeisimmän verokauden tarkistuksen alkuperäinen vastaus, HTTP-tila ja "
+"kyselyn parametrit. Tarkistus varmistaa valitun kauden ennen lähetystä ja on"
+" erillinen annetun ilmoituksen kyselystä. Testivastaus on malliaineistoa "
+"eikä todista aiempaa ilmoittamista."
+
+#. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__latest_payload
 msgid ""
 "Readable JSON representation of the exact content confirmed for the most "
@@ -2146,6 +2314,19 @@ msgstr ""
 "Luettava JSON-esitys uusimmalle yritykselle vahvistetusta tarkasta "
 "sisällöstä. Tämä on historiallista lähetysaineistoa, ei nykyisten "
 "kirjanpitotapahtumien uusi laskenta."
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__period_query_text
+msgid ""
+"Readable request and response for the latest filing period check, including "
+"the operation and HTTP status. This response is separate from the filed "
+"return query and never confirms receipt of a submission. Test services "
+"return simulated filing history."
+msgstr ""
+"Viimeisimmän verokauden tarkistuksen pyyntö ja vastaus luettavassa muodossa "
+"sekä rajapintatoiminto ja HTTP-tila. Vastaus on erillinen annetun "
+"ilmoituksen kyselystä eikä vahvista lähetyksen vastaanottoa. Testipalvelut "
+"palauttavat malliaineistoa ilmoitushistoriasta."
 
 #. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__latest_response
@@ -2161,13 +2342,17 @@ msgstr ""
 #. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__query_text
 msgid ""
-"Readable result of the latest VAT status query. Fetch data from the Finnish "
-"Tax Administration refreshes this information without resubmitting; a "
-"matching older return does not resolve an uncertain latest attempt."
+"Readable result of the latest VAT status query. Refresh status retrieves the"
+" Finnish Tax Administration data when no submission is queued or being sent."
+" During VAT preparation, it can also retrieve a return filed elsewhere. "
+"Querying preserves the preview and does not submit a return or confirm "
+"receipt of an uncertain attempt."
 msgstr ""
-"Viimeisimmän ALV-tilakyselyn luettava tulos. Hae tiedot Verohallinnosta "
-"päivittää tiedon lähettämättä ilmoitusta uudelleen; vastaava vanha ilmoitus "
-"ei ratkaise uusimman yrityksen epäselvyyttä."
+"Viimeisimmän ALV-tilakyselyn tulos luettavassa muodossa. Päivitä tila hakee "
+"Verohallinnon tiedot, kun ilmoitusta ei ole jonossa tai lähetettävänä. ALV:n"
+" valmistelussa sillä voi hakea myös muualla annetun ilmoituksen. Kysely "
+"säilyttää esikatselun. Se ei lähetä ilmoitusta eikä vahvista epäselvän "
+"lähetyksen vastaanottoa."
 
 #. module: account_vat_periods
 #. odoo-javascript
@@ -2259,10 +2444,13 @@ msgid "Received by the Finnish Tax Administration"
 msgstr "Vastaanotettu Verohallinnossa"
 
 #. module: account_vat_periods
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_report_list
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
 msgid ""
-"Received by the Finnish Tax Administration API; not a final tax decision"
-msgstr "Vastaanotettu Verohallinnon API:ssa; ei lopullinen verotuspäätös"
+"Received by the Finnish Tax Administration. The receipt has been saved. This"
+" is not a final tax decision."
+msgstr ""
+"Vastaanotettu Verohallinnossa. Vastaanottokuittaus on tallennettu. Tämä ei "
+"ole lopullinen verotuspäätös."
 
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
@@ -2311,13 +2499,9 @@ msgstr "Kirjaa selvityksen tulos"
 #. module: account_vat_periods
 #. odoo-javascript
 #: code:addons/account_vat_periods/static/src/components/vero_credentials.xml:0
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
 msgid "Refresh status"
 msgstr "Päivitä tila"
-
-#. module: account_vat_periods
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
-msgid "Refresh submission status"
-msgstr "Päivitä lähetyksen tila"
 
 #. module: account_vat_periods
 #. odoo-python
@@ -2333,6 +2517,11 @@ msgstr ""
 #: code:addons/account_vat_periods/static/src/components/vero_credentials.js:0
 msgid "Rejected"
 msgstr "Hylätty"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_submission__can_open_bill
+msgid "Related bill available"
+msgstr "Liittyvä lasku saatavilla"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_report__remote_status
@@ -2382,8 +2571,14 @@ msgid "Report status"
 msgstr "Ilmoituksen tila"
 
 #. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__history_only
+msgid "Report tracking only"
+msgstr "Vain ilmoituksen seuranta"
+
+#. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_report__kind
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__kind
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_report_search
 msgid "Report type"
 msgstr "Ilmoituksen tyyppi"
 
@@ -2648,22 +2843,6 @@ msgid "Select an allowed company."
 msgstr "Valitse yritys, johon sinulla on käyttöoikeus."
 
 #. module: account_vat_periods
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_period_list
-msgid "Select another VAT connection / environment"
-msgstr "Valitse ALV-ilmoituksen toinen yhteys / ympäristö"
-
-#. module: account_vat_periods
-#: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__month
-msgid ""
-"Select any date in the calendar month to report. The entire calendar month "
-"is included. Prepare each required month separately, including when VAT is "
-"reported quarterly or annually."
-msgstr ""
-"Valitse mikä tahansa ilmoitettavan kalenterikuukauden päivä. Laskentaan "
-"sisältyy koko kalenterikuukausi. Laadi kukin tarvittava kuukausi erikseen "
-"myös silloin, kun ALV ilmoitetaan neljännesvuosittain tai vuosittain."
-
-#. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_ec_month_list
 msgid "Select month"
 msgstr "Valitse kuukausi"
@@ -2687,6 +2866,26 @@ msgstr "Valitse EU-yhteenvetoilmoituksen kuukausi."
 
 #. module: account_vat_periods
 #. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid "Select the VAT accounts to close."
+msgstr "Valitse suljettavat ALV-tilit."
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__month
+msgid ""
+"Select the month and year to report, or enter them as MM/YYYY. The entire "
+"calendar month is included, from its first day to its last day; no "
+"individual day needs to be selected. Prepare each required month separately,"
+" including when VAT is reported quarterly or annually."
+msgstr ""
+"Valitse ilmoitettava kuukausi ja vuosi tai kirjoita ne muodossa KK/VVVV. "
+"Laskentaan sisältyy koko kalenterikuukausi ensimmäisestä viimeiseen päivään;"
+" yksittäistä päivää ei tarvitse valita. Laadi kukin tarvittava kuukausi "
+"erikseen myös silloin, kun ALV ilmoitetaan neljännesvuosittain tai "
+"vuosittain."
+
+#. module: account_vat_periods
+#. odoo-python
 #: code:addons/account_vat_periods/wizards/vero_wizard.py:0
 msgid "Select the reason for correction."
 msgstr "Valitse korjauksen syy."
@@ -2707,18 +2906,6 @@ msgstr "Lähetys kesken / tarkistettava"
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__sent
 msgid "Sent"
 msgstr "Lähetetty"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "Sep (short)"
-msgstr "Syys"
-
-#. module: account_vat_periods
-#. odoo-python
-#: code:addons/account_vat_periods/wizards/date_range_generator.py:0
-msgid "September"
-msgstr "Syyskuu"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_submission__response_body
@@ -2769,6 +2956,20 @@ msgstr "Näytä vain tila"
 #: model:ir.model.fields,help:account_vat_periods.field_mis_report_instance__widget_show_date_range
 msgid "Show the Date Range Filter in the report widget bar"
 msgstr "Näytä Date Range -suodatin raportin widget-palkissa"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__can_submit
+msgid ""
+"Shows whether the prepared content can currently be confirmed. A valid VAT "
+"closing, changed content, required correction options and a successful "
+"period check are required. The server validates these conditions again "
+"before it queues a submission."
+msgstr ""
+"Kertoo, voiko valmistellun sisällön vahvistaa lähetettäväksi. ALV-ilmoitus "
+"edellyttää kelvollista sulkukirjausta. Korjauksen sisällön on oltava "
+"muuttunut ja tarvittavien korjausvalintojen täytettyjä. Myös verokauden "
+"tarkistuksen on onnistuttava. Palvelin tarkistaa ehdot uudelleen ennen "
+"lähetyksen lisäämistä jonoon."
 
 #. module: account_vat_periods
 #. odoo-javascript
@@ -2832,13 +3033,9 @@ msgstr ""
 "aiemmista vastaanotetuista versioista historiasta."
 
 #. module: account_vat_periods
-#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_report_list
-msgid "Status"
-msgstr "Tila"
-
-#. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_ec_month_list
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_report_form
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_report_list
 msgid "Status and responses"
 msgstr "Tila ja vastaukset"
 
@@ -2848,16 +3045,10 @@ msgid "Status query"
 msgstr "Tilakysely"
 
 #. module: account_vat_periods
-#: model:ir.model.fields,help:account_vat_periods.field_vero_api_report__remote_status
-#: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__remote_status
-msgid ""
-"Status text returned by the latest query to the Finnish Tax Administration. "
-"This can refer to an earlier return and is separate from Odoo's submission "
-"status and receipt history."
-msgstr ""
-"Viimeisimmän Verohallinnolle tehdyn kyselyn palauttama tilateksti. Se voi "
-"koskea aiempaa ilmoitusta ja on erillinen Odoon lähetyksen tilasta ja "
-"kuittihistoriasta."
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_report__query_error
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__query_error
+msgid "Status query problem"
+msgstr "Tilakyselyn virhe"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_account_vat_period__vero_ec_status
@@ -2879,6 +3070,11 @@ msgstr "Lähetys"
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_resolution__submission_id
 msgid "Submission attempt"
 msgstr "Lähetysyritys"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__can_submit
+msgid "Submission available"
+msgstr "Lähetys mahdollinen"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__latest_error
@@ -2907,6 +3103,11 @@ msgstr "Lähetyshistoriaa ei voi poistaa."
 #: code:addons/account_vat_periods/models/vero_report.py:0
 msgid "Submission history is immutable."
 msgstr "Lähetyshistoria on muuttumaton."
+
+#. module: account_vat_periods
+#: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__submission_block_reason
+msgid "Submission information"
+msgstr "Lähetyksen lisätieto"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_report__state
@@ -2957,9 +3158,13 @@ msgstr "TESTI"
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
 msgid ""
-"TEST ENVIRONMENT: this submission does not create a production tax return."
+"TEST ENVIRONMENT: this submission does not create a production tax return. "
+"Status queries return simulated data and do not prove that you have filed a "
+"return."
 msgstr ""
-"TESTIYMPÄRISTÖ: tästä lähetyksestä ei muodostu tuotannon veroilmoitusta."
+"TESTIYMPÄRISTÖ: tästä lähetyksestä ei muodostu tuotannon veroilmoitusta. "
+"Tilakyselyt palauttavat malliaineistoa eivätkä todista, että olet lähettänyt"
+" ilmoituksen."
 
 #. module: account_vat_periods
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__vero_api_wizard__replacement_reason__txa
@@ -3110,6 +3315,54 @@ msgstr "ALV:n eräpäivä puuttuu kausikyselystä."
 
 #. module: account_vat_periods
 #. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid "The VAT period and its date range must belong to the same fiscal year."
+msgstr "ALV-kauden ja sen päivämäärävälin on kuuluttava samaan tilikauteen."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid ""
+"The VAT period has no valid posted closing entry. Review its closing in "
+"accounting before submitting."
+msgstr ""
+"ALV-kaudella ei ole kelvollista kirjattua sulkutositetta. Tarkista kauden "
+"sulkeminen kirjanpidossa ennen lähettämistä."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid "The VAT period must be within its fiscal year."
+msgstr "ALV-kauden on oltava tilikautensa sisällä."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_workflow.py:0
+msgid "The VAT report template must belong to the period company."
+msgstr "ALV-raporttipohjan on kuuluttava kauden yritykselle."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_report.py:0
+msgid ""
+"The VAT status query failed. Check the response and try again. The "
+"submission state was not changed."
+msgstr ""
+"ALV-ilmoituksen tilakysely epäonnistui. Tarkista vastaus ja yritä uudelleen."
+" Lähetyksen tilaa ei muutettu."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_report.py:0
+msgid ""
+"The VAT status response is invalid: a supported Status value is required. "
+"The submission state was not changed."
+msgstr ""
+"ALV-ilmoituksen tilavastaus on virheellinen: Status-kentästä puuttuu "
+"tunnettu tilatieto. Lähetyksen tilaa ei muutettu."
+
+#. module: account_vat_periods
+#. odoo-python
 #: code:addons/account_vat_periods/models/vero_credentials.py:0
 msgid ""
 "The Vero API connection test failed. Check the environment, key, certificate"
@@ -3234,6 +3487,24 @@ msgstr "Varmenteen luottamusketjua ei voitu vahvistaa valittuun ympäristöön."
 
 #. module: account_vat_periods
 #. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid "The closing accounts must belong to the period company."
+msgstr "Sulkutilien on kuuluttava kauden yritykseen."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid "The closing did not produce exactly one posted journal entry."
+msgstr "Sulkeminen ei muodostanut täsmälleen yhtä kirjattua sulkutositetta."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid "The closing template and journal must belong to the period company."
+msgstr "Sulkupohjan ja päiväkirjan on kuuluttava kauden yritykseen."
+
+#. module: account_vat_periods
+#. odoo-python
 #: code:addons/account_vat_periods/vero_credentials.py:0
 msgid "The company identifier has changed since the certificate request."
 msgstr "Yrityksen tunniste on muuttunut varmennepyynnön jälkeen."
@@ -3275,6 +3546,12 @@ msgstr ""
 
 #. module: account_vat_periods
 #. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid "The date range and fiscal year must belong to the same company."
+msgstr "Päivämäärävälin ja tilikauden on kuuluttava samaan yritykseen."
+
+#. module: account_vat_periods
+#. odoo-python
 #: code:addons/account_vat_periods/wizards/vero_wizard.py:0
 msgid ""
 "The filing content or correction options changed. Refresh the preview before"
@@ -3292,6 +3569,34 @@ msgid ""
 msgstr ""
 "Kausikysely epäonnistui. Ilmoitusta ei lähetetty. Päivitä esikatselu ja "
 "yritä uudelleen."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_report.py:0
+msgid ""
+"The filing period response contains an invalid due date. No return was "
+"submitted."
+msgstr ""
+"Verokauden vastauksessa on virheellinen eräpäivä. Ilmoitusta ei lähetetty."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_report.py:0
+msgid ""
+"The filing period response has an unsupported status. No return was "
+"submitted."
+msgstr ""
+"Verokauden vastauksessa on tuntematon tilatieto. Ilmoitusta ei lähetetty."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_report.py:0
+msgid ""
+"The filing period response is invalid: a FilingPeriod list of period objects"
+" is required. No return was submitted."
+msgstr ""
+"Verokauden vastaus on virheellinen: FilingPeriod-kentässä on oltava luettelo"
+" kausien tiedoista. Ilmoitusta ei lähetetty."
 
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
@@ -3349,6 +3654,23 @@ msgstr ""
 #: code:addons/account_vat_periods/models/vero_report.py:0
 msgid "The payable amount has not changed. No bill adjustment is needed."
 msgstr "Maksettava määrä ei ole muuttunut. Laskun oikaisua ei tarvita."
+
+#. module: account_vat_periods
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
+msgid ""
+"The period has been assessed by estimation. This is not proof of a "
+"previously filed return. Submit the missing return; use replacement only "
+"when you have a receipt for an earlier return."
+msgstr ""
+"Kaudelle on tehty arvioverotus. Se ei todista aiemmin annettua ilmoitusta. "
+"Anna puuttuva ilmoitus; tee korvaava ilmoitus vain, jos aiemmasta "
+"ilmoituksesta on vastaanottokuitti."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid "The period has not ended yet."
+msgstr "Kausi ei ole vielä päättynyt."
 
 #. module: account_vat_periods
 #. odoo-python
@@ -3592,15 +3914,57 @@ msgid "This filing period is expired or has an unsupported status."
 msgstr "Verokausi on vanhentunut tai sen tilaa ei tueta."
 
 #. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vero_report.py:0
+msgid ""
+"This period has been assessed by estimation. This is not evidence of a "
+"previously filed return. Clear the replacement selection and submit the "
+"missing return."
+msgstr ""
+"Kaudelle on tehty arvioverotus. Se ei todista aiemmin annettua ilmoitusta. "
+"Poista korvaavan ilmoituksen valinta ja anna puuttuva ilmoitus."
+
+#. module: account_vat_periods
 #: model:ir.model.constraint,message:account_vat_periods.constraint_vero_api_report_vero_report_unique
 msgid "This report already exists for this connection and period."
 msgstr "Tälle yhteydelle ja kaudelle on jo ilmoitus."
+
+#. module: account_vat_periods
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_wizard_form
+msgid "This return has not been submitted yet."
+msgstr "Tätä ilmoitusta ei ole vielä lähetetty."
 
 #. module: account_vat_periods
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__account_fiscal_year__vat_period_duration__3
 #: model:ir.model.fields.selection,name:account_vat_periods.selection__res_company__vat_period_duration__3
 msgid "Three months"
 msgstr "Kolme kuukautta"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__last_query_at
+msgid ""
+"Time of the latest completed VAT status query. The query details are shown "
+"in the tracking dialog after a query has been made. They may describe an "
+"earlier return and do not confirm receipt of an uncertain submission "
+"attempt."
+msgstr ""
+"Viimeisimmän valmistuneen ALV-tilakyselyn ajankohta. Kyselyn tiedot "
+"näytetään seurantanäkymässä, kun kysely on tehty. Tiedot voivat koskea "
+"aikaisempaa ilmoitusta, eivätkä ne vahvista epäselvän lähetysyrityksen "
+"vastaanottoa."
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_report__last_period_query_at
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__last_period_query_at
+msgid ""
+"Time of the latest completed filing period check. This timestamp belongs "
+"only to the period response and must not be interpreted as a submission time"
+" or as the timestamp of the separate query for a previously filed VAT "
+"return."
+msgstr ""
+"Viimeisimmän valmistuneen verokauden tarkistuksen aika. Aikaleima koskee "
+"vain kauden vastausta. Se ei ole ilmoituksen lähetysaika eikä erillisen, "
+"aiemmin annettua ALV-ilmoitusta koskevan kyselyn aika."
 
 #. module: account_vat_periods
 #: model:ir.model.fields,help:account_vat_periods.field_vero_api_report__ec_checked_at
@@ -3665,6 +4029,24 @@ msgid ""
 msgstr ""
 "Ajankohta, jolloin ilmoituksen tietoja viimeksi kysyttiin Verohallinnosta. "
 "Tämä on kyselyn aika, ei ilmoituksen lähetys- tai vastaanottoaika."
+
+#. module: account_vat_periods
+#: model:ir.model.fields.selection,name:account_vat_periods.selection__account_vat_period__closing_state__open
+msgid "To close"
+msgstr "Suljettava"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_account_vat_period__closing_state
+msgid ""
+"To close means that the period has not been closed yet; it does not "
+"guarantee that closing is currently possible. Closed means that the period "
+"closing has been recorded. This status does not indicate whether a VAT "
+"return was received or a bill was paid."
+msgstr ""
+"Suljettava tarkoittaa, ettei kautta ole vielä suljettu. Se ei takaa, että "
+"sulkeminen on juuri nyt mahdollista. Suljettu tarkoittaa, että kauden "
+"sulkeminen on kirjattu. Tila ei kerro ALV-ilmoituksen vastaanottamisesta tai"
+" laskun maksamisesta."
 
 #. module: account_vat_periods
 #. odoo-javascript
@@ -3732,6 +4114,12 @@ msgstr "Tuntematon avaintoiminto."
 #: code:addons/account_vat_periods/models/vero_backend.py:0
 msgid "Unsupported Vero operation."
 msgstr "Vero-toimintoa ei tueta."
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_closing.py:0
+msgid "Use Close period to record the closing status and journal entry."
+msgstr "Kirjaa sulkemistila ja sulkutosite Sulje kausi -toiminnolla."
 
 #. module: account_vat_periods
 #. odoo-python
@@ -3849,6 +4237,7 @@ msgstr "ALV-raportti Kuukausi"
 #. module: account_vat_periods
 #. odoo-python
 #: code:addons/account_vat_periods/models/account_vat_period.py:0
+#: code:addons/account_vat_periods/models/vat_period_workflow.py:0
 msgid "VAT Report Preview"
 msgstr "ALV-raportin esikatselu"
 
@@ -3879,6 +4268,7 @@ msgid "VAT bill adjustment"
 msgstr "ALV-laskun oikaisu"
 
 #. module: account_vat_periods
+#: model:date.range.type,name:account_vat_periods.date_range_vat_period
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_report__vat_period_id
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_wizard__vat_period_id
 msgid "VAT period"
@@ -3894,6 +4284,12 @@ msgstr "ALV-kaudet ja ilmoitukset"
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__vero_vat_received
 msgid "VAT receipt confirmed"
 msgstr "ALV-vastaanotto vahvistettu"
+
+#. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/models/vat_period_workflow.py:0
+msgid "VAT report: %s"
+msgstr "ALV-raportti: %s"
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__vero_vat_status
@@ -3942,6 +4338,34 @@ msgstr "ALV: lähetyksen tila"
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_period_list
 msgid "VAT: view error"
 msgstr "ALV: näytä virhe"
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_report__remote_status
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__remote_status
+msgid ""
+"Validated status from the filed VAT return query displayed below. The filing"
+" period check has its own status and timestamp. Test services return "
+"simulated data, and no query changes Odoo's submission status or receipt "
+"history."
+msgstr ""
+"Alla näytettävän, annettua ALV-ilmoitusta koskevan kyselyn tarkistettu "
+"tilatieto. Verokauden tarkistuksella on oma tila ja aikaleima. Testipalvelut"
+" palauttavat malliaineistoa. Kyselyt eivät muuta Odoon lähetysstatusta tai "
+"vastaanottokuittien historiaa."
+
+#. module: account_vat_periods
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_report__period_status
+#: model:ir.model.fields,help:account_vat_periods.field_vero_api_wizard__period_status
+msgid ""
+"Validated status of the selected period in the latest filing period "
+"response. Estimated means an assessment by estimation, not proof of a return"
+" filed by the taxpayer. Test and sandbox statuses are simulated and do not "
+"establish actual filing history."
+msgstr ""
+"Valitun kauden tarkistettu tila viimeisimmässä verokauden vastauksessa. "
+"Estimated tarkoittaa arvioverotusta eikä todista verovelvollisen antaneen "
+"ilmoitusta. Testi- ja sandbox-ympäristöjen tilat ovat malliaineistoa eivätkä"
+" kuvaa todellista ilmoitushistoriaa."
 
 #. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_account_vat_period__payment_move_id
@@ -4118,6 +4542,7 @@ msgstr "Odottaa varmennetta"
 
 #. module: account_vat_periods
 #: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_ec_month_search
+#: model_terms:ir.ui.view,arch_db:account_vat_periods.vero_report_search
 msgid "Year"
 msgstr "Vuosi"
 
@@ -4132,164 +4557,3 @@ msgstr "Sinulla ei ole oikeutta tämän yrityksen Vero API -avaimiin."
 #: code:addons/account_vat_periods/models/vero_backend.py:0
 msgid "You do not have access to this company."
 msgstr "Sinulla ei ole oikeutta tähän yritykseen."
-
-#~ msgid ""
-#~ "Accounting VAT period associated with this return. VAT returns cover the "
-#~ "exact period; EC sales lists cover one selected calendar month within it. "
-#~ "VAT submission requires this period to be closed, but EC submission does "
-#~ "not."
-#~ msgstr ""
-#~ "Ilmoitukseen liittyvä kirjanpidon ALV-kausi. ALV-ilmoitus kattaa täsmälleen "
-#~ "kauden; EU-yhteenveto kattaa yhden siihen kuuluvan kalenterikuukauden. ALV-"
-#~ "lähetys vaatii suljetun kauden, EU-lähetys ei."
-
-#~ msgid "EC: reports"
-#~ msgstr "EU: ilmoitukset"
-
-#~ msgid "EC: resolve status"
-#~ msgstr "EU: selvitä tila"
-
-#~ msgid "EC: submission status"
-#~ msgstr "EU: lähetyksen tila"
-
-#~ msgid "EC: view error"
-#~ msgstr "EU: näytä virhe"
-
-#~ msgid "Prepare EC sales list"
-#~ msgstr "Tee EU-ilmoitus"
-
-#~ msgid "Select a month within this VAT period."
-#~ msgstr "Valitse tähän ALV-kauteen kuuluva kuukausi."
-
-#~ msgid ""
-#~ "Select any date in the calendar month to report. The whole month is included"
-#~ " and the selected date must fall within the VAT period. Prepare each "
-#~ "required month separately even for quarterly or annual VAT periods."
-#~ msgstr ""
-#~ "Valitse mikä tahansa ilmoitettavan kalenterikuukauden päivä. Mukaan tulee "
-#~ "koko kuukausi ja valitun päivän on kuuluttava ALV-kauteen. Valmistele kukin "
-#~ "tarvittava kuukausi erikseen myös neljännesvuosi- ja vuosikausilla."
-
-#~ msgid "Select the EC sales list month or another connection"
-#~ msgstr "Valitse EU-ilmoituksen kuukausi tai toinen yhteys"
-
-#~ msgid "View EC sales list"
-#~ msgstr "Näytä EU-ilmoitus"
-
-#~ msgid ""
-#~ "Certificate retrieval needs attention. Keep the existing request and its "
-#~ "files. Ask your administrator to investigate the error, then use Refresh "
-#~ "status to retry the saved response check. Do not delete the connection or "
-#~ "start another request with the same transfer credentials. You can still "
-#~ "manage the software API key and return to the connection settings."
-#~ msgstr ""
-#~ "Varmenteen nouto vaatii selvitystä. Säilytä nykyinen pyyntö ja sen "
-#~ "tiedostot. Pyydä ylläpitäjää selvittämään virhe ja tarkista sen jälkeen "
-#~ "tallennettu vastaus uudelleen Päivitä tila -painikkeella. Älä poista "
-#~ "yhteyttä tai aloita uutta pyyntöä samoilla siirtotunnuksilla. Voit edelleen "
-#~ "hallita ohjelmisto-API-avainta ja palata yhteyden asetuksiin."
-
-#~ msgid "File Statement"
-#~ msgstr "Ilmoituksen tila"
-
-#~ msgid ""
-#~ "Keys and certificate retrieval data are encrypted in the database. The "
-#~ "private key is never returned to the browser or written to a client key "
-#~ "file. Administrators must back up the server encryption key separately from "
-#~ "the database. Changing company credentials does not require an Odoo restart."
-#~ msgstr ""
-#~ "Avaimet ja varmenteen noutotiedot tallennetaan tietokantaan salattuina. "
-#~ "Yksityistä avainta ei palauteta selaimeen eikä kirjoiteta "
-#~ "asiakasavaintiedostoon. Ylläpitäjän tulee varmuuskopioida palvelimen "
-#~ "salausavain erillään tietokannasta. Yrityksen tunnusten vaihtaminen ei vaadi"
-#~ " Odoon uudelleenkäynnistystä."
-
-#~ msgid ""
-#~ "The saved Vero credentials cannot be decrypted for this connection. Restore "
-#~ "the original server encryption key and matching database backup. Do not "
-#~ "overwrite the credentials or start a new certificate request."
-#~ msgstr ""
-#~ "Tallennettujen Vero-tunnusten salausta ei voi purkaa tälle yhteydelle. "
-#~ "Palauta alkuperäinen palvelimen salausavain ja sitä vastaava tietokannan "
-#~ "varmuuskopio. Älä korvaa tunnuksia tai aloita uutta varmennepyyntöä."
-
-#~ msgid "VAT Reported OK"
-#~ msgstr "ALV ilmoitettu"
-
-#~ msgid ""
-#~ "Absolute server path to the company's PEM client certificate for the "
-#~ "selected environment. Retrieve and activate it through Keys and certificate."
-#~ " Test and production certificates cannot be used interchangeably."
-#~ msgstr ""
-#~ "Yrityksen valittuun ympäristöön kuuluvan PEM-asiakasvarmenteen absoluuttinen"
-#~ " palvelinpolku. Nouda ja aktivoi varmenne Avaimet ja varmenne -toiminnolla. "
-#~ "Testi- ja tuotantovarmenteita ei voi käyttää ristiin."
-
-#~ msgid ""
-#~ "Absolute server path to the protected private key matching the client "
-#~ "certificate. The key is generated on the Odoo server during enrollment and "
-#~ "must remain confidential. Only technical administrators may set this path "
-#~ "manually."
-#~ msgstr ""
-#~ "Asiakasvarmennetta vastaavan suojatun yksityisen avaimen absoluuttinen "
-#~ "palvelinpolku. Avain luodaan Odoo-palvelimella varmenteen noudossa ja on "
-#~ "pidettävä salassa. Vain tekninen ylläpitäjä saa asettaa polun käsin."
-
-#~ msgid ""
-#~ "Absolute server path to the protected software API key file, or the "
-#~ "subscription key file in Sandbox. Use Keys and certificate to save the key "
-#~ "securely; this field contains only the path and never the secret itself."
-#~ msgstr ""
-#~ "Ohjelmiston API-avaimen suojatun tiedoston absoluuttinen palvelinpolku; "
-#~ "Sandboxissa tilausavaimen tiedosto. Tallenna avain turvallisesti Avaimet ja "
-#~ "varmenne -toiminnolla. Kenttä sisältää vain polun, ei itse salaista avainta."
-
-#~ msgid "Administrator settings: server file paths"
-#~ msgstr "Ylläpidon lisäasetukset: palvelimen tiedostopolut"
-
-#~ msgid "Configure readable PEM certificate and private key files."
-#~ msgstr ""
-#~ "Määritä luettavissa olevat PEM-varmenteen ja yksityisen avaimen tiedostot."
-
-#~ msgid "Configure the absolute server path for %s."
-#~ msgstr "Määritä kentälle %s absoluuttinen palvelinpolku."
-
-#~ msgid "Create a separate connection after starting certificate enrollment."
-#~ msgstr "Luo erillinen yhteys varmenteen noudon aloittamisen jälkeen."
-
-#~ msgid ""
-#~ "Keys are kept in a private directory on the Odoo server. The private key is "
-#~ "never returned to the browser. Administrators must include the credential "
-#~ "directory in secure backups. Changing credentials does not require an Odoo "
-#~ "restart."
-#~ msgstr ""
-#~ "Avaimet säilyvät Odoo-palvelimen suojatussa hakemistossa. Yksityistä avainta"
-#~ " ei palauteta selaimelle. Ylläpidon tulee sisällyttää avainhakemisto "
-#~ "suojattuun varmuuskopiointiin. Avainten vaihtaminen ei vaadi Odoon "
-#~ "uudelleenkäynnistystä."
-
-#~ msgid ""
-#~ "Optional absolute server path to a current authorization token for acting on"
-#~ " another party's behalf. Leave empty for normal own-company filing. Token "
-#~ "acquisition, authorization and renewal must be arranged separately."
-#~ msgstr ""
-#~ "Valinnainen absoluuttinen palvelinpolku voimassa olevaan puolesta-asioinnin "
-#~ "valtuutustunnisteeseen. Jätä tyhjäksi oman yrityksen tavallisessa "
-#~ "asioinnissa. Tunnisteen hankinta, valtuutus ja uusiminen on järjestettävä "
-#~ "erikseen."
-
-#~ msgid "The configured credential file cannot be read: %s"
-#~ msgstr "Määritettyä tunnustiedostoa ei voi lukea: %s"
-
-#~ msgid "The configured credential file is empty: %s"
-#~ msgstr "Määritetty tunnustiedosto on tyhjä: %s"
-
-#~ msgid "The current certificate details could not be read."
-#~ msgstr "Nykyisen varmenteen tietoja ei voitu lukea."
-
-#~ msgid ""
-#~ "The saved certificate retrieval status could not be read. Ask your "
-#~ "administrator to check the retrieval files and their permissions."
-#~ msgstr ""
-#~ "Tallennettua varmenteen noutotilaa ei voitu lukea. Pyydä ylläpitäjää "
-#~ "tarkistamaan noutotiedostot ja niiden käyttöoikeudet."

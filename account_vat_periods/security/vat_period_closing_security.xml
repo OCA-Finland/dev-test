@@ -1,0 +1,7 @@
+<odoo>
+    <!-- The dependency's legacy rule uses user.company_id, which ignores the
+         companies selected in the session. Keep its global isolation rule but
+         use Odoo's validated allowed-company context. Update only the known
+         legacy default, including noupdate records; preserve customized rules. -->
+    <function model="account.vat.period" name="_upgrade_legacy_closing_rule"/>
+</odoo>

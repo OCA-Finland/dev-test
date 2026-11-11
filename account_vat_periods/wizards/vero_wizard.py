@@ -47,7 +47,8 @@ class VeroWizard(models.TransientModel):
     month = fields.Date(
         string='EC sales list month',
         help=(
-            'Select any date in the calendar month to report. The entire calendar month is included. '
+            'Select the month and year to report, or enter them as MM/YYYY. The entire calendar month '
+            'is included, from its first day to its last day; no individual day needs to be selected. '
             'Prepare each required month separately, including when VAT is reported quarterly or annually.'
         ),
     )
@@ -72,6 +73,14 @@ class VeroWizard(models.TransientModel):
             'Indicates that this dialog displays an existing submission and its history instead of '
             'preparing new data. Use Prepare return or Make correction when another preview is allowed; '
             'opening the status does not send anything.'
+        ),
+    )
+    history_only = fields.Boolean(
+        string='Report tracking only', readonly=True, default=False,
+        help=(
+            'Identifies a dialog opened from the shared Vero API reporting list. It displays submission '
+            'history and status without preparation, correction or connection-selection actions. '
+            'Prepare and correct returns from the VAT periods or EU sales lists screen.'
         ),
     )
     edit_requested = fields.Boolean(
@@ -109,6 +118,18 @@ class VeroWizard(models.TransientModel):
             'existing return requiring replacement. The calculated figures remain available for checking; '
             'resolve the warning and refresh the preview.'
         ),
+    )
+    can_submit = fields.Boolean(
+        string='Submission available', compute='_compute_submission_availability',
+        help='Shows whether the prepared content can currently be confirmed. A valid VAT closing, '
+             'changed content, required correction options and a successful period check are required. '
+             'The server validates these conditions again before it queues a submission.',
+    )
+    submission_block_reason = fields.Char(
+        string='Submission information', compute='_compute_submission_availability',
+        help='Explains why this preview cannot yet be submitted, such as an open VAT period, an '
+             'unchanged correction or options changed after calculation. Resolve the reason and '
+             'recalculate the preview when requested; this message does not send anything.',
     )
     report_state = fields.Selection(
         string='Report status',
@@ -252,18 +273,37 @@ class VeroWizard(models.TransientModel):
         string='Remote status',
         related='report_id.remote_status',
         help=(
-            'Status text returned by the latest query to the Finnish Tax Administration. This can refer '
-            "to an earlier return and is separate from Odoo's submission status and receipt history."
+            'Validated status from the filed VAT return query displayed below. The filing period check '
+            'has its own status and timestamp. Test services return simulated data, and no query '
+            "changes Odoo's submission status or receipt history."
         ),
     )
     query_text = fields.Text(
         string='Latest status query',
         compute='_compute_query',
         help=(
-            'Readable result of the latest VAT status query. Fetch data from the Finnish Tax '
-            'Administration refreshes this information without resubmitting; a matching older return does '
-            'not resolve an uncertain latest attempt.'
+            'Readable result of the latest VAT status query. Refresh status retrieves the Finnish Tax '
+            'Administration data when no submission is queued or being sent. During VAT preparation, '
+            'it can also retrieve a return filed elsewhere. Querying preserves the preview and does not '
+            'submit a return or confirm receipt of an uncertain attempt.'
         ),
+    )
+    last_query_at = fields.Datetime(
+        string='Latest status query time', related='report_id.last_query_at', readonly=True,
+        help=(
+            'Time of the latest completed VAT status query. The query details are shown in the tracking '
+            'dialog after a query has been made. They may describe an earlier return and do not confirm '
+            'receipt of an uncertain submission attempt.'
+        ),
+    )
+    query_error = fields.Text(related='report_id.query_error', readonly=True)
+    period_status = fields.Char(related='report_id.period_status', readonly=True)
+    last_period_query_at = fields.Datetime(related='report_id.last_period_query_at', readonly=True)
+    period_query_text = fields.Text(
+        string='Latest filing period check', compute='_compute_query',
+        help='Readable request and response for the latest filing period check, including the operation '
+             'and HTTP status. This response is separate from the filed return query and never '
+             'confirms receipt of a submission. Test services return simulated filing history.',
     )
 
     @api.model_create_multi
@@ -282,9 +322,64 @@ class VeroWizard(models.TransientModel):
             backends = self.env['vero.api.backend'].search([('company_id', '=', self.company_id.id)], limit=2)
             self.backend_id = backends if len(backends) == 1 else False
 
+    @api.depends('report_id.last_query', 'report_id.last_period_query')
     def _compute_query(self):
         for rec in self:
             rec.query_text = json.dumps(rec.report_id.last_query or {}, ensure_ascii=False, indent=2)
+            rec.period_query_text = json.dumps(rec.report_id.last_period_query or {}, ensure_ascii=False, indent=2)
+
+    @api.depends_context('lang', 'uid', 'allowed_company_ids', 'tz')
+    @api.depends(
+        'status_only', 'history_only', 'snapshot', 'preview_body', 'period_checked', 'preview_warning',
+        'no_activity', 'replace_external', 'replacement_reason', 'report_id.state',
+        'report_id.vat_period_id.closed', 'report_id.vat_period_id.move_id',
+        'report_id.vat_period_id.move_id.state', 'report_id.vat_period_id.move_id.date',
+        'report_id.vat_period_id.move_id.closing_move', 'report_id.vat_period_id.move_id.close_id',
+        'report_id.vat_period_id.move_id.company_id', 'report_id.vat_period_id.date_range_id.date_end',
+        'report_id.submission_ids.state', 'report_id.submission_ids.snapshot',
+    )
+    def _compute_submission_availability(self):
+        for wizard in self:
+            if wizard.history_only:
+                wizard.submission_block_reason = False
+                wizard.can_submit = False
+                continue
+            reason = wizard._submission_problem()
+            wizard.submission_block_reason = reason
+            wizard.can_submit = bool(
+                wizard.report_id and wizard.snapshot and wizard.preview_body
+                and not wizard.status_only and not wizard.history_only and not reason
+            )
+
+    def _submission_problem(self):
+        self.ensure_one()
+        report = self.report_id
+        if not report:
+            return False
+        if report.submission_ids.filtered(lambda attempt: attempt.state in ('queued', 'sending', 'uncertain')):
+            return _('A submission is pending or its result is uncertain. Resolve it before another submission.')
+        if report.kind == 'vat':
+            reason = report.vat_period_id._closing_integrity_problem()
+            if reason:
+                return reason
+        if report.date_start > fields.Date.context_today(self):
+            return _('Future periods cannot be sent with this MVP.')
+        if not self.snapshot:
+            return False
+        if report.kind == 'vat' and bool(self.snapshot.get('NoActivity')) != bool(self.no_activity):
+            return _('The filing content or correction options changed. Refresh the preview before confirming.')
+        previous = report._accepted()
+        if previous and payloads.digest(previous.snapshot) == payloads.digest(self.snapshot):
+            return _('No changes compared with the last received return.')
+        if report.kind == 'vat' and (previous or self.replace_external) and not self.replacement_reason:
+            return _('Select the reason for correction.')
+        if self._request_body(report, self.snapshot, previous) != self.preview_body:
+            return _('The filing content or correction options changed. Refresh the preview before confirming.')
+        if report.kind == 'ec' and not self.preview_body.get('Buyers'):
+            return _('No EC sales to report or no changed buyers. Nothing was sent.')
+        if report.kind == 'vat' and (not self.period_checked or self.preview_warning):
+            return self.preview_warning or _('Refresh the preview to verify the filing period with the Finnish Tax Administration before submitting.')
+        return False
 
     @api.depends('report_id.submission_ids', 'report_id.submission_ids.response_body')
     def _compute_latest(self):
@@ -293,26 +388,37 @@ class VeroWizard(models.TransientModel):
             rec.latest_payload = json.dumps(rec.latest_id.request_body or {}, ensure_ascii=False, indent=2)
             rec.latest_response = json.dumps(rec.latest_id.response_body or {}, ensure_ascii=False, indent=2)
 
+    def _check_preparation_allowed(self):
+        self.ensure_one()
+        if self.history_only:
+            raise UserError(_('Prepare or correct returns from the VAT periods or EU sales lists screen.'))
+
     def action_edit(self):
+        self._check_preparation_allowed()
         report = self._get_report()
         if report.submission_ids.filtered(lambda s: s.state in ('queued', 'sending', 'uncertain')):
             self.status_only = True
             return self._action()
         self.write({'status_only': False, 'edit_requested': True, 'queue_notice': False,
                     'snapshot': False, 'preview_body': False, 'payload_text': False,
-                    'period_checked': False, 'preview_warning': False})
+                    'diff_text': False, 'period_checked': False, 'preview_warning': False})
         return self._action()
 
     def action_local_status(self):
         self._get_report()
         return self._action()
 
-    def action_choose(self):
-        if self.kind == 'ec':
-            report = self._get_report()
-            check_access(report)
-            return self.env['vero.api.report'].with_company(report.company_id).action_new_ec_month()
-        return self.vat_period_id._vero_open(self.kind, choose=True)
+    def action_update_status(self):
+        report = self._get_report()
+        latest = report.submission_ids.sorted('id', reverse=True)[:1]
+        # Pending work is tracked locally. EC has no remote status endpoint.
+        # Preparation can query a return filed elsewhere, without a local attempt.
+        preparing_vat = not self.status_only and not self.history_only
+        if report.kind == 'vat' and (latest or preparing_vat) and latest.state not in ('queued', 'sending'):
+            report.action_fetch_status()
+        # Refreshing must preserve correction choices and the current preview.
+        # Query data never confirms a receipt or retries a submission.
+        return self._action()
 
     def _action(self):
         self.ensure_one()
@@ -359,6 +465,7 @@ class VeroWizard(models.TransientModel):
         return report
 
     def action_refresh(self):
+        self._check_preparation_allowed()
         report = self._get_report()
         if report.submission_ids.filtered(lambda s: s.state in ('queued', 'sending', 'uncertain')) or (
                 report.submission_ids and not self.edit_requested):
@@ -398,14 +505,17 @@ class VeroWizard(models.TransientModel):
         return body
 
     def action_submit(self):
+        self._check_preparation_allowed()
         report = self._get_report()
         if not self.snapshot:
             raise UserError(_('Preview the report first.'))
         if report.kind == 'vat' and (not self.period_checked or self.preview_warning):
             raise UserError(_('Refresh the preview to verify the filing period with the Finnish Tax Administration before submitting.'))
         check_access(report)
-        if report.kind == 'vat' and not report.vat_period_id.closed:
-            raise UserError(_('Close the VAT period before submitting the VAT return.'))
+        if report.kind == 'vat':
+            closing_problem = report.vat_period_id._closing_integrity_problem()
+            if closing_problem:
+                raise UserError(closing_problem)
         if report.date_start > fields.Date.context_today(self):
             raise UserError(_('Future periods cannot be sent with this MVP.'))
         report.backend_id._connection()  # Missing credentials fail before queuing.

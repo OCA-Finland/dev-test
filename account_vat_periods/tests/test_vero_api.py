@@ -13,6 +13,7 @@ from .. import vero_payload as p
 from ..models import vero_backend
 from ..models.vero_backend import INTERNAL
 from ..models.vero_report import MisReportInstance
+from .closing_fixtures import record_test_closing
 
 
 @tagged('post_install', '-at_install', 'vero_api')
@@ -39,7 +40,8 @@ class TestVeroAPI(TransactionCase):
         range_type = cls.env['date.range.type'].create({'name': 'Vero test months'})
         date_range = cls.env['date.range'].create({'name': 'Vero 2026-03', 'type_id': range_type.id,
             'date_start': '2026-03-01', 'date_end': '2026-03-31', 'company_id': cls.company.id})
-        cls.period = cls.env['account.vat.period'].create({'date_range_id': date_range.id, 'closed': True})
+        cls.period = cls.env['account.vat.period'].create({'date_range_id': date_range.id})
+        record_test_closing(cls.period)
         cls.report = cls.env['vero.api.report'].with_context(_vero_internal=INTERNAL).create({
             'company_id': cls.company.id, 'backend_id': cls.backend.id, 'vat_period_id': cls.period.id,
             'kind': 'vat', 'date_start': '2026-03-01', 'date_end': '2026-03-31'})
@@ -50,6 +52,14 @@ class TestVeroAPI(TransactionCase):
         wizard.action_edit()
         with patch.object(type(self.report), '_check_filing_period'):
             return wizard.action_refresh()
+
+    def _select_environment(self, environment):
+        if self.backend.environment != environment:
+            self.backend = self.backend.copy({
+                'environment': environment,
+                'api_root': vero_backend.SAT_API_ROOTS[environment],
+            })
+            self.report.with_context(_vero_internal=INTERNAL).write({'backend_id': self.backend.id})
 
     def payload(self, tax=100, deduction=20):
         values = dict.fromkeys(p.VAT_MAPPING, 0)
@@ -149,7 +159,7 @@ class TestVeroAPI(TransactionCase):
         body = body or self.payload()
         return self.env['vero.api.submission'].with_context(_vero_internal=INTERNAL).create({
             'report_id': self.report.id, 'requested_by_id': self.user.id,
-            'environment': 'sandbox', 'snapshot': body, 'request_body': body,
+            'environment': self.backend.environment, 'snapshot': body, 'request_body': body,
             'content_hash': p.digest(body), 'state': 'accepted', 'receipt': 'unit-test-receipt',
         }).with_user(self.user)
 
@@ -216,10 +226,18 @@ class TestVeroAPI(TransactionCase):
         with patch.object(type(self.backend), '_connection', return_value=('', {}, None)), patch.object(type(self.report), '_payload', return_value=body):
             self._preview(wizard)
             self.assertTrue(wizard.preview_body['ReplacementReturn'])
+            self.assertTrue(wizard.can_submit)
+            wizard.no_activity = True
+            self.assertFalse(wizard.can_submit)
+            wizard.no_activity = False
+            self.assertTrue(wizard.can_submit)
             wizard.replacement_reason = 'LAW'
+            self.assertFalse(wizard.can_submit)
+            self.assertTrue(wizard.submission_block_reason)
             with self.assertRaises(UserError):
                 wizard.action_submit()
             self._preview(wizard)
+            self.assertTrue(wizard.can_submit)
             wizard.action_submit()
         self.assertEqual(self.report.submission_ids.sorted('id', reverse=True)[:1].request_body['ReplacementReason'], 'LAW')
 
@@ -234,6 +252,192 @@ class TestVeroAPI(TransactionCase):
             self.report.with_user(self.user).action_fetch_status()
         self.assertEqual(attempt.state, 'uncertain')
         self.assertFalse(self.period.vero_vat_received)
+
+    def test_reporting_dialog_cannot_prepare_or_submit(self):
+        with patch.object(type(self.backend), '_call') as call, \
+             patch.object(type(self.report), '_payload') as calculate:
+            action = self.report.with_user(self.user).action_history()
+            wizard = self.env['vero.api.wizard'].with_user(self.user).browse(action['res_id'])
+            self.assertTrue(wizard.history_only)
+            self.assertTrue(wizard.status_only)
+            self.assertFalse(wizard.latest_id)
+            self.assertFalse(wizard.can_submit)
+            wizard.action_update_status()
+            for method in ('action_edit', 'action_refresh', 'action_submit'):
+                with self.subTest(method=method), self.assertRaisesRegex(UserError, 'VAT periods or EU sales lists'):
+                    getattr(wizard, method)()
+            call.assert_not_called()
+            calculate.assert_not_called()
+        self.assertFalse(self.report.submission_ids)
+        working_action = self.report.with_user(self.user).action_status()
+        working = self.env['vero.api.wizard'].with_user(self.user).browse(working_action['res_id'])
+        self.assertFalse(working.history_only)
+        with patch.object(type(self.backend), '_call') as call:
+            working.action_update_status()
+            call.assert_not_called()
+        self.assertTrue(working.status_only)
+        working.action_edit()
+        self.assertFalse(working.status_only)
+
+    def test_tracking_pending_submission_only_refreshes_local_state(self):
+        attempt = self.attempt()
+        for state in ('queued', 'sending'):
+            attempt._update(state=state, receipt=False)
+            # Browser refreshes read in a new request, without cached related
+            # values from an earlier status. Open a fresh dialog for each state.
+            for opener in ('action_history', 'action_status'):
+                action = getattr(self.report.with_user(self.user), opener)()
+                wizard = self.env['vero.api.wizard'].with_user(self.user).browse(action['res_id'])
+                with self.subTest(state=state, opener=opener), patch.object(type(self.backend), '_call') as call:
+                    wizard.action_update_status()
+                    call.assert_not_called()
+                    self.assertEqual(wizard.report_state, state)
+                    self.assertTrue(wizard.status_only)
+                    self.assertEqual(wizard.history_only, opener == 'action_history')
+                    self.assertEqual(len(self.report.submission_ids), 1)
+
+    def test_tracking_vat_query_does_not_change_receipt_or_resubmit(self):
+        attempt = self.attempt()
+        for state in ('accepted', 'error', 'uncertain', 'not_received'):
+            receipt = 'unit-test-receipt' if state == 'accepted' else False
+            attempt._update(state=state, receipt=receipt)
+            original = attempt.read(['request_body', 'response_body', 'content_hash', 'state', 'receipt'])[0]
+            for opener in ('action_history', 'action_status'):
+                action = getattr(self.report.with_user(self.user), opener)()
+                wizard = self.env['vero.api.wizard'].with_user(self.user).browse(action['res_id'])
+                with self.subTest(state=state, opener=opener), patch.object(type(self.backend), '_call', return_value=(200, {'Status': 'Processed'})) as call:
+                    wizard.action_update_status()
+                    call.assert_called_once_with('GetFiledVATReturn/v2', {
+                        'BusinessId': '9999999-2', 'FilingPeriod': '2026-03-31',
+                    })
+                    self.assertEqual(attempt.read(list(original))[0], original)
+                    self.assertTrue(wizard.last_query_at)
+                    self.assertEqual(self.report.remote_status, 'Processed')
+                    self.assertTrue(wizard.status_only)
+                    self.assertEqual(wizard.history_only, opener == 'action_history')
+                    self.assertEqual(len(self.report.submission_ids), 1)
+
+    def test_status_refresh_preserves_correction_preview_and_confirmation(self):
+        attempt = self.attempt()
+        action = self.period.with_user(self.user).action_do_send()
+        wizard = self.env['vero.api.wizard'].with_user(self.user).browse(action['res_id'])
+        wizard.action_edit()
+        wizard.replacement_reason = 'CLC'
+        changed = self.payload(120, 20)
+        with patch.object(type(self.report), '_payload', return_value=changed), \
+             patch.object(type(self.report), '_check_filing_period'):
+            wizard.action_refresh()
+        preview_fields = ['snapshot', 'preview_body', 'payload_text', 'diff_text',
+                          'period_checked', 'preview_warning', 'replacement_reason',
+                          'replace_external', 'edit_requested', 'status_only']
+        original = wizard.read(preview_fields)[0]
+        self.assertTrue(wizard.can_submit)
+        with patch.object(type(self.backend), '_call', return_value=(200, {'Status': 'Processed'})) as call:
+            wizard.action_update_status()
+            call.assert_called_once_with('GetFiledVATReturn/v2', {
+                'BusinessId': '9999999-2', 'FilingPeriod': '2026-03-31',
+            })
+        self.assertEqual(wizard.read(preview_fields)[0], original)
+        self.assertTrue(wizard.can_submit)
+        with patch.object(type(self.backend), '_call', side_effect=requests.Timeout('Simulated timeout')), \
+             self.assertRaises(UserError):
+            wizard.action_update_status()
+        self.assertEqual(wizard.read(preview_fields)[0], original)
+        self.assertEqual(len(self.report.submission_ids), 1)
+        with patch.object(type(self.backend), '_connection'), \
+             patch.object(type(self.report), '_payload', return_value=changed):
+            wizard.action_submit()
+        latest = self.report.submission_ids.sorted('id', reverse=True)[:1]
+        self.assertEqual(latest.state, 'queued')
+        self.assertTrue(latest.request_body['ReplacementReturn'])
+        self.assertEqual(latest.request_body['ReplacementReason'], 'CLC')
+        self.assertEqual(attempt.state, 'accepted')
+        self.assertEqual(attempt.receipt, 'unit-test-receipt')
+        self.assertEqual(len(self.report.submission_ids), 2)
+
+    def test_status_refresh_can_fetch_external_return_without_local_submission(self):
+        self._select_environment('production')
+        action = self.report.with_user(self.user).action_preview()
+        wizard = self.env['vero.api.wizard'].with_user(self.user).browse(action['res_id'])
+        period_response = (200, {'FilingPeriod': [{
+            'Period': '2026-03-31', 'StartDate': '2026-03-01', 'EndDate': '2026-03-31',
+            'Status': 'Processed', 'DueDate': '2026-05-12',
+        }]})
+        with patch.object(type(self.report), '_payload', return_value=self.payload()), \
+             patch.object(type(self.backend), '_call', return_value=period_response):
+            wizard.action_refresh()
+        self.assertTrue(wizard.preview_warning)
+        self.assertFalse(wizard.can_submit)
+        wizard.write({'replace_external': True, 'replacement_reason': 'LAW'})
+        original = wizard.read(['snapshot', 'preview_body', 'preview_warning',
+                                'replace_external', 'replacement_reason', 'status_only'])[0]
+        with patch.object(type(self.backend), '_call', return_value=(200, {'Status': 'Processed'})) as call:
+            wizard.action_update_status()
+            call.assert_called_once_with('GetFiledVATReturn/v2', {
+                'BusinessId': '9999999-2', 'FilingPeriod': '2026-03-31',
+            })
+        self.assertEqual(wizard.read(list(original))[0], original)
+        self.assertFalse(wizard.can_submit)
+        self.assertFalse(self.report.submission_ids)
+        self.assertEqual(self.report.state, 'draft')
+        self.assertTrue(wizard.last_query_at)
+        with patch.object(type(self.report), '_payload', return_value=self.payload()), \
+             patch.object(type(self.backend), '_call', return_value=period_response):
+            wizard.action_refresh()
+        self.assertFalse(wizard.preview_warning)
+        self.assertTrue(wizard.can_submit)
+        self.assertTrue(wizard.preview_body['ReplacementReturn'])
+        self.assertEqual(wizard.preview_body['ReplacementReason'], 'LAW')
+
+    def test_tracking_query_timeout_preserves_previous_result(self):
+        attempt = self.attempt()
+        attempt._update(state='uncertain', receipt=False)
+        self.report.with_context(_vero_internal=INTERNAL).write({
+            'last_query': {'http_status': 200, 'body': {'Status': 'Processed'}},
+            'last_query_at': '2026-04-01 12:00:00',
+        })
+        action = self.report.with_user(self.user).action_history()
+        wizard = self.env['vero.api.wizard'].with_user(self.user).browse(action['res_id'])
+        previous = self.report.read(['last_query', 'last_query_at', 'remote_status'])[0]
+        with patch.object(type(self.backend), '_call', side_effect=requests.Timeout('Simulated timeout')), \
+             self.assertRaises(UserError):
+            wizard.action_update_status()
+        self.assertEqual(self.report.read(list(previous))[0], previous)
+        self.assertEqual(attempt.state, 'uncertain')
+        self.assertFalse(attempt.receipt)
+
+    def test_tracking_ec_refresh_uses_stored_receipt_without_remote_query(self):
+        report = self.env['vero.api.report'].with_context(_vero_internal=INTERNAL).create({
+            'company_id': self.company.id, 'backend_id': self.backend.id,
+            'kind': 'ec', 'date_start': '2026-03-01', 'date_end': '2026-03-31',
+        })
+        body = p.ec_payload([{'CountryCode': 'SE', 'VATIdentifier': '123456789001',
+                              'SalesOfGoods': 100, 'SalesOfServices': 0, 'TriangulationSales': 0}],
+                            '9999999-2', date(2026, 3, 1), p.contact('Test', '+3581'))
+        attempt = self.env['vero.api.submission'].with_context(_vero_internal=INTERNAL).create({
+            'report_id': report.id, 'requested_by_id': self.user.id, 'environment': 'sandbox',
+            'snapshot': body, 'request_body': body, 'content_hash': p.digest(body),
+            'state': 'accepted', 'receipt': 'EC-stored-receipt',
+        })
+        for opener in ('action_history', 'action_status'):
+            action = getattr(report.with_user(self.user), opener)()
+            wizard = self.env['vero.api.wizard'].with_user(self.user).browse(action['res_id'])
+            with self.subTest(opener=opener), patch.object(type(self.backend), '_call') as call:
+                wizard.action_update_status()
+                call.assert_not_called()
+            self.assertEqual(wizard.latest_receipt, attempt.receipt)
+            self.assertEqual(wizard.report_state, 'accepted')
+            self.assertTrue(wizard.status_only)
+            self.assertFalse(wizard.last_query_at)
+            self.assertEqual(len(report.submission_ids), 1)
+
+    def test_tracking_actions_require_full_accounting_access(self):
+        with self.assertRaises(AccessError):
+            self.report.with_user(self.reader).action_history()
+        action = self.report.with_user(self.user).action_history()
+        wizard = self.env['vero.api.wizard'].browse(action['res_id']).with_user(self.reader)
+        with self.assertRaises(AccessError):
+            wizard.action_update_status()
 
     def test_uncertain_resolution_is_audited_and_not_resent(self):
         attempt = self.attempt()
@@ -251,6 +455,21 @@ class TestVeroAPI(TransactionCase):
         self.assertFalse(attempt.bill_id)
         with self.assertRaises(UserError):
             wizard.action_confirm()
+
+    def test_uncertain_action_opens_unsaved_resolution_with_required_values_unset(self):
+        attempt = self.attempt()
+        attempt._update(state='uncertain', receipt=False)
+        model = self.env['vero.api.resolution'].with_user(self.user)
+        before = model.search_count([])
+        action = attempt.action_resolve()
+        self.assertEqual(action['res_model'], model._name)
+        self.assertFalse(action.get('res_id'))
+        self.assertEqual(model.search_count([]), before)
+        form_model = model.with_context(action['context'])
+        self.assertEqual(form_model.default_get(['submission_id'])['submission_id'], attempt.id)
+        wizard = form_model.create({'result': 'not_received', 'note': 'Verified test non-receipt'})
+        wizard.action_confirm()
+        self.assertEqual(attempt.state, 'not_received')
 
     def test_ec_source_refund_and_missing_identifier(self):
         goods, services = self.env['account.account.tag'].create([
@@ -350,7 +569,7 @@ class TestVeroAPI(TransactionCase):
         self.assertEqual(first.bill_id.state, 'posted')
 
     def test_ec_queue_is_independent_and_correction_sends_only_changes(self):
-        self.period.closed = False
+        self.period = self.period.copy({'closed': False})
         report = self.env['vero.api.report'].with_context(_vero_internal=INTERNAL).create({
             'company_id': self.company.id, 'backend_id': self.backend.id, 'vat_period_id': self.period.id,
             'kind': 'ec', 'date_start': '2026-03-01', 'date_end': '2026-03-31'})
@@ -388,9 +607,109 @@ class TestVeroAPI(TransactionCase):
         with patch.object(type(self.backend), '_connection', return_value=('', {}, None)), \
              patch.object(type(self.report), '_payload', return_value=self.payload()):
             self._preview(wizard)
+            self.assertFalse(wizard.can_submit)
+            self.assertIn('No changes', wizard.submission_block_reason)
             with self.assertRaises(UserError):
                 wizard.action_submit()
         self.assertEqual(self.report.submission_ids, first)
+
+    def test_missing_closing_evidence_blocks_wizard_and_queued_preflight(self):
+        wizard = self.env['vero.api.wizard'].with_user(self.user).create({'report_id': self.report.id})
+        with patch.object(type(self.backend), '_connection', return_value=('', {}, None)), \
+             patch.object(type(self.report), '_payload', return_value=self.payload()):
+            self._preview(wizard)
+            self.assertTrue(wizard.can_submit)
+            original = self.period.move_id
+            self.period.with_user(self.user).with_context(_vero_internal=INTERNAL).write({'move_id': False})
+            # A browser refresh reads the transient wizard in a new request.
+            wizard.invalidate_recordset(['can_submit', 'submission_block_reason'])
+            self.assertFalse(wizard.can_submit)
+            self.assertIn('valid posted closing entry', wizard.submission_block_reason)
+            with self.assertRaises(UserError):
+                wizard.action_submit()
+            self.assertFalse(self.report.submission_ids)
+            self.period.with_user(self.user).with_context(_vero_internal=INTERNAL).write({'move_id': original.id})
+            wizard.action_submit()
+            attempt = self.report.submission_ids[:1]
+            self.period.with_user(self.user).with_context(_vero_internal=INTERNAL).write({'move_id': False})
+            with patch.object(type(self.backend), '_call', side_effect=AssertionError('No network for invalid closing')):
+                with self.assertRaises(UserError):
+                    attempt.with_user(self.user)._preflight()
+            self.assertEqual(attempt.state, 'queued')
+
+    def test_action_edit_discards_stale_diff_and_preview(self):
+        wizard = self.env['vero.api.wizard'].with_user(self.user).create({
+            'report_id': self.report.id, 'diff_text': 'Old comparison',
+            'snapshot': self.payload(), 'preview_body': self.payload(),
+        })
+        wizard.action_edit()
+        self.assertFalse(wizard.diff_text)
+        self.assertFalse(wizard.preview_body)
+        self.assertFalse(wizard.can_submit)
+
+    def test_bill_buttons_follow_latest_vat_and_historical_document_links(self):
+        self.report.with_context(_vero_internal=INTERNAL).write({'due_date': '2026-05-12'})
+        first = self.attempt()
+        self.assertTrue(first.can_retry_bill)
+        self.assertFalse(first.can_open_bill)
+        self.assertFalse(first.can_prepare_bill_adjustment)
+        first._sync_bill()
+        self.assertFalse(first.can_retry_bill)
+        self.assertTrue(first.can_open_bill)
+        first.bill_id.action_post()
+        correction = self.attempt(self.payload(200, 20))
+        correction._sync_bill()
+        self.assertFalse(first.can_retry_bill)
+        self.assertFalse(first.can_prepare_bill_adjustment)
+        self.assertFalse(correction.can_retry_bill)
+        self.assertTrue(correction.can_prepare_bill_adjustment)
+        correction.action_prepare_bill_adjustment()
+        self.assertFalse(correction.can_prepare_bill_adjustment)
+        self.assertTrue(correction.can_open_bill)
+        action = correction.action_open_bill()
+        self.assertEqual(set(action['domain'][0][2]), set((correction.bill_id | correction.credit_note_id).ids))
+        self.assertEqual(first.action_open_bill()['res_id'], first.bill_id.id)
+
+    def test_ec_history_has_no_vat_bill_actions(self):
+        wizard = self._independent_ec('2026-06-15')
+        report = wizard._get_report()
+        body = p.ec_payload([], '9999999-2', date(2026, 6, 1), p.contact('Test', '+3581'))
+        attempt = self.env['vero.api.submission'].with_context(_vero_internal=INTERNAL).create({
+            'report_id': report.id, 'requested_by_id': self.user.id,
+            'environment': 'sandbox', 'snapshot': body, 'request_body': body,
+            'content_hash': p.digest(body), 'state': 'accepted', 'receipt': 'EC-no-bill',
+        }).with_user(self.user)
+        self.assertFalse(attempt.can_retry_bill)
+        self.assertFalse(attempt.can_prepare_bill_adjustment)
+        self.assertFalse(attempt.can_open_bill)
+        for action in ('action_retry_bill', 'action_prepare_bill_adjustment', 'action_open_bill'):
+            with self.subTest(action=action), self.assertRaises(UserError):
+                getattr(attempt, action)()
+
+    def test_manual_receipt_after_posted_refund_allows_payable_bill_creation(self):
+        self.report.with_context(_vero_internal=INTERNAL).write({'due_date': '2026-05-12'})
+        first = self.attempt()
+        first._sync_bill()
+        first.bill_id.action_post()
+        refund = self.attempt(self.payload(0, 0))
+        refund.action_prepare_bill_adjustment()
+        refund.credit_note_id.action_post()
+        credit = refund.credit_note_id
+        self.assertEqual(self.period.payment_move_id, credit)
+        correction = self.attempt(self.payload(50, 0))
+        correction._update(state='uncertain', receipt=False)
+        resolution = self.env['vero.api.resolution'].with_user(self.user).create({
+            'submission_id': correction.id, 'result': 'received',
+            'note': 'Verified test receipt', 'receipt': 'verified-after-refund',
+            'accepted_timestamp': '2026-05-01T12:00:00Z',
+        })
+        resolution.action_confirm()
+        self.assertTrue(correction.can_retry_bill)
+        self.assertFalse(correction.can_prepare_bill_adjustment)
+        correction.action_retry_bill()
+        self.assertEqual(correction.bill_id.amount_total, 50)
+        self.assertEqual(correction.credit_note_id, credit)
+        self.assertEqual(credit.state, 'posted')
 
     def test_same_payable_correction_reuses_bill(self):
         self.report.with_context(_vero_internal=INTERNAL).write({'due_date': '2026-05-12'})
@@ -492,6 +811,7 @@ class TestVeroAPI(TransactionCase):
             self.env['vero.api.wizard'].with_user(self.user).create({'report_id': report.id})
 
     def test_preflight_rejects_wrong_period_and_existing_external_return(self):
+        self._select_environment('production')
         attempt = self.attempt()
         info = {'Period': '2026-03-31', 'StartDate': '2026-03-01', 'EndDate': '2026-03-31',
                 'Status': 'Missing', 'DueDate': '2026-05-12'}
@@ -555,8 +875,7 @@ class TestVeroAPI(TransactionCase):
     def test_failed_status_query_preserves_receipt_and_last_successful_query(self):
         attempt = self.attempt()
         self.report.with_context(_vero_internal=INTERNAL).write({
-            'last_query': {'http_status': 200, 'body': {'Status': 'Processed'}},
-            'remote_status': 'Processed'})
+            'last_query': {'http_status': 200, 'body': {'Status': 'Processed'}}})
         with patch.object(type(self.backend), '_call', side_effect=requests.Timeout('Simulated timeout')), \
              self.assertRaises(UserError):
             self.report.with_user(self.user).action_fetch_status()
@@ -650,16 +969,23 @@ class TestVeroAPI(TransactionCase):
         with self.assertRaises(UserError):
             self.backend.with_user(self.user).write({'api_root': 'https://api-sandbox.vero.fi/Return/SAT/changed'})
 
-    def test_multiple_environments_require_explicit_selection(self):
+    def test_period_uses_company_connection_and_reopens_existing_report(self):
+        date_range = self.period.date_range_id.copy({
+            'name': 'Vero 2026-04', 'date_start': '2026-04-01', 'date_end': '2026-04-30',
+        })
+        new_period = self.env['account.vat.period'].create({'date_range_id': date_range.id})
+        new_action = new_period.with_user(self.user).action_do_send()
+        self.assertEqual(self.env['vero.api.wizard'].browse(new_action['res_id']).backend_id, self.backend)
         single = self.period.with_user(self.user).action_do_send()
         self.assertEqual(self.env['vero.api.wizard'].browse(single['res_id']).backend_id, self.backend)
         self.env['vero.api.backend'].create({
             'name': 'Explicit production selection', 'company_id': self.company.id,
             'environment': 'production', 'contact_name': 'Test', 'contact_phone': '+3581'})
-        for action in ('action_vero_choose_vat', 'action_vero_choose_ec'):
-            with self.subTest(action=action):
-                result = getattr(self.period.with_user(self.user), action)()
-                self.assertFalse(self.env['vero.api.wizard'].browse(result['res_id']).backend_id)
+        existing = self.period.with_user(self.user).action_do_send()
+        wizard = self.env['vero.api.wizard'].browse(existing['res_id'])
+        self.assertEqual(wizard.report_id, self.report)
+        self.assertEqual(wizard.backend_id, self.backend)
+        self.assertTrue(wizard.status_only)
 
     def test_real_invoice_and_refund_reach_mis_payload_in_their_period(self):
         template = self.company.mis_report_instance_id
@@ -785,6 +1111,7 @@ class TestVeroAPI(TransactionCase):
                 'Status': state, 'DueDate': '2026-05-12'}]})
 
     def test_preview_detects_external_return_and_requires_explicit_replacement(self):
+        self._select_environment('production')
         wizard = self.env['vero.api.wizard'].with_user(self.user).create({'report_id': self.report.id})
         with patch.object(type(self.backend), '_call', return_value=self._period_response('Processed')) as call, \
              patch.object(type(self.report), '_payload', return_value=self.payload()):
@@ -801,6 +1128,162 @@ class TestVeroAPI(TransactionCase):
             self.assertTrue(wizard.period_checked)
             self.assertTrue(wizard.preview_body['ReplacementReturn'])
             self.assertTrue(all(c.args[0] == 'GetVATPeriods/v1' for c in call.call_args_list))
+
+    def _check_simulated_status_initial_return(self):
+        wizard = self.env['vero.api.wizard'].with_user(self.user).create({'report_id': self.report.id})
+        with patch.object(type(self.backend), '_call', return_value=self._period_response('Processed')), \
+             patch.object(type(self.report), '_payload', return_value=self.payload()):
+            wizard.action_refresh()
+            self.assertTrue(wizard.can_submit)
+            self.assertFalse(wizard.preview_warning)
+            self.assertFalse(wizard.preview_body.get('ReplacementReturn'))
+            self.assertEqual(self.report.period_status, 'Processed')
+            self.assertFalse(self.report.remote_status)
+            self.assertFalse(self.report.submission_ids)
+            # Exercise the scheduler preflight without actually filing a return.
+            with patch.object(type(self.backend), '_connection'):
+                wizard.action_submit()
+                attempt = self.report.submission_ids
+                attempt.with_user(self.user)._preflight()
+            self.assertEqual(attempt.state, 'queued')
+            self.assertFalse(attempt.request_body.get('ReplacementReturn'))
+
+    def test_simulated_processed_status_allows_initial_return_in_sandbox(self):
+        self._check_simulated_status_initial_return()
+
+    def test_simulated_processed_status_allows_initial_return_with_test_certificate(self):
+        self._select_environment('test')
+        self._check_simulated_status_initial_return()
+
+    def test_production_estimated_period_allows_missing_initial_return(self):
+        self._select_environment('production')
+        wizard = self.env['vero.api.wizard'].with_user(self.user).create({'report_id': self.report.id})
+        with patch.object(type(self.backend), '_call', return_value=self._period_response('Estimated')), \
+             patch.object(type(self.report), '_payload', return_value=self.payload()):
+            wizard.action_refresh()
+            self.assertTrue(wizard.can_submit)
+            self.assertFalse(wizard.preview_body.get('ReplacementReturn'))
+            self.assertEqual(wizard.period_status, 'Estimated')
+            self.assertFalse(self.report.submission_ids)
+            wizard.write({'replace_external': True, 'replacement_reason': 'CLC'})
+            wizard.action_refresh()
+            self.assertFalse(wizard.can_submit)
+            self.assertIn('assessed by estimation', wizard.preview_warning)
+
+    def test_production_existing_return_still_requires_replacement(self):
+        self._select_environment('production')
+        for status in ('Processed', 'Being Processed'):
+            with self.subTest(status=status), \
+                 patch.object(type(self.backend), '_call', return_value=self._period_response(status)):
+                with self.assertRaises(UserError):
+                    self.report._check_filing_period(self.payload())
+                self.report._check_filing_period(dict(self.payload(), ReplacementReturn=True, ReplacementReason='CLC'))
+        self.assertFalse(self.report.submission_ids)
+
+    def test_production_missing_rejects_external_replacement_without_receipt(self):
+        self._select_environment('production')
+        with patch.object(type(self.backend), '_call', return_value=self._period_response()):
+            with self.assertRaises(UserError):
+                self.report._check_filing_period(dict(self.payload(), ReplacementReturn=True))
+            attempt = self.attempt()
+            self.report._check_filing_period(dict(self.payload(), ReplacementReturn=True))
+            self.assertEqual(attempt.state, 'accepted')
+
+    def test_query_sources_keep_their_own_status_response_and_timestamp(self):
+        with patch.object(type(self.backend), '_call', return_value=(200, {'Status': 'Processed'})):
+            self.report.with_user(self.user).action_fetch_status()
+        before = self.report.read(['remote_status', 'last_query', 'last_query_at'])[0]
+        with patch.object(type(self.backend), '_call', return_value=self._period_response('Missing')):
+            self.report.with_user(self.user)._check_filing_period(self.payload())
+        self.assertEqual(self.report.read(list(before))[0], before)
+        self.assertEqual(self.report.period_status, 'Missing')
+        self.assertTrue(self.report.last_period_query_at)
+        period_before = self.report.read(['period_status', 'last_period_query', 'last_period_query_at'])[0]
+        with patch.object(type(self.backend), '_call', return_value=(200, {'Status': 'Estimated'})):
+            self.report.with_user(self.user).action_fetch_status()
+        self.assertEqual(self.report.read(list(period_before))[0], period_before)
+        self.assertEqual(self.report.remote_status, 'Estimated')
+        self.assertEqual(self.report.last_query['operation'], 'GetFiledVATReturn/v2')
+        self.assertEqual(self.report.last_period_query['operation'], 'GetVATPeriods/v1')
+        self.assertEqual(self.report.last_query['request']['FilingPeriod'], '2026-03-31')
+        self.assertEqual(self.report.last_period_query['request']['FilingYear'], 2026)
+
+    def test_historical_query_status_is_derived_from_its_own_response(self):
+        self.report.with_context(_vero_internal=INTERNAL).write({
+            'last_query': {'http_status': 200, 'body': {'Status': 'Processed'}},
+            'last_query_at': '2026-04-01 12:00:00',
+        })
+        # Simulate the old persisted column after a different period query.
+        self.cr.execute("SELECT 1 FROM information_schema.columns WHERE table_name='vero_api_report' AND column_name='remote_status'")
+        if self.cr.fetchone():
+            self.cr.execute("UPDATE vero_api_report SET remote_status='Missing' WHERE id=%s", [self.report.id])
+        self.report.invalidate_recordset()
+        self.assertEqual(self.report.remote_status, 'Processed')
+        self.assertFalse(self.report.query_error)
+
+    def test_invalid_status_responses_show_problem_without_changing_receipt(self):
+        attempt = self.attempt()
+        before = attempt.read(['state', 'receipt', 'response_body'])[0]
+        for response in (None, [], {}, {'Status': None}, {'Status': []}, {'Status': 'Unknown'}):
+            with self.subTest(response=response), \
+                 patch.object(type(self.backend), '_call', return_value=(200, response)):
+                self.report.with_user(self.user).action_fetch_status()
+            self.assertEqual(self.report.remote_status, 'Invalid response')
+            self.assertTrue(self.report.query_error)
+            self.assertEqual(self.report.last_query['body'], response)
+            self.assertTrue(self.report.last_query_at)
+            self.assertEqual(attempt.read(list(before))[0], before)
+
+    def test_known_statuses_are_query_data_not_submission_receipts(self):
+        for status in ('Missing', 'Processed', 'Being Processed', 'Estimated', 'Expired'):
+            with self.subTest(status=status), \
+                 patch.object(type(self.backend), '_call', return_value=(200, {'Status': status})):
+                self.report.with_user(self.user).action_fetch_status()
+            self.assertEqual(self.report.remote_status, status)
+            self.assertFalse(self.report.query_error)
+            self.assertEqual(self.report.state, 'draft')
+            self.assertFalse(self.report.submission_ids)
+
+    def test_malformed_period_responses_block_preview_without_rpc_errors(self):
+        info = self._period_response()[1]['FilingPeriod'][0]
+        values = [None, [], {}, {'FilingPeriod': None}, {'FilingPeriod': 'invalid'},
+                  {'FilingPeriod': [None]}, {'FilingPeriod': [{}]},
+                  {'FilingPeriod': [dict(info, Status=[])]},
+                  {'FilingPeriod': [dict(info, DueDate=5)]},
+                  {'FilingPeriod': [dict(info, DueDate='2026-02-30')]}]
+        wizard = self.env['vero.api.wizard'].with_user(self.user).create({'report_id': self.report.id})
+        for response in values:
+            with self.subTest(response=response), \
+                 patch.object(type(self.backend), '_call', return_value=(200, response)), \
+                 patch.object(type(self.report), '_payload', return_value=self.payload()):
+                wizard.action_refresh()
+                self.assertTrue(wizard.preview_warning)
+                self.assertFalse(wizard.period_checked)
+                self.assertFalse(wizard.can_submit)
+                self.assertEqual(self.report.period_status, 'Invalid response')
+                self.assertEqual(self.report.last_period_query['body'], response)
+                with self.assertRaises(UserError):
+                    wizard.action_submit()
+        self.assertFalse(self.report.submission_ids)
+
+    def test_test_environment_keeps_period_and_expiry_validation(self):
+        for environment in ('sandbox', 'test'):
+            self._select_environment(environment)
+            for response in (self._period_response('Expired'), (200, {'FilingPeriod': []}),
+                             (503, {'ErrorText': 'Unavailable'})):
+                with self.subTest(environment=environment, response=response), \
+                     patch.object(type(self.backend), '_call', return_value=response), \
+                     self.assertRaises(UserError):
+                    self.report._check_filing_period(self.payload())
+
+    def test_period_query_timeout_preserves_separate_query_history(self):
+        with patch.object(type(self.backend), '_call', return_value=self._period_response()):
+            self.report._check_filing_period(self.payload())
+        before = self.report.read(['period_status', 'last_period_query', 'last_period_query_at'])[0]
+        with patch.object(type(self.backend), '_call', side_effect=requests.Timeout), \
+             self.assertRaises(requests.Timeout):
+            self.report._check_filing_period(self.payload())
+        self.assertEqual(self.report.read(list(before))[0], before)
 
     def test_preview_timeout_preserves_preview_but_blocks_queue(self):
         wizard = self.env['vero.api.wizard'].with_user(self.user).create({'report_id': self.report.id})
@@ -832,11 +1315,10 @@ class TestVeroAPI(TransactionCase):
             self.assertTrue(second.status_only)
         self.assertEqual(len(self.report.submission_ids), 1)
 
-    def test_selected_existing_connection_opens_history_instead_of_new_preview(self):
+    def test_reopening_queued_period_shows_history_instead_of_new_preview(self):
         self.attempt()._update(state='queued')
-        action = self.period.with_user(self.user).action_vero_choose_vat()
+        action = self.period.with_user(self.user).action_do_send()
         wizard = self.env['vero.api.wizard'].browse(action['res_id'])
-        wizard.backend_id = self.backend
         with patch.object(type(self.report), '_payload', side_effect=AssertionError('Must not calculate')):
             wizard.action_refresh()
         self.assertEqual(wizard.report_id, self.report)
@@ -878,10 +1360,11 @@ class TestVeroAPI(TransactionCase):
         })
 
     def test_three_ec_months_with_open_quarterly_vat_period(self):
+        self.period = self.period.copy({'closed': False})
+        self.report.with_context(_vero_internal=INTERNAL).write({'vat_period_id': self.period.id})
         self.company.tax_lock_date = False
-        self.period.date_range_id.date_start = date(2026, 1, 1)
+        self.period.date_range_id.with_context(_vero_internal=INTERNAL).write({'date_start': date(2026, 1, 1)})
         self.report.with_context(_vero_internal=INTERNAL).write({'date_start': date(2026, 1, 1)})
-        self.period.closed = False
         goods, services = self.env['account.account.tag'].create([
             {'name': 'Quarterly EC goods', 'applicability': 'taxes'},
             {'name': 'Quarterly EC services', 'applicability': 'taxes'}])
@@ -919,9 +1402,12 @@ class TestVeroAPI(TransactionCase):
         with patch.object(type(self.report), '_payload', return_value=self.payload()), \
              patch.object(type(self.backend), '_connection', return_value=('', {}, None)):
             self._preview(vat)
+            self.assertFalse(vat.can_submit)
+            self.assertTrue(vat.submission_block_reason)
             with self.assertRaises(UserError):
                 vat.action_submit()
-            self.period.closed = True
+            record_test_closing(self.period)
+            self.assertTrue(vat.can_submit)
             vat.action_submit()
         self.assertEqual(self.report.date_start, date(2026, 1, 1))
         self.assertEqual(self.report.date_end, date(2026, 3, 31))
@@ -995,12 +1481,7 @@ class TestVeroAPI(TransactionCase):
                 'kind': 'vat', 'backend_id': self.backend.id})._get_report()
 
     def test_ec_navigation_and_monthly_view(self):
-        wizard = self._independent_ec('2026-07-01')
-        wizard._get_report()
-        # A writable transient field must not broaden company access on navigation.
-        other = self.env['res.company'].create({'name': 'EC navigation forbidden company'})
-        wizard.company_id = other
-        action = wizard.action_choose()
+        action = self.env['vero.api.report'].with_user(self.user).with_company(self.company).action_new_ec_month()
         next_wizard = self.env['vero.api.wizard'].browse(action['res_id'])
         self.assertEqual(next_wizard.company_id, self.company)
         self.assertFalse(next_wizard.vat_period_id)

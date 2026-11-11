@@ -38,7 +38,9 @@ class TestVeroTranslations(TransactionCase):
             for key, field in model._fields.items():
                 if field.automatic or field.inherited:
                     continue
-                if name == 'account.vat.period' and not key.startswith('vero_'):
+                if name == 'account.vat.period' and not (
+                    key.startswith('vero_') or key in ('closing_state', 'closeable', 'closing_block_reason', 'is_fiscal_start_date')
+                ):
                     continue
                 # Exclude fields inherited from connector.backend or mail mixins.
                 if 'account_vat_periods' not in field._modules:
@@ -133,3 +135,17 @@ class TestVeroTranslations(TransactionCase):
             if message.id:
                 self.assertTrue(message.string, message.id)
                 self.assertNotIn('fuzzy', message.flags, message.id)
+
+    def test_query_validation_messages_follow_user_language(self):
+        report = self.env['vero.api.report'].new({
+            'kind': 'vat', 'date_start': '2026-03-01', 'date_end': '2026-03-31',
+            'last_query': {'http_status': 200, 'body': {'Status': 'Unknown'}},
+            'last_period_query': {'http_status': 200, 'body': {'FilingPeriod': None}},
+        })
+        source = 'The VAT status response is invalid: a supported Status value is required. The submission state was not changed.'
+        for lang in ('en_US', 'fi_FI', 'en_US'):
+            localized = report.with_context(lang=lang)
+            expected_status = 'Invalid response' if lang == 'en_US' else self.translated('Invalid response')
+            self.assertEqual(localized.remote_status, expected_status)
+            self.assertEqual(localized.period_status, expected_status)
+            self.assertEqual(localized.query_error, source if lang == 'en_US' else self.translated(source))

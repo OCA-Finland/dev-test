@@ -117,10 +117,10 @@ class VeroVatPeriod(models.Model):
             raise AccessError(self.env._('The period must belong to an allowed company.'))
         return company
 
-    def _vero_open(self, kind, choose=False):
+    def _vero_open(self, kind):
         company = self._vero_company()
         reports = self.vero_report_ids.filtered(lambda r: r.kind == kind)
-        if reports and not choose:
+        if reports:
             if len(reports) == 1:
                 return reports.action_status()
             action = self.action_vero_status()
@@ -144,12 +144,6 @@ class VeroVatPeriod(models.Model):
 
     def action_vero_ec(self):
         return self._vero_open('ec')
-
-    def action_vero_choose_vat(self):
-        return self._vero_open('vat', choose=True)
-
-    def action_vero_choose_ec(self):
-        return self._vero_open('ec', choose=True)
 
     def action_vero_status(self):
         self._vero_company()

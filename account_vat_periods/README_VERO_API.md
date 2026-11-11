@@ -14,6 +14,102 @@ lähetetään itsenäisesti. Yhteenvetoilmoituksen kohde on aina kalenterikuukau
 Kaikki Vero-toiminnot edellyttävät ryhmää `account.group_account_user`;
 `account.group_account_readonly` ei riitä.
 
+## Tilakyselyjen tulkinta (18.0.1.8.5)
+
+Sekä sandbox että testivarmenteellinen Vero-testipalvelu palauttavat mallivastauksia.
+Niiden `Processed`-tila ei todista käyttäjän lähettäneen kyseisen kauden ilmoitusta,
+eikä pakota testi-ilmoitusta korvaavaksi ilmoitukseksi. Myös testissä tarkistetaan
+vastauksen rakenne, kauden päivämäärät ja kauden vanhentuminen. Odoon oma
+lähetyshistoria määrää, onko kyseessä aiemman testilähetyksen korjaus.
+
+Tuotannossa `Processed` ja `Being Processed` edellyttävät edelleen korvaavaa
+ilmoitusta. `Estimated` tarkoittaa arvioverotusta: puuttuva ilmoitus voidaan antaa
+alkuperäisenä. Arvioverotus yksin ei oikeuta valitsemaan aiemmin muualla annetun
+ilmoituksen korvaamista. Odoossa tallennettu aiemman ilmoituksen vastaanottokuitti
+säilyy erillisenä todisteena, vaikka kysely palauttaisi vanhempaa tilatietoa.
+
+Tilakysely-välilehdellä ilmoituskyselyllä ja kauden tarkistuksella on omat tilansa,
+aikaleimansa, pyyntönsä ja vastauksensa. Virheellinen vastaus näytetään selkeänä
+virheenä. Kysely ei koskaan kuittaa lähetysyritystä vastaanotetuksi eikä lähetä sitä
+uudelleen. Pelkkä testipalvelun kysely ei varmista tuotannon ilmoitushistoriaa.
+
+Lähde: [Verohallinnon testausohje](https://www.vero.fi/tietoa-verohallinnosta/kehittaja/vero-api/testaus/).
+
+## ALV- ja EU-dialogien yhtenäiset painikkeet (18.0.1.8.4)
+
+Myös ALV-kausilta ja EU-kuukausilta avattava dialogi käyttää yhtä **Päivitä tila**
+-painiketta. Vastaanotetun ilmoituksen toiminnot ovat **Tee korjaus**, **Päivitä tila**
+ja **Sulje**. Jonossa, lähetyksessä tai epäselvässä tilassa korjausta ei tarjota.
+Ilman lähetysyritystä tilanäkymässä on **Valmistele ilmoitus** ja **Sulje**.
+ALV-kausi tai EU-kuukausi valitaan listalta ja uusi EU-kuukausi omalta näytöltään.
+Versiossa 18.0.1.8.6 kausirivin yhteydenvaihtopainike ja sen erilliset toiminnot
+on poistettu. Yrityksen ainoa käytettävissä oleva yhteys valitaan automaattisesti.
+Aiempi ilmoitus avataan normaalista ilmoituspainikkeesta omine tietoineen.
+
+ALV:n valmistelussa **Päivitä tila** voi hakea myös muualla annetun ilmoituksen,
+vaikka Odoossa ei vielä ole lähetyshistoriaa. Kysely säilyttää esikatselun,
+korjausvalinnat ja vahvistamisen ehdot; se ei korvaa esikatselun laskentaa.
+Tyhjä Tilakysely-välilehti piilotetaan kaikissa avausreiteissä.
+
+## Seurantadialogin toiminnot (18.0.1.8.3)
+
+Yhteisen Vero API -ilmoitukset -raportin Tila ja vastaukset avaa seurantadialogin.
+Jos lähetysyrityksiä ei ole, dialogi kertoo, ettei ilmoitusta ole vielä lähetetty,
+ja siinä on vain Sulje-painike. Tyhjää lähetyshistoriaa ei näytetä.
+Kun lähetysyritys on olemassa, dialogissa on Päivitä tila ja Sulje.
+Jonossa olevien ja lähetettävien ilmoitusten sekä EU-ilmoitusten päivitys lukee
+Odoon tallennetun tilan. Muiden ALV-lähetysten päivitys hakee lisäksi
+Verohallinnon tiedot. Kysely ei vahvista epäselvän lähetyksen vastaanottoa
+eikä lähetä ilmoitusta uudelleen. Valmistelu, korjaus ja yhteyden valinta
+tehdään ALV-kausien tai EU-yhteenvetoilmoitusten omissa työnäkymissä.
+
+## Ilmoitusten yhteinen seurantanäkymä (18.0.1.8.2)
+
+Vero API -ilmoitukset sijaitsee kohdassa **Laskutus → Raportointi → Hallinta**.
+Yhteinen lista käyttää omaa ALV- ja EU-ilmoitusten seurantanäkymää ja hakua.
+Siinä näkyvät ilmoitustyyppi, kauden päivämäärät, yritys, ympäristö ja tila;
+Tila ja vastaukset avaa ilmoituksen tiedot ja lähetyshistorian.
+Valitse kuukausi on vain EU-yhteenvetoilmoitusten näytöllä. Ilmoitukset
+valmistellaan ja korjataan edelleen ALV- tai EU-näkymän kautta.
+
+## Katselmoinnin korjaukset (18.0.1.8.1)
+
+- Kausien tietuetason yritysrajaus koskee myös suoria hakuja ja lukukäyttäjiä.
+  Tilikauden kaudet luodaan kyseisen yrityksen tiedoilla sen alku- ja loppupäivien
+  sisälle. Uusilla ALV-kausilla on oma yhteinen kausityyppi; olemassa olevia
+  tilikausikuukausien tyyppejä ja niiden yritysasetuksia ei muuteta.
+- Nykyinen tilikausi -suodatin lasketaan avattaessa. Avaa Raportti avaa erillisen
+  tilapäisen MIS-raportin kauden yritykselle ja täsmälliselle päivämäärävälille.
+  Yrityksen yhteistä raporttipohjaa ei muuteta.
+  Moduulin muuttamattomat yleiset MIS-oletussarakkeet käyttävät jatkossa 1, 3 tai
+  12 kalenterikuukautta; omia mukautettuja sarakemäärityksiä ei korvata.
+- Sulkemistilan ja sulkutositteen voi kirjata vain Sulje kausi -toiminnolla.
+  Lähetyksen vahvistus ja jonon käsittely tarkistavat myös tositteen kelvollisuuden.
+  Kirjanpito- tai ilmoitushistorian sisältävää kautta ei voi poistaa tai siirtää
+  toisiin päivämääriin tai toiseen yritykseen myöskään sen tilikauden kautta.
+- Tee ALV-ilmoitus näkyy vasta suljetulla kaudella. Vahvista lähetys piilotetaan,
+  jos lähettämisen ehto ei täyty; esikatselu kertoo esteen. Muuttumatonta korjausta
+  ei tarjota lähetettäväksi. Korjauksen aloitus tyhjentää vanhan vertailun.
+- Lähetyshistorian laskupainikkeet näkyvät vain soveltuvissa ALV-lähetyksissä.
+  EU-lähetyksillä niitä ei näytetä. Vanhan lähetyksen laskulinkki avaa siihen
+  liittyvän laskun, ei myöhemmän korjauksen erillistä laskua.
+  Kirjatun hyvityksen jälkeen uusi maksettavan veron lasku voidaan luoda myös,
+  kun epäselvän lähetyksen vastaanotto on ensin vahvistettu käsin.
+
+Riippuvuuden sulkupohjien yrityssääntö päivitetään vain, jos se vastaa tunnettua
+vanhaa oletussääntöä. Ylläpitäjän mukauttamia sääntöjä ei korvata päivityksessä.
+Päivitetty [käyttöohje](KAYTTOOHJE_FI.md) korvaa PDF-ohjeen näitä kohtia koskevat tiedot.
+
+## ALV-kauden sulkemistila (18.0.1.8.0)
+
+Suljettava ja Suljettu ovat vain tilatägejä. Sulje kausi näkyy, kun päättynyt kausi,
+saman yrityksen aiemmat kaudet, sulkuasetukset, lukitukset ja käyttäjän oikeudet
+sallivat sulkemisen. Muussa tapauksessa Sulkemisen lisätieto kertoo esteen.
+Vanha Suljettu-painike ja kauden sulkemisen peruminen on estetty myös palvelinpuolella.
+Sulkeminen käyttää kauden yritystä, säilyttää muut lukituspäivät ja estää toistuvan
+sulkukirjauksen. Vero-ilmoituksen korjaus on edelleen erillinen toiminto.
+KAYTTOOHJE_FI.md:n sulkemisohje korvaa vanhan PDF-ohjeen tämän osuuden.
+
 ## Erilliset ALV- ja EU-näkymät (18.0.1.7.0)
 
 **ALV-kaudet ja ilmoitukset** säilyttää kausien sulkemisen, ALV-ilmoitukset ja

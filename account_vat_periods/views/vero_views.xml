@@ -28,22 +28,36 @@
     </record>
     <record id="vero_report_list" model="ir.ui.view">
         <field name="name">vero.api.report.list</field><field name="model">vero.api.report</field>
+        <field name="priority">10</field>
         <field name="arch" type="xml">
             <list create="0" edit="0" delete="0" js_class="vero_status_list">
-                <field name="name"/><field name="company_id"/><field name="environment"/>
+                <field name="kind"/><field name="date_start"/><field name="date_end"/>
+                <field name="company_id"/><field name="backend_id" optional="hide"/><field name="environment"/>
                 <field name="state" widget="badge" decoration-success="state == 'accepted'" decoration-warning="state in ('queued','sending','uncertain')" decoration-danger="state == 'error'"/>
-                <button name="action_status" type="object" icon="fa-info-circle" string="Status"/>
-                <button name="action_status" type="object" icon="fa-check-circle" class="text-success" title="Received by the Finnish Tax Administration API; not a final tax decision" invisible="state != 'accepted'"/>
-                <button name="action_preview" type="object" string="Prepare / correct" invisible="state in ('queued', 'sending', 'uncertain')"/>
-                <field name="remote_status"/>
+                <button name="action_history" type="object" icon="fa-info-circle" string="Status and responses"/>
+                <field name="remote_status" optional="hide"/>
             </list>
+        </field>
+    </record>
+    <record id="vero_report_search" model="ir.ui.view">
+        <field name="name">vero.api.report.search</field><field name="model">vero.api.report</field>
+        <field name="priority">10</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/><field name="kind"/><field name="company_id"/>
+                <field name="backend_id"/><field name="state"/><field name="date_start"/>
+                <filter name="report_year" string="Year" date="date_start"/>
+                <filter name="report_kind" string="Report type" context="{'group_by': 'kind'}"/>
+                <filter name="report_company" string="Company" context="{'group_by': 'company_id'}"/>
+                <filter name="report_environment" string="Environment" context="{'group_by': 'environment'}"/>
+            </search>
         </field>
     </record>
     <record id="vero_report_form" model="ir.ui.view">
         <field name="name">vero.api.report.form</field><field name="model">vero.api.report</field>
         <field name="arch" type="xml">
             <form create="0" edit="0" delete="0">
-                <header><button name="action_preview" type="object" string="Prepare / correct" invisible="state in ('queued', 'sending', 'uncertain')" class="oe_highlight"/><button name="action_status" type="object" string="Status and responses"/></header>
+                <header><button name="action_history" type="object" string="Status and responses"/></header>
                 <sheet><group><field name="name"/><field name="company_id"/><field name="backend_id"/><field name="kind"/><field name="date_start"/><field name="date_end"/><field name="environment"/><field name="state"/><field name="remote_status"/><field name="last_query_at"/><field name="due_date" invisible="kind == 'ec'"/><field name="ec_due_date" invisible="kind != 'ec'"/><field name="ec_status" invisible="kind != 'ec'"/><field name="ec_checked_at" invisible="kind != 'ec'"/></group>
                     <field name="submission_ids"><list create="0" delete="0"><field name="create_date"/><field name="state"/><field name="environment"/><field name="receipt"/><field name="bill_message"/></list></field>
                 </sheet>
@@ -54,7 +68,8 @@
         <field name="name">vero.api.submission.form</field><field name="model">vero.api.submission</field>
         <field name="arch" type="xml">
             <form create="0" edit="0" delete="0">
-                <header><button name="action_retry_bill" type="object" string="Create / check bill" invisible="state != 'accepted'"/><button name="action_prepare_bill_adjustment" type="object" string="Prepare bill adjustment" invisible="state != 'accepted'" confirm="Create a draft credit note for the posted bill and a new draft bill for the corrected amount? Check and post them in accounting and account for the previous payment."/><button name="action_open_bill" type="object" string="Open bill / adjustment"/><button name="action_resolve" type="object" string="Record verified outcome" invisible="state != 'uncertain'"/></header>
+                <field name="can_retry_bill" invisible="1"/><field name="can_prepare_bill_adjustment" invisible="1"/><field name="can_open_bill" invisible="1"/>
+                <header><button name="action_retry_bill" type="object" string="Create / check bill" invisible="not can_retry_bill"/><button name="action_prepare_bill_adjustment" type="object" string="Prepare bill adjustment" invisible="not can_prepare_bill_adjustment" confirm="Create a draft credit note for the posted bill and a new draft bill for the corrected amount? Check and post them in accounting and account for the previous payment."/><button name="action_open_bill" type="object" string="Open bill / adjustment" invisible="not can_open_bill"/><button name="action_resolve" type="object" string="Record verified outcome" invisible="state != 'uncertain'"/></header>
                 <sheet><group><field name="report_id"/><field name="company_id"/><field name="environment"/><field name="state"/><field name="requested_by_id"/><field name="started_at"/><field name="finished_at"/><field name="http_status"/><field name="receipt"/><field name="accepted_timestamp"/><field name="bill_id"/></group>
                     <group><field name="error_message"/><field name="bill_message"/></group>
                     <group string="Bill adjustment" invisible="not credit_note_id"><field name="superseded_bill_id"/><field name="credit_note_id"/></group>
@@ -79,49 +94,70 @@
         <field name="arch" type="xml">
             <form string="Vero API">
                 <field name="status_only" invisible="1"/>
+                <field name="history_only" invisible="1"/>
+                <field name="last_query_at" invisible="1"/>
+                <field name="last_period_query_at" invisible="1"/>
+                <field name="period_status" invisible="1"/>
                 <field name="period_checked" invisible="1"/>
                 <field name="queue_notice" invisible="1"/>
                 <field name="latest_id" invisible="1"/>
                 <field name="ec_preparation" invisible="1"/>
+                <field name="can_submit" invisible="1"/>
                 <div class="alert alert-info" invisible="kind != 'ec' or ec_preparation != 'empty' or status_only">No reportable EU sales were found in the posted entries for this month. No initial sales list is needed. Recalculate after changing the bookkeeping.</div>
                 <div class="alert alert-info" invisible="not queue_notice or report_state != 'queued'">Return added to the submission queue. Do not submit it again. You can close this window; the period list updates automatically.</div>
                 <div class="alert alert-warning" invisible="report_state not in ('queued', 'sending') or (queue_notice and report_state == 'queued')">The return is queued or being sent. Another submission is blocked. Refresh the status using the button below.</div>
                 <div class="alert alert-warning" invisible="report_state != 'uncertain'">The submission outcome is uncertain. Do not resubmit. Read the response and verify receipt with the Finnish Tax Administration. Record the verified outcome from the submission history.</div>
-                <div class="alert alert-success" invisible="report_state != 'accepted'">Received by the Finnish Tax Administration. The receipt has been saved. This is not a final tax decision. Select Make correction to change the return.</div>
+                <div class="alert alert-info" invisible="not history_only or latest_id">This return has not been submitted yet.</div>
+                <div class="alert alert-success" invisible="report_state != 'accepted' or not status_only or history_only">Received by the Finnish Tax Administration. The receipt has been saved. This is not a final tax decision. Select Make correction to change the return.</div>
+                <div class="alert alert-success" invisible="report_state != 'accepted' or not history_only">Received by the Finnish Tax Administration. The receipt has been saved. This is not a final tax decision.</div>
+                <div class="alert alert-info" invisible="report_state != 'accepted' or status_only">Preparing a correction. The previous received return remains in the history. Recalculate and check the changes before confirming.</div>
                 <div class="alert alert-danger" invisible="report_state != 'error'">The latest submission failed. Read the error below before preparing another preview.</div>
                 <group invisible="report_id">
                     <field name="kind" readonly="1"/>
                     <field name="company_id" invisible="kind != 'ec'" options="{'no_create': True}"/>
                     <field name="vat_period_id" readonly="1" invisible="kind == 'ec'"/>
                     <field name="backend_id" required="not report_id" domain="[('company_id', '=', company_id)]" options="{'no_create': True}"/>
-                    <field name="month" invisible="kind != 'ec'" required="kind == 'ec' and not report_id"/>
+                    <field name="month" widget="vero_month" invisible="kind != 'ec'" required="kind == 'ec' and not report_id"/>
                 </group>
                 <group invisible="not report_id"><field name="report_id" string="Report"/><field name="backend_id" readonly="1" string="Connection"/><field name="environment" string="Environment"/><field name="report_state" string="Report status" widget="badge" decoration-success="report_state == 'accepted'" decoration-danger="report_state == 'error'" decoration-warning="report_state in ('queued', 'sending', 'uncertain')"/><field name="latest_at" invisible="not latest_id"/><field name="latest_receipt" invisible="not latest_receipt"/></group>
                 <div class="alert alert-danger" invisible="not latest_error"><field name="latest_error" nolabel="1"/></div>
                 <div class="alert alert-warning" invisible="not preview_warning"><field name="preview_warning" nolabel="1"/></div>
-                <div class="alert alert-warning" invisible="not report_id or environment == 'production'">TEST ENVIRONMENT: this submission does not create a production tax return.</div>
+                <div class="alert alert-info" invisible="status_only or not submission_block_reason or preview_warning"><field name="submission_block_reason" nolabel="1"/></div>
+                <div class="alert alert-warning" invisible="not report_id or environment == 'production'">TEST ENVIRONMENT: this submission does not create a production tax return. Status queries return simulated data and do not prove that you have filed a return.</div>
+                <div class="alert alert-warning" invisible="not query_error"><field name="query_error" nolabel="1"/></div>
+                <div class="alert alert-info" invisible="status_only or environment != 'production' or period_status != 'Estimated'">The period has been assessed by estimation. This is not proof of a previously filed return. Submit the missing return; use replacement only when you have a receipt for an earlier return.</div>
                 <group invisible="status_only or kind == 'ec'">
                     <field name="no_activity"/><field name="replace_external"/><field name="replacement_reason"/>
                 </group>
-                <notebook>
+                <notebook invisible="history_only and not latest_id">
                     <page string="Preview" invisible="status_only"><field name="payload_text" nolabel="1"/><field name="diff_text"/></page>
                     <page string="Submitted return and response" invisible="not latest_id"><field name="latest_payload"/><field name="latest_response"/></page>
-                    <page string="Submission history and responses">
+                    <page string="Submission history and responses" invisible="not history_ids">
                         <field name="history_ids"><list create="0" edit="0" delete="0">
                             <field name="create_date"/><field name="state" widget="badge" decoration-success="state == 'accepted'" decoration-danger="state == 'error'" decoration-warning="state in ('queued','sending','uncertain')"/>
                             <field name="receipt"/><field name="error_message"/><field name="bill_message"/>
                         </list></field>
                     </page>
-                    <page string="Status query" invisible="kind == 'ec'"><group><field name="remote_status" string="Latest queried status"/></group><p>Query data may refer to an earlier return. It does not change the submission receipt.</p><field name="query_text" nolabel="1"/></page>
+                    <page string="Status query" invisible="kind == 'ec' or not (last_query_at or last_period_query_at)">
+                        <p>Query data may refer to an earlier return. It does not change the submission receipt.</p>
+                        <group string="Filed return query" invisible="not last_query_at">
+                            <field name="remote_status" string="Latest queried status"/>
+                            <field name="last_query_at"/>
+                        </group>
+                        <field name="query_text" nolabel="1" invisible="not last_query_at"/>
+                        <group string="Filing period check" invisible="not last_period_query_at">
+                            <field name="period_status"/>
+                            <field name="last_period_query_at"/>
+                        </group>
+                        <field name="period_query_text" nolabel="1" invisible="not last_period_query_at"/>
+                    </page>
                 </notebook>
                 <footer>
-                    <button name="action_refresh" type="object" string="Calculate / refresh preview" invisible="status_only"/>
-                    <button name="action_submit" type="object" string="Confirm and submit" class="btn-primary" confirm="Submit the previewed return to the selected Vero API environment?" invisible="status_only or not payload_text or preview_warning or (kind == 'vat' and not period_checked) or (kind == 'ec' and ec_preparation == 'empty') or report_state in ('queued', 'sending', 'uncertain')"/>
-                    <button name="action_edit" type="object" string="Make correction" invisible="not status_only or report_state != 'accepted'"/>
-                    <button name="action_edit" type="object" string="Prepare return" invisible="not status_only or report_state not in ('draft', 'error', 'not_received')"/>
-                    <button name="action_local_status" type="object" string="Refresh submission status" invisible="not status_only"/>
-                    <button name="action_choose" type="object" string="Another month / connection" invisible="not status_only"/>
-                    <button name="action_fetch_status" type="object" string="Fetch data from the Finnish Tax Administration" invisible="not report_id or kind == 'ec'"/>
+                    <button name="action_refresh" type="object" string="Calculate / refresh preview" invisible="history_only or status_only"/>
+                    <button name="action_submit" type="object" string="Confirm and submit" class="btn-primary" confirm="Submit the previewed return to the selected Vero API environment?" invisible="not can_submit"/>
+                    <button name="action_edit" type="object" string="Make correction" invisible="history_only or not status_only or report_state != 'accepted'"/>
+                    <button name="action_edit" type="object" string="Prepare return" invisible="history_only or not status_only or report_state not in ('draft', 'error', 'not_received')"/>
+                    <button name="action_update_status" type="object" string="Refresh status" invisible="not report_id or (status_only and not latest_id) or (not status_only and kind != 'vat')"/>
                     <button string="Close" special="cancel"/>
                 </footer>
             </form>
@@ -135,19 +171,27 @@
             <xpath expr="//button[@name='action_do_send'][2]" position="replace"/>
             <xpath expr="//button[@name='action_do_send']" position="replace"/>
             <xpath expr="//button[@name='action_do_cancel_send']" position="replace"/>
+            <xpath expr="//button[@name='action_do_close'][2]" position="replace"/>
+            <xpath expr="//button[@name='action_do_close']" position="replace">
+                <field name="closing_state" widget="badge" decoration-success="closing_state == 'closed'" decoration-muted="closing_state == 'open'"/>
+                <field name="closeable" column_invisible="True"/>
+                <field name="closed" column_invisible="True"/>
+                <button name="action_do_close" type="object" string="Close period" class="btn-success" invisible="not closeable" confirm="Close this VAT period? This posts the closing entry and updates the company tax lock date. The period cannot be reopened from this module."/>
+                <field name="closing_block_reason" optional="show" class="text-wrap" width="190px"/>
+            </xpath>
+            <xpath expr="//button[@name='action_do_cancel_close']" position="replace"/>
             <xpath expr="//field[@name='move_id']" position="attributes"><attribute name="optional">hide</attribute></xpath>
             <xpath expr="//field[@name='closing_date']" position="attributes"><attribute name="optional">hide</attribute></xpath>
             <xpath expr="//field[@name='vat_payment_type']" position="attributes"><attribute name="optional">hide</attribute></xpath>
             <xpath expr="//field[@name='date_range_id']" position="after">
                 <field name="vero_vat_state" column_invisible="True" groups="account.group_account_user"/>
                 <field name="vero_vat_status" class="text-wrap" width="240px" decoration-success="vero_vat_state == 'accepted'" decoration-warning="vero_vat_state in ('queued', 'sending', 'uncertain')" decoration-danger="vero_vat_state == 'error'" groups="account.group_account_user"/>
-                <button name="action_do_send" type="object" string="Prepare VAT return" icon="fa-pencil" invisible="vero_vat_state != 'draft'" groups="account.group_account_user"/>
+                <button name="action_do_send" type="object" string="Prepare VAT return" icon="fa-pencil" invisible="vero_vat_state != 'draft' or not closed" groups="account.group_account_user"/>
                 <button name="action_do_send" type="object" string="VAT: submission status" icon="fa-clock-o" invisible="vero_vat_state not in ('queued', 'sending')" groups="account.group_account_user"/>
                 <button name="action_do_send" type="object" string="View VAT return" icon="fa-check-circle" class="text-success" invisible="vero_vat_state != 'accepted'" groups="account.group_account_user"/>
                 <button name="action_do_send" type="object" string="VAT: view error" icon="fa-exclamation-triangle" class="text-danger" invisible="vero_vat_state != 'error'" groups="account.group_account_user"/>
                 <button name="action_do_send" type="object" string="VAT: resolve status" icon="fa-question-circle" invisible="vero_vat_state != 'uncertain'" groups="account.group_account_user"/>
                 <button name="action_do_send" type="object" string="VAT: returns" icon="fa-list" invisible="vero_vat_state not in ('multiple', 'not_received')" groups="account.group_account_user"/>
-                <button name="action_vero_choose_vat" type="object" icon="fa-exchange" title="Select another VAT connection / environment" groups="account.group_account_user"/>
                 <button name="action_vero_status" type="object" icon="fa-history" title="All reports and submission history" groups="account.group_account_user"/>
             </xpath>
         </field>
@@ -189,8 +233,12 @@
     <record id="account_vat_period_menu_action" model="ir.ui.menu"><field name="name">VAT periods and returns</field></record>
     <menuitem id="vero_ec_month_menu" name="EU sales lists" parent="account_vat_periods.account_vat_period_conf_menu" action="vero_ec_month_action" sequence="11" groups="account.group_account_user"/>
     <record id="vero_backend_action" model="ir.actions.act_window"><field name="name">Vero API connections</field><field name="res_model">vero.api.backend</field><field name="view_mode">list,form</field></record>
-    <record id="vero_report_action" model="ir.actions.act_window"><field name="name">Vero API reports</field><field name="res_model">vero.api.report</field><field name="view_mode">list,form</field></record>
+    <record id="vero_report_action" model="ir.actions.act_window">
+        <field name="name">Vero API reports</field><field name="res_model">vero.api.report</field>
+        <field name="view_mode">list,form</field><field name="view_id" ref="vero_report_list"/>
+        <field name="search_view_id" ref="vero_report_search"/>
+    </record>
     <menuitem id="vero_backend_menu" name="Vero API connections" parent="connector.menu_connector" action="vero_backend_action" groups="account.group_account_user"/>
-    <menuitem id="vero_report_menu" name="Vero API reports" parent="account_vat_periods.account_vat_period_conf_menu" action="vero_report_action" groups="account.group_account_user"/>
+    <menuitem id="vero_report_menu" name="Vero API reports" parent="account.account_reports_management_menu" action="vero_report_action" sequence="40" groups="account.group_account_user"/>
     <menuitem id="vero_backend_accounting_menu" name="Vero API connections" parent="account.menu_finance_configuration" sequence="50" action="vero_backend_action" groups="account.group_account_user"/>
 </odoo>

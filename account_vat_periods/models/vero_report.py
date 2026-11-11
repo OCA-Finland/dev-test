@@ -1,5 +1,5 @@
 import json
-from datetime import timedelta
+from datetime import date, timedelta
 from decimal import Decimal
 from dateutil.easter import easter
 
@@ -11,6 +11,9 @@ from odoo.addons.mis_builder.models.mis_report_instance import MisReportInstance
 
 from .vero_backend import INTERNAL, check_access
 from .. import vero_payload as payloads
+
+
+VAT_REMOTE_STATES = frozenset({'Missing', 'Processed', 'Being Processed', 'Estimated', 'Expired'})
 
 
 class VeroReport(models.Model):
@@ -136,11 +139,36 @@ class VeroReport(models.Model):
     )
     remote_status = fields.Char(
         string='Remote status',
-        readonly=True,
+        compute='_compute_remote_status',
         help=(
-            'Status text returned by the latest query to the Finnish Tax Administration. This can refer '
-            "to an earlier return and is separate from Odoo's submission status and receipt history."
+            'Validated status from the filed VAT return query displayed below. The filing period check '
+            'has its own status and timestamp. Test services return simulated data, and no query '
+            "changes Odoo's submission status or receipt history."
         ),
+    )
+    query_error = fields.Text(
+        string='Status query problem', compute='_compute_remote_status',
+        help='Explains an unsuccessful HTTP response or an invalid status response from the filed VAT '
+             'return query. The raw response remains available for diagnosis, and submission receipts '
+             'and the ability to retry uncertain submissions are not changed by this query.',
+    )
+    last_period_query = fields.Json(
+        string='Latest filing period response', readonly=True,
+        help='Raw response, HTTP status and request parameters from the latest filing period check. '
+             'This checks the selected period before submission and is independent of the filed '
+             'return query. A test response is simulated data, not evidence of a previous filing.',
+    )
+    last_period_query_at = fields.Datetime(
+        string='Filing period checked at', readonly=True,
+        help='Time of the latest completed filing period check. This timestamp belongs only to the '
+             'period response and must not be interpreted as a submission time or as the timestamp '
+             'of the separate query for a previously filed VAT return.',
+    )
+    period_status = fields.Char(
+        string='Filing period status', compute='_compute_period_status',
+        help='Validated status of the selected period in the latest filing period response. Estimated '
+             'means an assessment by estimation, not proof of a return filed by the taxpayer. Test '
+             'and sandbox statuses are simulated and do not establish actual filing history.',
     )
     due_date = fields.Date(
         string='Due date',
@@ -342,24 +370,96 @@ class VeroReport(models.Model):
         except payloads.PayloadError as exc:
             raise UserError(exc.translated(self.env._)) from exc
 
+    def _validated_return_status(self, response):
+        status = response.get('Status') if isinstance(response, dict) else None
+        if not isinstance(status, str) or status not in VAT_REMOTE_STATES:
+            raise UserError(_('The VAT status response is invalid: a supported Status value is required. The submission state was not changed.'))
+        return status
+
+    @api.depends_context('lang')
+    @api.depends('last_query')
+    def _compute_remote_status(self):
+        # Derive these values from the displayed response, including historical
+        # records where the old shared status column was overwritten by preflight.
+        for report in self:
+            report.remote_status = report.query_error = False
+            query = report.last_query
+            if not query:
+                continue
+            if not isinstance(query, dict) or query.get('http_status') != 200:
+                report.remote_status = _('Query error')
+                report.query_error = _('The VAT status query failed. Check the response and try again. The submission state was not changed.')
+                continue
+            try:
+                report.remote_status = report._validated_return_status(query.get('body'))
+            except UserError as exc:
+                report.remote_status = _('Invalid response')
+                report.query_error = str(exc)
+
+    def _validated_filing_period(self, response):
+        self.ensure_one()
+        periods = response.get('FilingPeriod') if isinstance(response, dict) else None
+        if not isinstance(periods, list) or any(
+                not isinstance(item, dict) or not isinstance(item.get('Period'), str) for item in periods):
+            raise UserError(_('The filing period response is invalid: a FilingPeriod list of period objects is required. No return was submitted.'))
+        matches = [item for item in periods if item['Period'] == str(self.date_end)]
+        if len(matches) != 1 or matches[0].get('StartDate') != str(self.date_start) or matches[0].get('EndDate') != str(self.date_end):
+            raise UserError(_('The selected period does not match a Vero filing period.'))
+        info = matches[0]
+        status = info.get('Status')
+        if not isinstance(status, str) or status not in VAT_REMOTE_STATES:
+            raise UserError(_('The filing period response has an unsupported status. No return was submitted.'))
+        due_date = info.get('DueDate')
+        if due_date is not None:
+            try:
+                if not isinstance(due_date, str) or date.fromisoformat(due_date).isoformat() != due_date:
+                    raise ValueError()
+            except ValueError:
+                raise UserError(_('The filing period response contains an invalid due date. No return was submitted.')) from None
+        return info
+
+    @api.depends_context('lang')
+    @api.depends('last_period_query', 'date_start', 'date_end')
+    def _compute_period_status(self):
+        for report in self:
+            query = report.last_period_query
+            report.period_status = False
+            if not query:
+                continue
+            if not isinstance(query, dict) or query.get('http_status') != 200:
+                report.period_status = _('Query error')
+                continue
+            try:
+                report.period_status = report._validated_filing_period(query.get('body'))['Status']
+            except UserError:
+                report.period_status = _('Invalid response')
+
     def _check_filing_period(self, body):
         self.ensure_one()
         check_access(self)
-        status, data = self.backend_id._call('GetVATPeriods/v1', {'BusinessId': body['BusinessId'], 'FilingYear': self.date_end.year})
-        if status != 200 or not isinstance(data, dict):
+        request = {'BusinessId': body['BusinessId'], 'FilingYear': self.date_end.year}
+        status, data = self.backend_id._call('GetVATPeriods/v1', request)
+        self.with_context(_vero_internal=INTERNAL).write({
+            'last_period_query': {'operation': 'GetVATPeriods/v1', 'request': request, 'http_status': status, 'body': data},
+            'last_period_query_at': fields.Datetime.now(),
+        })
+        if status != 200:
             raise UserError(_('Could not verify the filing period with Vero: %s') % json.dumps(data, ensure_ascii=False))
-        periods = [p for p in data.get('FilingPeriod', []) if p.get('Period') == str(self.date_end)]
-        if len(periods) != 1 or periods[0].get('StartDate') != str(self.date_start) or periods[0].get('EndDate') != str(self.date_end):
-            raise UserError(_('The selected period does not match a Vero filing period.'))
-        info = periods[0]
-        remote_state = info.get('Status')
-        if remote_state not in {'Missing', 'Processed', 'Being Processed', 'Estimated'}:
+        info = self._validated_filing_period(data)
+        remote_state = info['Status']
+        if remote_state == 'Expired':
             raise UserError(_('This filing period is expired or has an unsupported status.'))
-        if remote_state != 'Missing' and not body.get('ReplacementReturn'):
-            raise UserError(_('The Finnish Tax Administration already has a return for this period. Retrieve the previous return. To replace it, select replacement of a return filed elsewhere and the reason for correction, then refresh the preview.'))
-        if remote_state == 'Missing' and body.get('ReplacementReturn') and not self._accepted():
-            raise UserError(_('There is no previous return to replace at the Finnish Tax Administration.'))
-        self.with_context(_vero_internal=INTERNAL).write({'due_date': info.get('DueDate'), 'remote_status': remote_state})
+        # Test certificate services and sandbox return simulated statuses, not
+        # filing history. Still validate structure, period dates and expiry above.
+        if self.backend_id.environment == 'production':
+            if remote_state in {'Processed', 'Being Processed'} and not body.get('ReplacementReturn'):
+                raise UserError(_('The Finnish Tax Administration already has a return for this period. Retrieve the previous return. To replace it, select replacement of a return filed elsewhere and the reason for correction, then refresh the preview.'))
+            if body.get('ReplacementReturn') and not self._accepted():
+                if remote_state == 'Estimated':
+                    raise UserError(_('This period has been assessed by estimation. This is not evidence of a previously filed return. Clear the replacement selection and submit the missing return.'))
+                if remote_state == 'Missing':
+                    raise UserError(_('There is no previous return to replace at the Finnish Tax Administration.'))
+        self.with_context(_vero_internal=INTERNAL).write({'due_date': info.get('DueDate') or False})
 
     def action_preview(self):
         self.ensure_one()
@@ -368,9 +468,17 @@ class VeroReport(models.Model):
         return wizard.action_edit()
 
     def action_status(self):
+        return self._status_action()
+
+    def action_history(self):
+        return self._status_action(history_only=True)
+
+    def _status_action(self, history_only=False):
         self.ensure_one()
         check_access(self)
-        wizard = self.env['vero.api.wizard'].create({'report_id': self.id, 'status_only': True})
+        wizard = self.env['vero.api.wizard'].create({
+            'report_id': self.id, 'status_only': True, 'history_only': history_only,
+        })
         return wizard._action()
 
     def action_fetch_status(self):
@@ -383,7 +491,10 @@ class VeroReport(models.Model):
             status, response = self.backend_id._call('GetFiledVATReturn/v2', body)
         except requests.RequestException:
             raise UserError(_('The status request failed. The submission state was not changed.')) from None
-        self.with_context(_vero_internal=INTERNAL).write({'last_query': {'http_status': status, 'body': response}, 'last_query_at': fields.Datetime.now(), 'remote_status': response.get('Status') if status == 200 and isinstance(response, dict) else _('Query error')})
+        self.with_context(_vero_internal=INTERNAL).write({
+            'last_query': {'operation': 'GetFiledVATReturn/v2', 'request': body, 'http_status': status, 'body': response},
+            'last_query_at': fields.Datetime.now(),
+        })
         # A fetched old return or a matching amount is not proof of this attempt's receipt.
         return True
 
@@ -606,6 +717,65 @@ class VeroSubmission(models.Model):
             'sufficient evidence.'
         ),
     )
+    can_retry_bill = fields.Boolean(
+        string='Bill creation available', compute='_compute_bill_actions',
+        help='Indicates whether the latest received VAT return still needs its payable bill created '
+             'or a draft bill checked. EC sales lists have no VAT bill. A posted bill with a changed '
+             'amount requires an adjustment instead of another bill creation attempt.',
+    )
+    can_prepare_bill_adjustment = fields.Boolean(
+        string='Bill adjustment available', compute='_compute_bill_actions',
+        help='Indicates whether this latest received VAT correction can prepare an adjustment for '
+             'an existing posted VAT bill. The amount must have changed and the original bill must '
+             'match the company, currency and VAT vendor without an existing active credit note.',
+    )
+    can_open_bill = fields.Boolean(
+        string='Related bill available', compute='_compute_bill_actions',
+        help='Indicates that a VAT bill or adjustment credit note is available for this submission. '
+             'Opening it does not post or pay anything. Historical attempts open their own linked '
+             'documents rather than an unrelated bill from a later correction.',
+    )
+
+    def _related_bills(self):
+        self.ensure_one()
+        if self.report_id.kind != 'vat':
+            return self.env['account.move']
+        moves = self.bill_id | self.credit_note_id
+        if not moves and self.report_id._accepted() == self:
+            moves = self.report_id.vat_period_id.payment_move_id
+        return moves
+
+    @api.depends(
+        'state', 'snapshot', 'bill_id', 'credit_note_id', 'report_id.kind',
+        'report_id.submission_ids.state', 'report_id.vat_period_id.payment_move_id',
+        'report_id.vat_period_id.payment_move_id.state',
+        'report_id.vat_period_id.payment_move_id.amount_total',
+        'report_id.vat_period_id.payment_move_id.reversal_move_ids.state',
+    )
+    def _compute_bill_actions(self):
+        for attempt in self:
+            report = attempt.report_id
+            eligible = report.kind == 'vat' and attempt.state == 'accepted' and report._accepted() == attempt
+            attempt.can_open_bill = bool(attempt._related_bills())
+            attempt.can_retry_bill = attempt.can_prepare_bill_adjustment = False
+            if not eligible:
+                continue
+            existing = report.vat_period_id.payment_move_id
+            amount = payloads.payable(attempt.snapshot)
+            posted_change = bool(existing and existing.move_type == 'in_invoice' and existing.state == 'posted' and
+                                 attempt.company_id.currency_id.compare_amounts(existing.amount_total, amount))
+            attempt.can_prepare_bill_adjustment = bool(
+                posted_change and not attempt.credit_note_id and existing.move_type == 'in_invoice'
+                and existing.company_id == attempt.company_id
+                and existing.currency_id == attempt.company_id.currency_id
+                and existing.partner_id == attempt.company_id.vat_partner_id
+                and not existing.reversal_move_ids.filtered(lambda move: move.state != 'cancel')
+            )
+            attempt.can_retry_bill = bool(
+                not posted_change and not attempt.credit_note_id
+                and (not attempt.bill_id or attempt.bill_id != existing)
+                and (amount > 0 or (existing and existing.state == 'draft'))
+            )
 
     def init(self):
         self.env.cr.execute("""CREATE UNIQUE INDEX IF NOT EXISTS vero_one_pending_submission
@@ -637,6 +807,9 @@ class VeroSubmission(models.Model):
             raise UserError(_('The connection environment changed or was disabled after confirmation.'))
         report.backend_id._connection()
         if report.kind == 'vat':
+            closing_problem = report.vat_period_id._closing_integrity_problem()
+            if closing_problem:
+                raise UserError(closing_problem)
             report._check_filing_period(self.request_body)
 
     def _sync_bill(self):
@@ -739,6 +912,8 @@ class VeroSubmission(models.Model):
     def action_retry_bill(self):
         self.ensure_one()
         check_access(self.report_id)
+        if self.state != 'accepted' or self.report_id.kind != 'vat' or self.report_id._accepted() != self:
+            raise UserError(_('Only the latest received VAT return can update the bill.'))
         self._sync_bill()
         return True
 
@@ -747,18 +922,22 @@ class VeroSubmission(models.Model):
         check_access(self.report_id)
         if self.state != 'uncertain':
             raise UserError(_('Only an uncertain submission needs manual resolution.'))
-        wizard = self.env['vero.api.resolution'].create({'submission_id': self.id})
-        return {'type': 'ir.actions.act_window', 'res_model': wizard._name, 'res_id': wizard.id,
-                'view_mode': 'form', 'target': 'new', 'name': _('Resolve uncertain submission')}
+        # Let the form collect the required outcome and evidence before create().
+        return {'type': 'ir.actions.act_window', 'res_model': 'vero.api.resolution',
+                'view_mode': 'form', 'target': 'new', 'name': _('Resolve uncertain submission'),
+                'context': {'default_submission_id': self.id, 'allowed_company_ids': self.company_id.ids}}
 
     def action_open_bill(self):
         self.ensure_one()
         check_access(self.report_id)
-        move = self.bill_id or self.report_id.vat_period_id.payment_move_id
-        if not move:
+        moves = self._related_bills()
+        if not moves:
             raise UserError(_('No related bill exists.'))
-        move.check_access('read')
-        return {'type': 'ir.actions.act_window', 'res_model': 'account.move', 'res_id': move.id, 'view_mode': 'form', 'target': 'current'}
+        moves.check_access('read')
+        if len(moves) == 1:
+            return {'type': 'ir.actions.act_window', 'res_model': 'account.move', 'res_id': moves.id, 'view_mode': 'form', 'target': 'current'}
+        return {'type': 'ir.actions.act_window', 'name': _('VAT bill adjustment'), 'res_model': 'account.move',
+                'view_mode': 'list,form', 'domain': [('id', 'in', moves.ids)], 'target': 'current'}
 
     @api.model
     def _cron_process(self):

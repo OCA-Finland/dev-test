@@ -1,6 +1,6 @@
 {
     "name": "Account Vat Periods",
-    "version": "18.0.1.8.6",
+    "version": "18.0.1.8.7",
     "category": "Localization",
     "summary": "Adds a view that automates the VAT period closing and VAT payment process",
     #"license": "",

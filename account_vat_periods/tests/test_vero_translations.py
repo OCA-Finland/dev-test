@@ -85,17 +85,16 @@ class TestVeroTranslations(TransactionCase):
             self.assertEqual(period.with_context(lang=lang).vero_vat_status, value)
             self.assertEqual(period.with_context(lang=lang).vero_ec_status, value)
 
-    def test_populated_period_translates_environment_and_status(self):
+    def test_populated_vat_badge_translates_status_without_environment_prefix(self):
         backend = self.env['vero.api.backend'].new({'environment': 'test'})
         report = self.env['vero.api.report'].new({
             'kind': 'vat', 'date_end': date(2026, 5, 31), 'backend_id': backend,
         })
         period = self.env['account.vat.period'].new({'vero_report_ids': report})
         for lang in ('en_US', 'fi_FI', 'en_US'):
-            prefix = 'TEST' if lang == 'en_US' else self.translated('TEST')
             state = 'Not sent' if lang == 'en_US' else self.translated('Not sent')
             self.assertEqual(period.with_context(lang=lang).vero_vat_status,
-                             '%s 05/2026: %s' % (prefix, state))
+                             state)
 
     def test_unchanged_preview_uses_user_language(self):
         report = self.env['vero.api.report'].new({'kind': 'ec'})

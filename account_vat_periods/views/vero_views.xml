@@ -74,7 +74,8 @@
                     <group><field name="error_message"/><field name="bill_message"/></group>
                     <group string="Bill adjustment" invisible="not credit_note_id"><field name="superseded_bill_id"/><field name="credit_note_id"/></group>
                     <group string="Manual resolution of an uncertain submission" invisible="not resolved_by_id"><field name="resolved_by_id"/><field name="resolved_at"/><field name="resolution_note"/></group>
-                    <notebook><page string="Submission"><field name="request_body"/></page><page string="Response"><field name="response_body"/></page><page string="Full period snapshot"><field name="snapshot"/></page></notebook>
+                    <field name="content_html" nolabel="1"/>
+                    <notebook groups="base.group_no_one"><page string="Submission"><field name="request_text"/></page><page string="Response"><field name="response_text"/></page><page string="Full period snapshot"><field name="snapshot_text"/></page></notebook>
                 </sheet>
             </form>
         </field>
@@ -130,8 +131,12 @@
                     <field name="no_activity"/><field name="replace_external"/><field name="replacement_reason"/>
                 </group>
                 <notebook invisible="history_only and not latest_id">
-                    <page string="Preview" invisible="status_only"><field name="payload_text" nolabel="1"/><field name="diff_text"/></page>
-                    <page string="Submitted return and response" invisible="not latest_id"><field name="latest_payload"/><field name="latest_response"/></page>
+                    <page string="Preview" invisible="status_only"><field name="preview_html" nolabel="1"/></page>
+                    <page string="Submitted return" invisible="not latest_id"><field name="latest_content_html" nolabel="1"/></page>
+                    <page string="Technical details" groups="base.group_no_one" invisible="status_only and not latest_id">
+                        <group invisible="status_only"><field name="payload_text"/><field name="diff_text"/></group>
+                        <group invisible="not latest_id"><field name="latest_payload"/><field name="latest_response"/></group>
+                    </page>
                     <page string="Submission history and responses" invisible="not history_ids">
                         <field name="history_ids"><list create="0" edit="0" delete="0">
                             <field name="create_date"/><field name="state" widget="badge" decoration-success="state == 'accepted'" decoration-danger="state == 'error'" decoration-warning="state in ('queued','sending','uncertain')"/>
@@ -144,12 +149,12 @@
                             <field name="remote_status" string="Latest queried status"/>
                             <field name="last_query_at"/>
                         </group>
-                        <field name="query_text" nolabel="1" invisible="not last_query_at"/>
+                        <field name="query_text" nolabel="1" invisible="not last_query_at" groups="base.group_no_one"/>
                         <group string="Filing period check" invisible="not last_period_query_at">
                             <field name="period_status"/>
                             <field name="last_period_query_at"/>
                         </group>
-                        <field name="period_query_text" nolabel="1" invisible="not last_period_query_at"/>
+                        <field name="period_query_text" nolabel="1" invisible="not last_period_query_at" groups="base.group_no_one"/>
                     </page>
                 </notebook>
                 <footer>
@@ -177,15 +182,16 @@
                 <field name="closeable" column_invisible="True"/>
                 <field name="closed" column_invisible="True"/>
                 <button name="action_do_close" type="object" string="Close period" class="btn-success" invisible="not closeable" confirm="Close this VAT period? This posts the closing entry and updates the company tax lock date. The period cannot be reopened from this module."/>
-                <field name="closing_block_reason" optional="show" class="text-wrap" width="190px"/>
+                <field name="vero_vat_state" column_invisible="True" groups="account.group_account_user"/>
+                <field name="vero_vat_status" widget="badge" decoration-success="vero_vat_state == 'accepted'" decoration-warning="vero_vat_state in ('queued', 'sending', 'uncertain', 'multiple')" decoration-danger="vero_vat_state == 'error'" groups="account.group_account_user"/>
+                <field name="closing_block_reason" class="text-wrap" width="190px"/>
             </xpath>
             <xpath expr="//button[@name='action_do_cancel_close']" position="replace"/>
-            <xpath expr="//field[@name='move_id']" position="attributes"><attribute name="optional">hide</attribute></xpath>
-            <xpath expr="//field[@name='closing_date']" position="attributes"><attribute name="optional">hide</attribute></xpath>
-            <xpath expr="//field[@name='vat_payment_type']" position="attributes"><attribute name="optional">hide</attribute></xpath>
-            <xpath expr="//field[@name='date_range_id']" position="after">
-                <field name="vero_vat_state" column_invisible="True" groups="account.group_account_user"/>
-                <field name="vero_vat_status" class="text-wrap" width="240px" decoration-success="vero_vat_state == 'accepted'" decoration-warning="vero_vat_state in ('queued', 'sending', 'uncertain')" decoration-danger="vero_vat_state == 'error'" groups="account.group_account_user"/>
+            <xpath expr="//field[@name='closing_block_reason']" position="after">
+                <xpath expr="//field[@name='closing_date']" position="move"/>
+            </xpath>
+            <xpath expr="//field[@name='payment_state']" position="attributes"><attribute name="optional">hide</attribute></xpath>
+            <xpath expr="//field[@name='closing_date']" position="after">
                 <button name="action_do_send" type="object" string="Prepare VAT return" icon="fa-pencil" invisible="vero_vat_state != 'draft' or not closed" groups="account.group_account_user"/>
                 <button name="action_do_send" type="object" string="VAT: submission status" icon="fa-clock-o" invisible="vero_vat_state not in ('queued', 'sending')" groups="account.group_account_user"/>
                 <button name="action_do_send" type="object" string="View VAT return" icon="fa-check-circle" class="text-success" invisible="vero_vat_state != 'accepted'" groups="account.group_account_user"/>

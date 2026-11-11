@@ -7,6 +7,7 @@ import requests
 from odoo import api, fields, models, _
 from odoo.exceptions import AccessError, UserError
 from .. import vero_payload as payloads
+from ..vero_presentation import return_summary
 from ..models.vero_backend import GROUP, INTERNAL, check_access
 
 
@@ -250,6 +251,18 @@ class VeroWizard(models.TransientModel):
             'comparison baseline.'
         ),
     )
+    preview_html = fields.Html(
+        string='Return preview', compute='_compute_preview_html', sanitize=True,
+        help='Readable presentation of the exact prepared request, with amounts in euros and a comparison '
+             'against the last received return stored in Odoo. Check these figures before confirming. '
+             'For EC corrections, only changed buyers are sent and zero rows remove earlier buyer amounts.',
+    )
+    latest_content_html = fields.Html(
+        string='Submitted return', related='latest_id.content_html', readonly=True,
+        help='Readable copy of the exact data confirmed for the latest submission attempt. These amounts '
+             'come from the saved request and do not change when the accounting is edited. Check the '
+             'submission status and receipt separately to confirm reception.',
+    )
     history_ids = fields.One2many(
         string='Submission history',
         related='report_id.submission_ids',
@@ -327,6 +340,13 @@ class VeroWizard(models.TransientModel):
         for rec in self:
             rec.query_text = json.dumps(rec.report_id.last_query or {}, ensure_ascii=False, indent=2)
             rec.period_query_text = json.dumps(rec.report_id.last_period_query or {}, ensure_ascii=False, indent=2)
+
+    @api.depends_context('lang')
+    @api.depends('preview_body', 'report_id.submission_ids.state', 'report_id.submission_ids.snapshot')
+    def _compute_preview_html(self):
+        for wizard in self:
+            previous = wizard.report_id._accepted()
+            wizard.preview_html = return_summary(wizard, wizard.preview_body, previous.snapshot)
 
     @api.depends_context('lang', 'uid', 'allowed_company_ids', 'tz')
     @api.depends(

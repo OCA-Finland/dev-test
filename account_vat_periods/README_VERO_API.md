@@ -14,6 +14,21 @@ lähetetään itsenäisesti. Yhteenvetoilmoituksen kohde on aina kalenterikuukau
 Kaikki Vero-toiminnot edellyttävät ryhmää `account.group_account_user`;
 `account.group_account_readonly` ei riitä.
 
+## Selkeä tilalista ja luettava esikatselu (18.0.1.8.7)
+
+ALV-kausien ilmoitustila on värillinen badge ilman ympäristö- ja kuukausietuliitettä.
+Ympäristö tarkistetaan ilmoitusikkunasta. Sarakkeet etenevät kaudesta sulkemistilaan,
+ilmoitustilaan, sulkemisen lisätietoon ja sulkemispäivään, sitten ilmoitustoimintoihin,
+raporttiin, kirjaukseen, maksun tyyppiin ja ostolaskuun. Sulje kausi näkyy
+sulkemistilan vieressä vain silloin, kun sulkeminen on mahdollista.
+
+Esikatselu ja tallennettu ilmoitus näyttävät tiedot luettavina taulukoina.
+Korjauksen summia verrataan Odoossa viimeksi vastaanotettuun ilmoitukseen.
+EU-korjauksessa näkyvät lähetettävät muuttuneet ostajat ja poistot nollariveinä.
+Alkuperäiset JSON-pyynnöt, vastaukset, erot ja tilakyselysanomat näkyvät vain
+kehittäjätilassa. Tavalliset tila-, kuitti-, virhe- ja kyselyaikatiedot säilyvät
+näkyvissä. Rajaus koskee käyttöliittymää; se ei muuta aineiston tallentamista.
+
 ## Tilakyselyjen tulkinta (18.0.1.8.5)
 
 Sekä sandbox että testivarmenteellinen Vero-testipalvelu palauttavat mallivastauksia.

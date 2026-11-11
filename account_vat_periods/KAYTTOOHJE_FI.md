@@ -3,9 +3,9 @@
 > Versiosta 18.0.1.6.0 alkaen uusi asennus hallitsee salausavaimen automaattisesti. Katso ajantasaiset käyttöönotto-, palautus- ja varmuuskopiointiohjeet [README-ohjeesta](README_VERO_API.md#automaattinen-avainhallinta-180160). Sen ohje korvaa tämän dokumentin vanhat palvelinavaimen määritysohjeet.
 
 
-**Moduuli:** `account_vat_periods` · **Versio:** 18.0.1.8.4 · **Odoo:** 18 Community
+**Moduuli:** `account_vat_periods` · **Versio:** 18.0.1.8.7 · **Odoo:** 18 Community
 
-**Ohje päivitetty:** 10.11.2026
+**Ohje päivitetty:** 11.11.2026
 
 Ohje kattaa ALV-kausien perustamisen, raportoinnin, sulkemisen, ALV- ja EU-yhteenvetoilmoitukset, ilmoitusten korjaamisen sekä ALV-laskujen käsittelyn. Se kuvaa nykyistä toteutusta ja sen rajauksia. Valikkojen nimet voivat näkyä suomeksi tai englanniksi; molemmat nimet on annettu tärkeimmissä kohdissa.
 
@@ -199,7 +199,7 @@ Listan oletussuodatin on **Nykyinen tilikausi / This Fiscal Year**. Se valitsee 
 | Sulje kausi / Close period | Muodostaa kauden sulkukirjauksen ja verolukituksen. Näkyy vain, kun kausi ja käyttäjän oikeudet sallivat sulkemisen. |
 | Sulkemisen lisätieto | Selittää piilotetun sulkemispainikkeen syyn, esimerkiksi keskeneräisen kauden, aiemman avoimen kauden tai puuttuvan käyttöoikeuden. |
 | Avaa Raportti / Open Report | Avaa kauden yrityksen MIS-raportin täsmälleen kauden alku- ja loppupäiville. Ei lähetä mitään. |
-| ALV-ilmoitus | Teksti kertoo SANDBOX-, TESTI- tai TUOTANTO-ympäristön sekä ilmoituksen kauden. EU-kuukausien tilat ovat EU-yhteenvetoilmoitukset-näkymässä. |
+| ALV-ilmoitus | Värillinen badge kertoo lähetyksen tilan ilman ympäristö- tai kuukausietuliitettä. Tarkista ympäristö avattavasta ilmoitusikkunasta. EU-kuukausien tilat ovat EU-yhteenvetoilmoitukset-näkymässä. |
 | Tee ALV-ilmoitus | Näkyy suljetulla kaudella ja aloittaa ilmoituksen valmistelun. Jos yhteydellä ja kaudella on jo lähetys, avautuu sen tila. |
 | ALV: lähetyksen tila | Jonossa tai lähetyksessä oleva ilmoitus. Uutta lähetystä ei tarjota. |
 | Näytä ALV-ilmoitus | Vastaanotettu ilmoitus, lähetysaika, kuitti, lähetetty sisältö ja vastaus. Korjaus aloitetaan erillisellä **Tee korjaus** -painikkeella. |
@@ -282,11 +282,11 @@ Kauden sulkemistietoja ei voi muuttaa suoraan. Kirjanpito- tai ilmoitushistorian
 4. Ensimmäisessä tavallisessa ilmoituksessa jätä **Korvaa aiemmin muualla annettu ALV-ilmoitus** pois. Korjauksen syytä ei silloin tarvita.
 5. Paina **Laske / päivitä esikatselu**.
 6. Tarkista valittu ympäristö, yrityksen tunniste ja kauden päättymispäivä.
-7. Tarkista **Lähetettävät tiedot** ja **Muutokset edelliseen vastaanotettuun ilmoitukseen**.
+7. Tarkista **Esikatselu**-välilehden tiedot ja summat. Korjauksessa taulukko näyttää myös aiemman vastaanotetun ilmoituksen summat ja erot.
 
 **Vahvista lähetys** näkyy vain, kun esikatselu on lähetettävissä. Lähetyksen lisätieto kertoo esteen, kuten muuttumattoman korjauksen, puuttuvan sulkukirjauksen tai esikatselun jälkeen muuttuneet korjausvalinnat. Korjaa syy ja laske esikatselu uudelleen. Lähetyshistorian laskutoiminnot näkyvät vain soveltuvilla ALV-lähetyksillä; EU-ilmoituksissa niitä ei näytetä.
 
-Esikatselu näyttää JSON-muotoisen sisällön. Tämä on nykyisen version varsinainen lähetettävien tietojen näkymä. Kenttien merkitykset on selitetty luvussa 19. Ensimmäisessä ilmoituksessa vertailu tehdään tyhjään lähtötilanteeseen, joten siinä näkyy lisäyksiä; se ei tarkoita, että ilmoitus olisi korjaus.
+Esikatselu näyttää lähetettävän sisällön luettavina taulukoina. Ensimmäisessä ilmoituksessa näkyvät lähetettävät summat; korjauksessa myös edellinen Odoossa vastaanotettu versio ja euromääräinen muutos. Negatiivinen nettosumma tarkoittaa palautettavaa ALV:tä. EU-korjauksessa näytetään vain lähetettävät muuttuneet ostajat ja poistettavien ostajien nollarivit. Alkuperäiset JSON-sanomat ja tekninen vertailu näkyvät vain kehittäjätilassa.
 
 Esikatselun laskeminen luo tarvittaessa ilmoituksen tietueen, mutta ei lähetä sitä Verohallintoon. ALV-esikatselu yrittää samalla tarkistaa Verohallinnon kauden. Puuttuva yhteys tai kaudella jo oleva ilmoitus näkyy varoituksena ja estää vahvistamisen. Summat jäävät silti tarkistettaviksi. Korvausvalinnan tai syyn muuttamisen jälkeen laske esikatselu uudelleen.
 
@@ -313,7 +313,7 @@ Jos kirjanpidon sisältö tai korjauksen valinnat ovat muuttuneet esikatselun j�
 1. Tarkista, ettei kaudella ole ilmoitettavia lukuja.
 2. Sulje kausi normaalin työjärjestyksen mukaan.
 3. Avaa ALV-esikatselu ja valitse **Ei toimintaa**.
-4. Laske esikatselu uudelleen ja tarkista `NoActivity: true`.
+4. Laske esikatselu uudelleen ja tarkista taulukosta **Ei toimintaa: Kyllä** sekä nollasummat.
 5. Vahvista ja seuraa vastaanottoa.
 
 Moduuli estää **Ei toimintaa** -valinnan, jos yksikin ilmoitukseen kartoitettu MIS-luku on nollasta poikkeava. Pelkkä maksettavan nettomäärän nolla ei tarkoita toimettomuutta: myynnin ja vähennysten summat voivat olla yhtä suuret. Tällöin käytetään normaalia ilmoitusta erittelyineen.
@@ -405,7 +405,7 @@ korjausvalinnat säilyvät. Valintojen muuttamisen jälkeen tarvitaan edelleen
 Kysely hakee Veron palauttaman ilmoitustiedon; se ei lähetä uutta ilmoitusta. **Se ei muuta epäselvää lähetysyritystä automaattisesti vastaanotetuksi**, koska palvelussa näkyvä ilmoitus voi olla aikaisempi versio. Myöskään samansuuruinen vero ei yksin todista uuden version vastaanottoa.
 
 **Tilakysely** erottaa toisistaan annetun ilmoituksen kyselyn ja kauden tarkistuksen.
-Kummankin tila, kyselyaika sekä pyyntö ja vastaus näytetään erikseen. Esikatselun
+Kummankin tila ja kyselyaika näytetään erikseen. Alkuperäiset JSON-pyynnöt ja vastaukset näkyvät vain kehittäjätilassa. Esikatselun
 päivittäminen ei muuta aiemman ilmoituskyselyn tietoja. Puuttuva tai tuntematon
 tilatieto näytetään virheellisenä vastauksena; vastaanottokuittaus säilyy ennallaan.
 

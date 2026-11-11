@@ -11,6 +11,7 @@ from odoo.addons.mis_builder.models.mis_report_instance import MisReportInstance
 
 from .vero_backend import INTERNAL, check_access
 from .. import vero_payload as payloads
+from ..vero_presentation import return_summary
 
 
 VAT_REMOTE_STATES = frozenset({'Missing', 'Processed', 'Being Processed', 'Estimated', 'Expired'})
@@ -444,7 +445,7 @@ class VeroReport(models.Model):
             'last_period_query_at': fields.Datetime.now(),
         })
         if status != 200:
-            raise UserError(_('Could not verify the filing period with Vero: %s') % json.dumps(data, ensure_ascii=False))
+            raise UserError(_('The filing period could not be verified (HTTP %s). Refresh the preview or ask your administrator to check the technical details.') % status)
         info = self._validated_filing_period(data)
         remote_state = info['Status']
         if remote_state == 'Expired':
@@ -589,6 +590,30 @@ class VeroSubmission(models.Model):
             'unchanged or outdated previews; it is not a receipt from the Finnish Tax Administration and '
             'should not be edited.'
         ),
+    )
+    content_html = fields.Html(
+        string='Submitted return', compute='_compute_content_html', sanitize=True,
+        help='Readable presentation of this attempt\'s saved request, including every reported VAT amount '
+             'or EU buyer row. It does not recalculate accounting or indicate reception; check the '
+             'submission status and receipt. Original technical messages remain available in debug mode.',
+    )
+    request_text = fields.Text(
+        string='Request JSON', compute='_compute_technical_text',
+        help='Formatted original request for this submission attempt, shown only in debug mode. '
+             'Use it for technical investigation; the readable return and the stored reception '
+             'status remain available in the normal user interface.',
+    )
+    response_text = fields.Text(
+        string='Response JSON', compute='_compute_technical_text',
+        help='Formatted original service response for this attempt, shown only in debug mode. '
+             'It is kept separate from later status queries. An HTTP response alone is not '
+             'proof of reception; check the receipt and submission state.',
+    )
+    snapshot_text = fields.Text(
+        string='Period snapshot JSON', compute='_compute_technical_text',
+        help='Formatted full-period snapshot saved for this attempt, shown only in debug mode. '
+             'An EC correction may send only changed buyers while this snapshot retains all '
+             'buyer totals as the baseline for future corrections.',
     )
     response_body = fields.Json(
         string='Service response',
@@ -735,6 +760,19 @@ class VeroSubmission(models.Model):
              'Opening it does not post or pay anything. Historical attempts open their own linked '
              'documents rather than an unrelated bill from a later correction.',
     )
+
+    @api.depends_context('lang')
+    @api.depends('request_body')
+    def _compute_content_html(self):
+        for submission in self:
+            submission.content_html = return_summary(submission, submission.request_body)
+
+    @api.depends('request_body', 'response_body', 'snapshot')
+    def _compute_technical_text(self):
+        for submission in self:
+            submission.request_text = json.dumps(submission.request_body or {}, ensure_ascii=False, indent=2)
+            submission.response_text = json.dumps(submission.response_body or {}, ensure_ascii=False, indent=2)
+            submission.snapshot_text = json.dumps(submission.snapshot or {}, ensure_ascii=False, indent=2)
 
     def _related_bills(self):
         self.ensure_one()

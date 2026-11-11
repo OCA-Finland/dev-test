@@ -51,9 +51,9 @@ class VeroVatPeriod(models.Model):
         compute='_compute_vero_status',
         groups=GROUP,
         help=(
-            'Latest VAT submission status with the environment and period. Use the adjacent action to '
-            'view the existing return; a failed correction can appear as an error even when an older '
-            'version was received.'
+            'Latest VAT submission status for this period. Open the return to check its environment, '
+            'receipt and history. A failed correction is shown as an error even when an older version '
+            'was received; different states across existing connections are shown as Multiple statuses.'
         ),
     )
     vero_ec_status = fields.Char(
@@ -98,6 +98,15 @@ class VeroVatPeriod(models.Model):
                 record['vero_%s_received' % kind] = bool(selected) and all(r.state == 'accepted' for r in selected)
                 states = set(selected.mapped('state'))
                 record['vero_%s_state' % kind] = next(iter(states)) if len(states) == 1 else ('multiple' if states else 'draft')
+                if kind == 'vat':
+                    state = record.vero_vat_state
+                    labels = dict(self.env['vero.api.report']._fields['state']._description_selection(self.env))
+                    record.vero_vat_status = (
+                        self.env._('Received by the Finnish Tax Administration') if state == 'accepted'
+                        else self.env._('Multiple statuses') if state == 'multiple'
+                        else labels[state]
+                    )
+                    continue
                 record['vero_%s_status' % kind] = ' | '.join('%s %s: %s' % (
                     {'sandbox': self.env._('SANDBOX'), 'test': self.env._('TEST'), 'production': self.env._('PRODUCTION')}[r.environment],
                     r.date_end.strftime('%m/%Y'),

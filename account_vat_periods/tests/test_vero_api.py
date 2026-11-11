@@ -4,6 +4,7 @@ from datetime import date
 from unittest.mock import Mock, patch
 
 import requests
+from lxml import html
 
 from odoo import Command, api
 from odoo.exceptions import AccessError, UserError
@@ -13,6 +14,7 @@ from .. import vero_payload as p
 from ..models import vero_backend
 from ..models.vero_backend import INTERNAL
 from ..models.vero_report import MisReportInstance
+from ..vero_presentation import return_summary
 from .closing_fixtures import record_test_closing
 
 
@@ -1324,11 +1326,10 @@ class TestVeroAPI(TransactionCase):
         self.assertEqual(wizard.report_id, self.report)
         self.assertTrue(wizard.status_only)
 
-    def test_separate_statuses_include_environment_and_mixed_states(self):
+    def test_vat_badge_has_no_prefix_and_preserves_mixed_states(self):
         self.attempt()
         self.assertEqual(self.period.vero_vat_state, 'accepted')
-        self.assertIn('SANDBOX', self.period.vero_vat_status)
-        self.assertIn('Received by the Finnish Tax Administration', self.period.vero_vat_status)
+        self.assertEqual(self.period.vero_vat_status, 'Received by the Finnish Tax Administration')
         self.assertEqual(self.period.vero_ec_status, 'Not sent')
         backend = self.env['vero.api.backend'].create({'name': 'Production UI fixture',
             'company_id': self.company.id, 'environment': 'production',
@@ -1338,7 +1339,7 @@ class TestVeroAPI(TransactionCase):
             'kind': 'vat', 'date_start': '2026-03-01', 'date_end': '2026-03-31'})
         self.assertEqual(self.period.vero_vat_state, 'multiple')
         self.assertFalse(self.period.vero_vat_received)
-        self.assertIn('PRODUCTION', self.period.vero_vat_status)
+        self.assertEqual(self.period.vero_vat_status, 'Multiple statuses')
         action = self.period.with_user(self.user).action_do_send()
         self.assertEqual(action['res_model'], 'vero.api.report')
         self.assertIn(('kind', '=', 'vat'), action['domain'])
@@ -1352,6 +1353,69 @@ class TestVeroAPI(TransactionCase):
         self.assertFalse(arch.xpath("//field[@name='vero_ec_status']"))
         self.assertFalse(arch.xpath("//button[@name='action_vero_ec']"))
         self.assertEqual(arch.get('js_class'), 'vero_status_list')
+
+    def test_readable_vat_correction_preserves_amounts_and_saved_history(self):
+        previous = self.attempt()
+        body = self.payload(10, 50)
+        body.update(ReplacementReturn=True, ReplacementReason='CLC')
+        wizard = self.env['vero.api.wizard'].with_user(self.user).with_context(lang='en_US').create({
+            'report_id': self.report.id, 'snapshot': body, 'preview_body': body,
+        })
+        original = copy.deepcopy(body)
+        tree = html.fromstring(wizard.preview_html)
+        rows = {cells[0]: cells[1:] for tr in tree.xpath('//tbody/tr')
+                if (cells := [td.text_content() for td in tr.xpath('./td')])}
+        self.assertEqual(rows['VAT payable / refundable'], ['80.00', '-40.00', '-120.00'])
+        self.assertEqual(rows['Deductible VAT'], ['20.00', '50.00', '30.00'])
+        self.assertIn('Calculation or entry error', tree.text_content())
+        self.assertEqual(wizard.preview_body, original)
+        saved = html.fromstring(previous.with_context(lang='en_US').content_html)
+        self.assertIn('80.00', saved.text_content())
+        self.assertNotIn('-40.00', saved.text_content())
+        self.assertEqual(previous.request_body, self.payload())
+        self.assertEqual(json.loads(previous.request_text), previous.request_body)
+        self.assertEqual(json.loads(previous.response_text), previous.response_body or {})
+        self.assertEqual(json.loads(previous.snapshot_text), previous.snapshot)
+
+    def test_readable_ec_correction_shows_zero_removals_and_escapes_text(self):
+        old = p.ec_payload([{'CountryCode': 'SE', 'VATIdentifier': '123456789001',
+            'SalesOfGoods': 100, 'SalesOfServices': 0, 'TriangulationSales': 0}],
+            '9999999-2', date(2026, 3, 1), p.contact('Test', '+3581'))
+        current = p.ec_payload([{'CountryCode': 'DE', 'VATIdentifier': '123456789',
+            'SalesOfGoods': 80, 'SalesOfServices': 0, 'TriangulationSales': 0}],
+            '9999999-2', date(2026, 3, 1), p.contact('<script>alert(1)</script>', '+3581'))
+        body = p.ec_correction(current, old)
+        original = copy.deepcopy(body)
+        rendered = return_summary(self.report.with_context(lang='en_US'), body, old)
+        tree = html.fromstring(rendered)
+        self.assertFalse(tree.xpath('//script'))
+        self.assertIn('<script>alert(1)</script>', tree.text_content())
+        self.assertIn('SE123456789001', tree.text_content())
+        self.assertIn('DE123456789', tree.text_content())
+        removed = tree.xpath("//h5[contains(., 'SE123456789001')]/following-sibling::div[1]//tbody/tr[1]/td")
+        self.assertEqual([td.text_content() for td in removed[1:]], ['100.00', '0.00', '-100.00'])
+        self.assertEqual(body, original)
+
+    def test_readable_zero_return_and_uncalculated_preview(self):
+        body = p.vat_payload(dict.fromkeys(p.VAT_MAPPING, 0), '9999999-2', '2026-03-31',
+                             p.contact('Test', '+3581'), no_activity=True)
+        tree = html.fromstring(return_summary(self.report.with_context(lang='en_US'), body))
+        rows = {cells[0]: cells[1:] for tr in tree.xpath('//tbody/tr')
+                if (cells := [td.text_content() for td in tr.xpath('./td')])}
+        self.assertEqual(rows['No activity'], ['Yes'])
+        self.assertEqual(rows['VAT payable / refundable'], ['0.00'])
+        self.assertFalse(return_summary(self.report, False))
+
+    def test_period_http_error_keeps_json_out_of_user_warning(self):
+        response = {'Error': 'technical-response-marker', 'Details': {'Code': 123}}
+        wizard = self.env['vero.api.wizard'].with_user(self.user).create({'report_id': self.report.id})
+        with patch.object(type(self.backend), '_call', return_value=(400, response)), \
+             patch.object(type(self.report), '_payload', return_value=self.payload()):
+            wizard.action_refresh()
+        self.assertIn('HTTP 400', wizard.preview_warning)
+        self.assertNotIn('technical-response-marker', wizard.preview_warning)
+        self.assertFalse(wizard.can_submit)
+        self.assertEqual(self.report.last_period_query['body'], response)
 
     def _independent_ec(self, month):
         return self.env['vero.api.wizard'].with_user(self.user).create({

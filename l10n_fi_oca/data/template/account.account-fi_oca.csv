@@ -342,7 +342,7 @@
 "account_2813","2813","Bonds (government bonds)","liability_current","False","","l10n_fi.account_tag_bonds_short-term","Obligaatiolainat"
 "account_2814","2814","Debenture loan","liability_current","False","","l10n_fi.account_tag_bonds_short-term","Debentuurilainat"
 "account_2815","2815","Other debentures","liability_current","False","","l10n_fi.account_tag_bonds_short-term","Muut joukkovelkakirjalainat"
-"account_2817","2817","Convertible debentures","liability_current","False","","	l10n_fi.account_tag_convertible_bonds_short-term","Vaihtovelkakirjalainat"
+"account_2817","2817","Convertible debentures","liability_current","False","","l10n_fi.account_tag_convertible_bonds_short-term","Vaihtovelkakirjalainat"
 "account_2821","2821","Long-term loan from credit institution 1 instalment","liability_current","False","","l10n_fi.account_tag_loans_from_financial_institutions_short-term","Pitkäaikaisen rahoituslaitoslainan 1 lyhennyserät"
 "account_2822","2822","Long-term loan from credit institution 2 instalment","liability_current","False","","l10n_fi.account_tag_loans_from_financial_institutions_short-term","Pitkäaikaisen rahoituslaitoslainan 2 lyhennyserät"
 "account_2823","2823","Long-term loan from credit institution 3 instalment","liability_current","False","","l10n_fi.account_tag_loans_from_financial_institutions_short-term","Pitkäaikaisen rahoituslaitoslainan 3 lyhennyserät"

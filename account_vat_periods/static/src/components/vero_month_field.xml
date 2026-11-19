@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="account_vat_periods.VeroMonthField">
+        <span t-if="props.readonly" t-esc="formattedValue"/>
+        <input t-else=""
+            t-ref="start-date"
+            t-att-id="props.id"
+            type="text"
+            class="o_datetime_input o_input cursor-pointer"
+            autocomplete="off"
+        />
+    </t>
+</templates>

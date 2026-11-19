@@ -4,7 +4,7 @@
     'website': 'https://www.odoo.com/documentation/master/applications/finance/fiscal_localizations.html',
     'icon': '/account/static/description/l10n.png',
     'countries': ['fi'],
-    'version': '18.0.2',
+    'version': '18.0.3',
     'author': 'Avoin.Systems, Tawasta, Vizucom, Sprintit, IODO, Cetmix',
     'category': 'Accounting/Localizations/Account Charts',
     'description': """

@@ -1,0 +1,186 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_credit_control_payment_reminder
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0-20260619\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-20 14:59+0000\n"
+"PO-Revision-Date: 2026-09-20 14:59+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model,name:account_credit_control_payment_reminder.model_credit_control_line
+msgid "A credit control line"
+msgstr "Credit Control -rivi"
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model,name:account_credit_control_payment_reminder.model_credit_control_policy_level
+msgid "A credit control policy level"
+msgstr "Credit Control Policy Level"
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model.fields,field_description:account_credit_control_payment_reminder.field_credit_control_policy_level__invoice_account_id
+msgid "Account for reminder invoice lines"
+msgstr "Tili muistutuslaskun riveille"
+
+#. module: account_credit_control_payment_reminder
+#. odoo-python
+#: code:addons/account_credit_control_payment_reminder/models/credit_control_run.py:0
+msgid ""
+"At least one of the invoice policies' levels has no account specified for "
+"reminder invoice lines! You can specify an account in Configuration -> "
+"Credit Control Policies -> Level -> Invoice tab"
+msgstr ""
+"Ainakin yhdeltä Lasku-tyyppiseltä Policy Leveliltä puuttuu tilin määritys "
+"muistutuslaskun riveille! Voit määrittää tilin kohdassa Asetukset -> "
+"Credit Control Policies -> Level "
+
+
+#. module: account_credit_control_payment_reminder
+#: model_terms:ir.ui.view,arch_db:account_credit_control_payment_reminder.res_config_settings_view_form
+msgid "B2B Policy"
+msgstr ""
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model.fields,field_description:account_credit_control_payment_reminder.field_res_company__credit_policy_b2c_id
+#: model:ir.model.fields,field_description:account_credit_control_payment_reminder.field_res_config_settings__credit_policy_b2c_id
+msgid "B2C Credit Control Policy"
+msgstr ""
+
+#. module: account_credit_control_payment_reminder
+#: model_terms:ir.ui.view,arch_db:account_credit_control_payment_reminder.res_config_settings_view_form
+msgid "B2C Policy"
+msgstr ""
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model.fields,field_description:account_credit_control_payment_reminder.field_credit_control_line__channel
+#: model:ir.model.fields,field_description:account_credit_control_payment_reminder.field_credit_control_policy_level__channel
+msgid "Channel"
+msgstr "Kanava"
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model,name:account_credit_control_payment_reminder.model_res_company
+msgid "Companies"
+msgstr "Yritykset"
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model,name:account_credit_control_payment_reminder.model_res_config_settings
+msgid "Config Settings"
+msgstr "Asetukset"
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model,name:account_credit_control_payment_reminder.model_credit_control_run
+msgid "Credit control line generator"
+msgstr "Credit Control rivigeneraattori"
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model.fields,field_description:account_credit_control_payment_reminder.field_credit_control_policy_level__currency_id
+msgid "Currency"
+msgstr "Valuutta"
+
+#. module: account_credit_control_payment_reminder
+#: model_terms:ir.ui.view,arch_db:account_credit_control_payment_reminder.res_config_settings_view_form
+msgid "Default Credit Control Policies"
+msgstr "Oletusarvoiset Credit Control Policyt"
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model,name:account_credit_control_payment_reminder.model_credit_control_policy
+msgid "Define a reminder policy"
+msgstr "Määritä muistutus-policy"
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model.fields.selection,name:account_credit_control_payment_reminder.selection__account_move__invoice_type__invoice
+#: model:ir.model.fields.selection,name:account_credit_control_payment_reminder.selection__credit_control_line__channel__invoice
+#: model:ir.model.fields.selection,name:account_credit_control_payment_reminder.selection__credit_control_policy_level__channel__invoice
+#: model_terms:ir.ui.view,arch_db:account_credit_control_payment_reminder.credit_control_policy_view_form_inherit
+msgid "Invoice"
+msgstr "Lasku"
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model.fields,field_description:account_credit_control_payment_reminder.field_account_bank_statement_line__invoice_type
+#: model:ir.model.fields,field_description:account_credit_control_payment_reminder.field_account_move__invoice_type
+msgid "Invoice Type"
+msgstr "Laskun tyyppi"
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model,name:account_credit_control_payment_reminder.model_account_move
+msgid "Journal Entry"
+msgstr "Kirjaus"
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model.fields,field_description:account_credit_control_payment_reminder.field_credit_control_policy_level__reminder_interest
+msgid "Late Payment Interest Rate"
+msgstr "Myöhästyneen maksun korkoprosentti"
+
+#. module: account_credit_control_payment_reminder
+#: model_terms:ir.ui.view,arch_db:account_credit_control_payment_reminder.credit_control_policy_view_form_inherit
+msgid "Leave empty for no tax"
+msgstr "Jätä tyhjäksi verottomalle"
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model.fields,field_description:account_credit_control_payment_reminder.field_credit_control_policy_level__reminder_note
+msgid "Note line for the reminder"
+msgstr "Kuvausrivi muistutuslaskulle"
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model.fields,field_description:account_credit_control_payment_reminder.field_credit_control_policy_level__payment_period
+msgid "Payment Period (days)"
+msgstr "Maksuaika (päivinä)"
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model.fields,field_description:account_credit_control_payment_reminder.field_credit_control_policy_level__reminder_fee
+msgid "Reminder Fee"
+msgstr "Maksumuistutuksen hinta"
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model.fields,field_description:account_credit_control_payment_reminder.field_credit_control_line__reminder_invoice_id
+#: model:ir.model.fields.selection,name:account_credit_control_payment_reminder.selection__account_move__invoice_type__reminder
+msgid "Reminder Invoice"
+msgstr "Muistutuslasku"
+
+#. module: account_credit_control_payment_reminder
+#: model_terms:ir.ui.view,arch_db:account_credit_control_payment_reminder.account_out_invoice_view_search
+msgid "Reminder Invoices"
+msgstr "Muistutuslaskut"
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model.fields,field_description:account_credit_control_payment_reminder.field_credit_control_policy_level__reminder_tax_ids
+msgid "Tax rate to use for reminder"
+msgstr "Käytettävä veroprosentti muistutuslaskulle"
+
+#. module: account_credit_control_payment_reminder
+#: model:ir.model.fields,help:account_credit_control_payment_reminder.field_res_company__credit_policy_b2c_id
+#: model:ir.model.fields,help:account_credit_control_payment_reminder.field_res_config_settings__credit_policy_b2c_id
+msgid ""
+"The B2C Credit Control Policy used on partners by default. This setting can "
+"be overridden on partners or invoices."
+msgstr ""
+"Käytettävä oletusarvoinen B2C Credit Control Policy."
+" Tämän asetuksen voi ylikirjoittaa kumppani- tai laskukohtaisesti"
+
+#. module: account_credit_control_payment_reminder
+#: model_terms:ir.ui.view,arch_db:account_credit_control_payment_reminder.credit_control_policy_view_form_inherit
+msgid ""
+"You can use the variables %INVOICE for the name of the original invoice, and"
+" %OUTSTANDING_BALANCE for the outstanding balance"
+msgstr ""
+"Voit käyttää muuttujia %INVOICE alkuperäisen laskun nimelle, ja "
+"%OUTSTANDING_BALANCE avoimelle saldolle"
+
+#. module: account_credit_control_payment_reminder
+#. odoo-python
+#: code:addons/account_credit_control_payment_reminder/models/credit_control_run.py:0
+msgid ""
+"You must specify a report to attach in the settings before generating "
+"reminders! This can be done in Configuration -> Settings -> Credit Control"
+msgstr ""
+"Sinun tulee määrittää käytettävä laskun pohja ennen kuin"
+" maksumuistutuksia voi luoda! Tämän voi tehdä kohdassa Asetukset -> Asetukset -> "
+"Credit Control"

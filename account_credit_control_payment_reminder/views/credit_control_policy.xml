@@ -1,0 +1,22 @@
+<odoo>
+    <record id="credit_control_policy_view_form_inherit" model="ir.ui.view">
+        <field name="name">credit.control.policy.form</field>
+        <field name="model">credit.control.policy</field>
+        <field name="inherit_id" ref="account_credit_control.credit_control_policy_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='level_ids']/form/notebook/page[.//field[@name='custom_text_after_details']]" position="after">
+                <page string="Invoice" invisible="channel != 'invoice'">
+                    <group>
+                        <field name="reminder_fee" widget="monetary"/>
+                        <field name="reminder_interest" widget="percentage"/>
+                        <field name="payment_period"/>
+                        <field name="invoice_account_id" domain="[('deprecated', '=', False), ('company_ids', 'parent_of', allowed_company_ids[0]), ('account_type', '=', 'income_other')]"/>
+                        <field name="reminder_tax_ids" widget="many2many_tax_tags" placeholder="Leave empty for no tax"/>
+                        <field name="reminder_note" widget="text" attrs="{'style': 'height: 150px;'}"/>
+                        <p style="text-align: center">You can use the variables %INVOICE for the name of the original invoice, and %OUTSTANDING_BALANCE for the outstanding balance</p>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

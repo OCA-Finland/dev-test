@@ -1,0 +1,25 @@
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.credit.control</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//setting[@id='credit_control_policy']" position="replace">
+                <setting id="credit_control_policies" string="Default Credit Control Policies">
+                    <div class="content-group">
+                        <div class="row mt8">
+                            <label for="credit_policy_id" class="col-lg-4 o_light_label" string="B2B Policy"/>
+                            <field name="credit_policy_id"/>
+                        </div>
+                    </div>
+                    <div class="content-group">
+                        <div class="row mt8">
+                            <label for="credit_policy_b2c_id" class="col-lg-4 o_light_label" string="B2C Policy"/>
+                            <field name="credit_policy_b2c_id"/>
+                        </div>
+                    </div>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>

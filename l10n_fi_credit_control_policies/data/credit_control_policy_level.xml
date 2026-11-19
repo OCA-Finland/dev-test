@@ -1,0 +1,59 @@
+<odoo noupdate="0">
+    <record model="credit.control.policy.level" id="credit_control_policy_first_b2b">
+        <field name="name">Initial Reminder</field>
+        <field name="channel" eval="'invoice'"/>
+        <field name="level" eval="1"/>
+        <field name="delay_days" eval="0"/>
+        <field name="computation_mode" eval="'net_days'"/>
+        <field name="email_template_id" ref="account_credit_control.email_template_credit_control_base"/>
+        <field name="custom_text">Custom Message</field>
+        <field name="custom_mail_text">Custom Mail Message</field>
+        <field name="reminder_fee" eval="40.0"/>
+        <field name="reminder_interest" eval="0.095"/>
+        <field name="payment_period" eval="14"/>
+        <field name="policy_id" ref="l10n_fi_credit_control_policies.credit_control_policy_b2b"/>
+    </record>
+    <record model="credit.control.policy.level" id="credit_control_policy_first_b2c">
+        <field name="name">Initial Reminder</field>
+        <field name="channel" eval="'invoice'"/>
+        <field name="level" eval="1"/>
+        <field name="delay_days" eval="0"/>
+        <field name="computation_mode" eval="'net_days'"/>
+        <field name="email_template_id" ref="account_credit_control.email_template_credit_control_base"/>
+        <field name="custom_text">Custom Message</field>
+        <field name="custom_mail_text">Custom Mail Message</field>
+        <field name="reminder_fee" eval="5.0"/>
+        <field name="reminder_interest" eval="0.095"/>
+        <field name="payment_period" eval="14"/>
+        <field name="policy_id" ref="l10n_fi_credit_control_policies.credit_control_policy_b2c"/>
+    </record>
+    <record model="credit.control.policy.level" id="credit_control_policy_second_b2b">
+        <field name="name">Second Reminder</field>
+        <field name="channel" eval="'invoice'"/>
+        <field name="level" eval="2"/>
+        <field name="delay_days" eval="14"/>
+        <field name="computation_mode" eval="'previous_date'"/>
+        <field name="email_template_id" ref="account_credit_control.email_template_credit_control_base"/>
+        <field name="custom_text">Custom Message</field>
+        <field name="custom_mail_text">Custom Mail Message</field>
+        <field name="reminder_fee" eval="40.0"/>
+        <field name="reminder_interest" eval="0.095"/>
+        <field name="payment_period" eval="14"/>
+        <field name="policy_id" ref="l10n_fi_credit_control_policies.credit_control_policy_b2b"/>
+    </record>
+    <record model="credit.control.policy.level" id="credit_control_policy_second_b2c">
+        <field name="name">Second Reminder</field>
+        <field name="channel" eval="'invoice'"/>
+        <field name="level" eval="2"/>
+        <field name="delay_days" eval="14"/>
+        <field name="computation_mode" eval="'previous_date'"/>
+        <field name="email_template_id" ref="account_credit_control.email_template_credit_control_base"/>
+        <field name="custom_text">Custom Message</field>
+        <field name="custom_mail_text">Custom Mail Message</field>
+        <field name="reminder_fee" eval="5.0"/>
+        <field name="reminder_interest" eval="0.095"/>
+        <field name="payment_period" eval="14"/>
+        <field name="policy_id" ref="l10n_fi_credit_control_policies.credit_control_policy_b2c"/>
+    </record>
+</odoo>
+

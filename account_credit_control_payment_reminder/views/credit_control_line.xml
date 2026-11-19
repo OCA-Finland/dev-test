@@ -1,0 +1,12 @@
+<odoo>
+    <record id="credit_control_line_view_list_inherit" model="ir.ui.view">
+        <field name="name">credit.control.line.list</field>
+        <field name="model">credit.control.line</field>
+        <field name="inherit_id" ref="account_credit_control.credit_control_line_tree"/>
+        <field name="arch" type="xml">
+            <field name="invoice_id" position="after">
+                <field name="reminder_invoice_id" position="after"></field>
+            </field>
+        </field>
+    </record>
+</odoo>

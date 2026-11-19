@@ -1,18 +1,16 @@
 {
-    'name': "OCA's Partner Autocomplete: Finland Open Data",
-    'version': "18.0.1.0.0",
-    'depends': ['base', 'partner_autocomplete_oca'],
-    'author': "Odoo Community Association (OCA) Finland",
-    # "website": "https://github.com/OCA/l10n-finland",
-    'contributors': [
-        'IODO Oy',
+    "name": "Partner Autocomplete: Finnish PRH Open Data",
+    "summary": "Autocomplete company information from PRH Avoin Data",
+    "version": "18.0.2.0.0",
+    "category": "Accounting",
+    "website": "https://github.com/OCA/l10n-finland",
+    "author": ("IODO Oy, Odoo Community Association (OCA)"),
+    "license": "AGPL-3",
+    "application": False,
+    "installable": True,
+    "external_dependencies": {"python": [], "bin": []},
+    "depends": ["iap_alternative_provider", "partner_autocomplete"],
+    "data": [
+        "views/iap_account_form.xml",
     ],
-    'category': "Localization",
-    'summary': "Enables autocomplete of company information from Finnish Open Data (PRH Avoin Data).",
-    'description': "OCA's Partner Autocomplete: Finnish Localization",
-    'data': [
-        'data/environment_data.xml',
-        'data/autocomplete_default_backend.xml',
-    ],
-    'license': 'LGPL-3',
 }

@@ -1,0 +1,8 @@
+<odoo noupdate="0">
+    <record model="credit.control.policy" id="credit_control_policy_b2b">
+        <field name="name">B2B Reminder Policy</field>
+    </record>
+    <record model="credit.control.policy" id="credit_control_policy_b2c">
+        <field name="name">B2C Reminder Policy</field>
+    </record>
+</odoo>

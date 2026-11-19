@@ -1,0 +1,44 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* l10n_fi_credit_control_policies
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0-20260619\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-20 16:44+0000\n"
+"PO-Revision-Date: 2026-09-20 16:44+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: l10n_fi_credit_control_policies
+#: model_terms:credit.control.policy.level,custom_mail_text:l10n_fi_credit_control_policies.credit_control_policy_first_b2b
+#: model_terms:credit.control.policy.level,custom_mail_text:l10n_fi_credit_control_policies.credit_control_policy_first_b2c
+#: model_terms:credit.control.policy.level,custom_mail_text:l10n_fi_credit_control_policies.credit_control_policy_second_b2b
+#: model_terms:credit.control.policy.level,custom_mail_text:l10n_fi_credit_control_policies.credit_control_policy_second_b2c
+msgid "Custom Mail Message"
+msgstr "Sähköpostiviesti"
+
+#. module: l10n_fi_credit_control_policies
+#: model:credit.control.policy.level,custom_text:l10n_fi_credit_control_policies.credit_control_policy_first_b2b
+#: model:credit.control.policy.level,custom_text:l10n_fi_credit_control_policies.credit_control_policy_first_b2c
+#: model:credit.control.policy.level,custom_text:l10n_fi_credit_control_policies.credit_control_policy_second_b2b
+#: model:credit.control.policy.level,custom_text:l10n_fi_credit_control_policies.credit_control_policy_second_b2c
+msgid "Custom Message"
+msgstr "Viesti"
+
+#. module: l10n_fi_credit_control_policies
+#: model:credit.control.policy.level,name:l10n_fi_credit_control_policies.credit_control_policy_first_b2b
+#: model:credit.control.policy.level,name:l10n_fi_credit_control_policies.credit_control_policy_first_b2c
+msgid "Initial Reminder"
+msgstr "Ensimmäinen muistutus"
+
+#. module: l10n_fi_credit_control_policies
+#: model:credit.control.policy.level,name:l10n_fi_credit_control_policies.credit_control_policy_second_b2b
+#: model:credit.control.policy.level,name:l10n_fi_credit_control_policies.credit_control_policy_second_b2c
+msgid "Second Reminder"
+msgstr "Toinen muistutus"

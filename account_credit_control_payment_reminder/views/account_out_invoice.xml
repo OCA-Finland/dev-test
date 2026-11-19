@@ -1,0 +1,12 @@
+<odoo>
+    <record id="account_out_invoice_view_search" model="ir.ui.view">
+            <field name="name">account.move.search</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='out_refund']" position="after">
+                    <filter string="Reminder Invoices" name="reminder_invoices" domain="[('invoice_type', '=', 'reminder')]"/>
+                </xpath>
+            </field>
+    </record>
+</odoo>

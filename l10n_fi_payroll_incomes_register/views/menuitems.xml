@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <menuitem
+        id="menu_l10n_fi_ir_backend"
+        name="Incomes Register Connections"
+        parent="payroll.payroll_menu_configuration"
+        action="action_l10n_fi_ir_backend"
+        groups="payroll.group_payroll_manager"
+        sequence="30"
+    />
+    <menuitem
+        id="menu_l10n_fi_ir_root"
+        name="Incomes Register"
+        parent="payroll.payroll_menu_root"
+        groups="payroll.group_payroll_user"
+        sequence="61"
+    />
+    <menuitem
+        id="menu_l10n_fi_ir_submission"
+        name="Submissions"
+        parent="menu_l10n_fi_ir_root"
+        action="action_l10n_fi_ir_submission"
+        groups="payroll.group_payroll_user"
+        sequence="10"
+    />
+</odoo>

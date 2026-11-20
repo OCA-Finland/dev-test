@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="l10n_fi_ir_backend_view_list" model="ir.ui.view">
+        <field name="name">l10n_fi.ir.backend.list</field>
+        <field name="model">l10n_fi.ir.backend</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name" />
+                <field name="company_id" groups="base.group_multi_company" />
+                <field name="environment" />
+                <field name="certificate_not_after" groups="base.group_no_one" />
+                <field
+                    name="state"
+                    widget="badge"
+                    decoration-success="state == 'confirmed'"
+                    decoration-warning="state == 'unconfirmed'"
+                />
+            </list>
+        </field>
+    </record>
+    <record id="l10n_fi_ir_backend_view_form" model="ir.ui.view">
+        <field name="name">l10n_fi.ir.backend.form</field>
+        <field name="model">l10n_fi.ir.backend</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button
+                        name="action_test_connection"
+                        type="object"
+                        string="Test connection"
+                        class="btn-primary"
+                    />
+                    <field name="state" widget="statusbar" />
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Connection" />
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field
+                                name="company_id"
+                                groups="base.group_multi_company"
+                            />
+                            <field name="environment" />
+                            <field name="base_url" />
+                        </group>
+                        <group>
+                            <field name="reports_per_delivery" />
+                            <field name="max_poll_hours" />
+                            <field name="active" invisible="1" />
+                        </group>
+                    </group>
+                    <group string="Certificate" groups="payroll.group_payroll_manager">
+                        <field name="certificate_file" />
+                        <field name="private_key_file" />
+                        <field name="certificate_password" password="True" />
+                        <field name="certificate_subject" groups="base.group_no_one" />
+                        <field
+                            name="certificate_not_after"
+                            groups="base.group_no_one"
+                        />
+                    </group>
+                </sheet>
+                <chatter />
+            </form>
+        </field>
+    </record>
+    <record id="action_l10n_fi_ir_backend" model="ir.actions.act_window">
+        <field name="name">Incomes Register Connections</field>
+        <field name="res_model">l10n_fi.ir.backend</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

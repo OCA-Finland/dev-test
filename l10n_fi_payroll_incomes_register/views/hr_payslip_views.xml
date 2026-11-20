@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="hr_payslip_view_form_ir_send" model="ir.ui.view">
+        <field name="name">hr.payslip.form.incomes.register.send</field>
+        <field name="model">hr.payslip</field>
+        <field
+            name="inherit_id"
+            ref="l10n_fi_payroll_community.hr_payslip_view_form_ir_report"
+        />
+        <field name="arch" type="xml">
+            <button name="action_incomes_register_report" position="after">
+                <button
+                    name="action_open_ir_send_wizard"
+                    type="object"
+                    string="Send to Incomes Register"
+                    invisible="state != 'done'"
+                    groups="payroll.group_payroll_user"
+                />
+                <field
+                    name="l10n_fi_ir_state"
+                    widget="badge"
+                    decoration-info="l10n_fi_ir_state == 'in_progress'"
+                    decoration-success="l10n_fi_ir_state == 'valid'"
+                    decoration-danger="l10n_fi_ir_state == 'rejected'"
+                />
+            </button>
+        </field>
+    </record>
+    <record id="hr_payslip_view_list_ir_send" model="ir.ui.view">
+        <field name="name">hr.payslip.list.incomes.register.send</field>
+        <field name="model">hr.payslip</field>
+        <field
+            name="inherit_id"
+            ref="l10n_fi_payroll_community.hr_payslip_view_list_inherit"
+        />
+        <field name="arch" type="xml">
+            <field name="exception_warning_state" position="after">
+                <field
+                    name="l10n_fi_ir_state"
+                    widget="badge"
+                    optional="show"
+                    decoration-info="l10n_fi_ir_state == 'in_progress'"
+                    decoration-success="l10n_fi_ir_state == 'valid'"
+                    decoration-danger="l10n_fi_ir_state == 'rejected'"
+                />
+            </field>
+        </field>
+    </record>
+    <record id="hr_payslip_run_view_form_ir_send" model="ir.ui.view">
+        <field name="name">hr.payslip.run.form.incomes.register.send</field>
+        <field name="model">hr.payslip.run</field>
+        <field
+            name="inherit_id"
+            ref="l10n_fi_payroll_community.hr_payslip_run_view_form_inherit"
+        />
+        <field name="arch" type="xml">
+            <button name="action_incomes_register_report" position="after">
+                <button
+                    name="action_open_ir_send_wizard"
+                    type="object"
+                    string="Send to Incomes Register"
+                    groups="payroll.group_payroll_user"
+                />
+            </button>
+        </field>
+    </record>
+    <record id="action_payslip_send_ir" model="ir.actions.server">
+        <field name="name">Send to Incomes Register</field>
+        <field name="model_id" ref="payroll.model_hr_payslip" />
+        <field name="binding_model_id" ref="payroll.model_hr_payslip" />
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = records.action_open_ir_send_wizard()
+        </field>
+    </record>
+</odoo>

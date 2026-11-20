@@ -1,0 +1,17 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_payslip_input_type_user,hr.payslip.input.type.user,model_hr_payslip_input_type,payroll.group_payroll_user,1,0,0,0
+access_hr_payslip_input_type_manager,hr.payslip.input.type.manager,model_hr_payslip_input_type,payroll.group_payroll_manager,1,1,1,1
+access_hr_taxcards,access.hr.taxcards,model_hr_taxcards,payroll.group_payroll_user,1,1,1,1
+access_hr_taxcards_manager,access.hr.taxcards.manager,model_hr_taxcards,payroll.group_payroll_manager,1,1,1,1
+
+access_hr_payroll_social_contribution,hr.payroll.structure,model_hr_payroll_social_contribution,payroll.group_payroll_user,1,1,1,1
+access_hr_payroll_social_contribution_hr_user,hr.payroll.structure.hr.user,model_hr_payroll_social_contribution,hr.group_hr_user,1,0,0,0
+access_l10n_fi_payroll_pension_provider,l10n.fi.payroll.pension.provider,model_l10n_fi_payroll_pension_provider,payroll.group_payroll_user,1,0,0,0
+access_l10n_fi_payroll_insurance_exception,l10n.fi.payroll.insurance.exception,model_l10n_fi_payroll_insurance_exception,payroll.group_payroll_user,1,0,0,0
+access_l10n_fi_payroll_tk10_code,l10n.fi.payroll.tk10.code,model_l10n_fi_payroll_tk10_code,payroll.group_payroll_user,1,0,0,0
+access_l10n_fi_payroll_tk10_code_admin,l10n.fi.payroll.tk10.code,model_l10n_fi_payroll_tk10_code,base.group_erp_manager,1,1,1,1
+
+access_l10n_fi_income_register_entry_user,l10n_fi.income.register.entry.user,model_l10n_fi_income_register_entry,payroll.group_payroll_user,1,0,0,0
+access_l10n_fi_income_register_entry_manager,l10n_fi.income.register.entry.manager,model_l10n_fi_income_register_entry,payroll.group_payroll_manager,1,1,1,1
+
+access_distraint_monthly_free,access_distraint_monthly_free,model_hr_distraint_monthly_free,payroll.group_payroll_manager,1,1,1,1

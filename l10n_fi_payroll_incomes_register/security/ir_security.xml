@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="l10n_fi_ir_backend_company_rule" model="ir.rule">
+        <field name="name">Incomes Register connection multi-company</field>
+        <field name="model_id" ref="model_l10n_fi_ir_backend" />
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="l10n_fi_ir_submission_company_rule" model="ir.rule">
+        <field name="name">Incomes Register submission multi-company</field>
+        <field name="model_id" ref="model_l10n_fi_ir_submission" />
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="l10n_fi_ir_submission_line_company_rule" model="ir.rule">
+        <field name="name">Incomes Register submission line multi-company</field>
+        <field name="model_id" ref="model_l10n_fi_ir_submission_line" />
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

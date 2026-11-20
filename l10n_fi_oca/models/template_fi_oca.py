@@ -9,6 +9,7 @@ class AccountChartTemplate(models.AbstractModel):
     @template('fi_oca')
     def _get_fi_template_data(self):
         return {
+            'name': 'OCA',
             'code_digits': '4',
             'property_account_receivable_id': 'account_1701',
             'property_account_payable_id': 'account_2871',

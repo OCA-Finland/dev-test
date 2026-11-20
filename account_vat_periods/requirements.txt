@@ -1,7 +1,7 @@
 # Install with the Python interpreter used by Odoo, then run pip check and restart.
-# Supported families, not a lock file; test other Odoo addons before deployment.
-signxml>=4.5.1,<5
-cryptography>=46.0.7,<47
-pyOpenSSL>=25.3.0,<26
-lxml>=5.2.1,<7
+# The addon checks these minimum versions at installation and during enrollment.
+signxml>=4.5.1
+cryptography>=46.0.7
+pyOpenSSL>=25.3.0
+lxml>=5.2.1
 packaging>=21

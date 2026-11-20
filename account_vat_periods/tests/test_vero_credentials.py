@@ -389,10 +389,17 @@ class TestVeroCredentials(TransactionCase):
             with self.assertRaisesRegex(UserError, 'signxml=3.2.2'):
                 self.backend.init()
 
+    def test_newer_major_versions_pass_the_dependency_check(self):
+        versions = {
+            'signxml': '5.3.0', 'cryptography': '50.0.2', 'pyOpenSSL': '26.4.0',
+            'lxml': '7.0', 'packaging': '26.3',
+        }
+        with patch.object(c.metadata, 'version', side_effect=versions.__getitem__):
+            c.check_dependencies()
+
     def test_old_dependencies_keep_screen_available_but_prevent_side_effects(self):
         versions = {'signxml': '3.2.2', 'cryptography': '41.0.7',
-                    'pyOpenSSL': '23.2.0', 'lxml': '5.2.1'}
-        directory = self.store(self.backend)
+                    'pyOpenSSL': '23.2.0', 'lxml': '5.2.1', 'packaging': '21.3'}
         before = set(self.store(self.backend).store.files)
         with patch.object(c.metadata, 'version', side_effect=versions.__getitem__), \
                 patch.object(c, 'call_pki') as call, \
@@ -422,24 +429,46 @@ class TestVeroCredentials(TransactionCase):
             session.assert_not_called()
             self.assertFalse((self.store(self.backend) / 'enrollment.json').exists())
 
-    def test_dependency_ranges_missing_packages_and_prereleases(self):
-        versions = {name: bounds[0] for name, bounds in c.DEPENDENCY_VERSIONS.items()}
-        with patch.object(c.metadata, 'version', side_effect=versions.__getitem__):
+    def test_dependency_versions_come_from_the_requirements_file(self):
+        path = Path(self.directory.name) / 'requirements.txt'
+        path.write_text(
+            '# Supported packages\n\nexample>=2,!=2.5,<4  # exclude a broken release\n'
+            'old-python-only[extra]>=1; python_version < "2"\n', encoding='utf-8',
+        )
+        with (
+            patch.object(c, 'REQUIREMENTS_FILE', path),
+            patch.object(c.metadata, 'version', return_value='2') as version,
+        ):
             c.check_dependencies()
-            for name, bounds in c.DEPENDENCY_VERSIONS.items():
-                for bad_version in (bounds[1], bounds[0] + 'rc1', 'invalid-version'):
-                    versions[name] = bad_version
-                    with self.subTest(package=name, version=bad_version), TestCase.assertRaises(self, c.CredentialError):
-                        c.check_dependencies()
-                versions[name] = bounds[0]
-        with patch.object(c.metadata, 'version', side_effect=c.metadata.PackageNotFoundError('signxml')):
-            with self.assertRaisesRegex(c.CredentialError, 'signxml=-'):
+            version.assert_called_once_with('example')
+            for installed in ('1.9', '2.5', '4', '3rc1', '3.dev1', 'invalid-version'):
+                version.return_value = installed
+                with self.subTest(installed=installed), self.assertRaisesRegex(c.CredentialError, 'example='):
+                    c.check_dependencies()
+            version.return_value = '2'
+            path.write_text('example>=3\n', encoding='utf-8')
+            with self.assertRaisesRegex(c.CredentialError, 'example=2 .*>=3'):
+                c.check_dependencies()
+            path.write_text('example>=3rc1\n', encoding='utf-8')
+            version.return_value = '3rc1'
+            c.check_dependencies()
+            version.side_effect = c.metadata.PackageNotFoundError('example')
+            with self.assertRaisesRegex(c.CredentialError, 'example=-'):
                 c.check_dependencies()
 
-    def test_dependency_error_is_localized_and_matches_requirements_file(self):
-        requirements = (Path(__file__).parents[1] / 'requirements.txt').read_text()
-        for name, (minimum, maximum) in c.DEPENDENCY_VERSIONS.items():
-            self.assertIn(f'{name}>={minimum},<{maximum}', requirements.splitlines())
+    def test_unusable_requirements_block_certificate_enrollment(self):
+        path = Path(self.directory.name) / 'requirements.txt'
+        with patch.object(c, 'REQUIREMENTS_FILE', path), patch.object(c, 'call_pki') as call:
+            for content in (None, '# comments only\n', 'signxml>=1\nincomplete['):
+                with self.subTest(content=content):
+                    if content is not None:
+                        path.write_text(content, encoding='utf-8')
+                    with self.assertRaisesRegex(c.CredentialError, r'restore the requirements\.txt'):
+                        self.submit()
+            call.assert_not_called()
+            self.assertFalse((self.store(self.backend) / 'enrollment.json').exists())
+
+    def test_dependency_error_is_localized(self):
         with patch.object(c.metadata, 'version', return_value='3.2.2'):
             info = self.backend.with_context(lang='fi_FI')._credential_operation('status', {})
             self.assertIn('Python-riippuvuudet', info['enrollment']['message'])

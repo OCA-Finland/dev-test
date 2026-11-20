@@ -1,6 +1,6 @@
 {
     "name": "Account Vat Periods",
-    "version": "18.0.1.8.7",
+    "version": "18.0.1.8.8",
     "category": "Localization",
     "summary": "Adds a view that automates the VAT period closing and VAT payment process",
     #"license": "",
@@ -43,6 +43,6 @@
             "account_vat_periods/static/src/components/vero_credentials.xml",
         ]
     },
-    "external_dependencies": {"python": ["cryptography", "signxml", "OpenSSL", "lxml", "packaging"], "bin": ["openssl"]},
+    "external_dependencies": {"python": ["cryptography", "signxml", "pyOpenSSL", "lxml", "packaging"], "bin": ["openssl"]},
     "application": True
 }

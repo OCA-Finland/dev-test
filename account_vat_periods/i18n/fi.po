@@ -366,6 +366,16 @@ msgid "Cancelled"
 msgstr "Peruttu"
 
 #. module: account_vat_periods
+#. odoo-python
+#: code:addons/account_vat_periods/vero_credentials.py:0
+msgid ""
+"Cannot check Python dependencies. Ask your administrator to restore the "
+"requirements.txt file supplied with the Vero API module."
+msgstr ""
+"Python-riippuvuuksia ei voida tarkistaa. Pyydä ylläpitäjää palauttamaan "
+"Vero API -moduulin mukana toimitettu requirements.txt."
+
+#. module: account_vat_periods
 #: model:ir.model.fields,field_description:account_vat_periods.field_vero_api_backend__certificate_file
 msgid "Certificate file"
 msgstr "Varmenteen tiedosto"
@@ -4767,15 +4777,16 @@ msgstr "Vero API"
 #: code:addons/account_vat_periods/vero_credentials.py:0
 msgid ""
 "Vero API Python dependencies are missing or unsupported: %s. Each entry "
-"shows the installed version and required range; \"-\" means not installed. "
-"Ask your administrator to install requirements.txt in the Python "
+"shows the installed version and the requirement from requirements.txt. "
+"A dash means the package is missing. "
+"Ask your administrator to install the listed packages in the Python "
 "environment used by Odoo, resolve any errors reported by python -m pip "
 "check, and restart Odoo. Keep the current certificate request and its files,"
 " then refresh its status."
 msgstr ""
 "Vero API:n Python-riippuvuudet puuttuvat tai niiden versioita ei tueta: %s. "
-"Kukin kohta näyttää asennetun version ja vaaditun versioalueen; \"-\" "
-"tarkoittaa puuttuvaa kirjastoa. Pyydä ylläpitäjää asentamaan requirements.txt "
+"Kukin kohta näyttää asennetun version ja requirements.txt-tiedoston vaatimuksen. "
+"Viiva tarkoittaa puuttuvaa kirjastoa. Pyydä ylläpitäjää asentamaan luetellut paketit "
 "Odoon käyttämään Python-ympäristöön, selvittämään komennon python "
 "-m pip check ilmoittamat virheet ja käynnistämään Odoo uudelleen. Säilytä "
 "nykyinen varmennepyyntö ja sen tiedostot ja päivitä sitten sen tila."

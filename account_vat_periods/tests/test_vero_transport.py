@@ -19,9 +19,12 @@ from ..vero_transport import MemoryCertificate
 
 class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
+        body = b'{"ok":true}'
         self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Content-Length', str(len(body)))
         self.end_headers()
-        self.wfile.write(b'{"ok":true}')
+        self.wfile.write(body[:-1] if self.path == '/truncated' else body)
 
     def log_message(self, *args):
         pass
@@ -74,6 +77,8 @@ class TestVeroTransport(TransactionCase):
                 with patch('certifi.where', return_value=str(root / 'ca.pem')):
                     with patch('tempfile.mkstemp', side_effect=AssertionError('Client TLS must not create files')):
                         self.assertEqual(client.post(url, timeout=3).json(), {'ok': True})
+                    with self.assertRaises(requests.exceptions.RequestException):
+                        client.post(url + '/truncated', timeout=3)
                     with self.assertRaises(requests.exceptions.SSLError):
                         client.post(url.replace('localhost', '127.0.0.1'), timeout=3)
                 with requests.Session() as session:

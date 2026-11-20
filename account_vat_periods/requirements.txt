@@ -1,0 +1,7 @@
+# Install with the Python interpreter used by Odoo, then run pip check and restart.
+# The addon checks these minimum versions at installation and during enrollment.
+signxml>=4.5.1
+cryptography>=46.0.7
+pyOpenSSL>=25.3.0
+lxml>=5.2.1
+packaging>=21

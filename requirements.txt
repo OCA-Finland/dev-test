@@ -1,0 +1,2 @@
+# Install the addon's dependencies when building the Odoo environment.
+-r account_vat_periods/requirements.txt

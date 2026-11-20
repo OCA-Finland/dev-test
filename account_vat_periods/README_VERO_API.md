@@ -185,9 +185,9 @@ tunnukset** -painikkeella. Uudessa tyhjässä tietokannassa tätä ei tarvita.
 [Tekninen tallennus- ja palautusohje](docs/ENCRYPTED_CREDENTIALS.md).
 Tämä osio korvaa vanhojen PDF-ohjeiden salausavaimen ja varmuuskopioinnin ohjeet.
 
-## Riippuvuuksien versiotarkistus (18.0.1.4.2)
+## Python-riippuvuuksien tarkistus
 
-Moduulin asennus ja päivitys tarkistavat Python-kirjastojen tuetut versiot.
+Moduulin asennus ja päivitys tarkistavat Python-kirjastojen vähimmäisversiot.
 Sama tarkistus tehdään ennen varmenteen noutopyyntöä, vastauksen tarkistusta
 ja käyttöönottoa. Virhe kertoo löytyneet versiot ja vaaditut versiorajat.
 Väärillä kirjastoilla kertakäyttötunnuksia ei lähetetä eikä uutta avainta luoda.
@@ -197,15 +197,23 @@ Jo käytössä olevan asennuksen avainnäkymä näyttää ohjeen tilassa
 Ylläpitäjä asentaa riippuvuudet Odoon käyttämään Python-ympäristöön:
 
 ```sh
-/path/to/odoo-venv/bin/python -m pip install -r /path/to/account_vat_periods/requirements-vero.txt
+/path/to/odoo-venv/bin/python -m pip install -r /path/to/account_vat_periods/requirements.txt
 /path/to/odoo-venv/bin/python -m pip check
 ```
 
 Polut korvataan oman asennuksen poluilla. Selvitä mahdolliset muiden moduulien
 riippuvuusristiriidat, käynnistä Odoo uudelleen ja jatka alkuperäistä noutoa
-**Päivitä tila** -painikkeella. Kirjastoja ei asenneta tai päivitetä automaattisesti.
-Tuetut versiorajat ovat `requirements-vero.txt`-tiedostossa; ne rajaavat
-tuetut kirjastosukupolvet, eivät edellytä täsmälleen yhtä korjausversiota.
+**Päivitä tila** -painikkeella. Moduulin asennus ei itse asenna tai päivitä Python-kirjastoja.
+Moduuli lukee vähimmäisversiot omasta `requirements.txt`-tiedostostaan.
+Myös vähimmäisversiota uudemmat vakaat pääversiot kelpaavat tarkistuksessa.
+Jos tiedosto puuttuu tai sen määrityksiä ei voi lukea, varmennepyyntö pysähtyy
+ennen tunnusten lähettämistä.
+
+Repositoryn juuressa on lisäksi `requirements.txt`, joka
+viittaa moduulin tiedostoon rivillä `-r account_vat_periods/requirements.txt`.
+Dockerissa asenna juuritiedosto kuvan rakennusvaiheessa komennolla
+`python -m pip install -r requirements.txt` repositoryn juuresta.
+Odoo.sh käyttää samaa juuritiedostoa ympäristön rakennusvaiheessa.
 
 ## Yhteyden käyttöönoton parannukset (18.0.1.4.1)
 
@@ -270,9 +278,10 @@ Odoon **Avaimet ja varmenne** -toiminnossa. Testi- ja tuotantoympäristöt on tu
 Käyttö edellyttää HTTPS:ää. Varmennetilaus ja ohjelmistorekisteröinti tehdään
 edelleen Verohallinnon palveluissa; automaattinen varmenteen uusiminen ei kuulu versioon.
 
-Palvelinriippuvuudet: PostgreSQL, OpenSSL 3 -komentorivityökalu ja `requirements-vero.txt`-tiedoston
-Python-riippuvuudet. Kehitysympäristössä testattu:
-signxml 4.5.1, cryptography 46.0.7, pyOpenSSL 25.3.0, lxml 5.2.1.
+Palvelin tarvitsee PostgreSQL:n ja OpenSSL 3 -komentorivityökalun. Python-kirjastojen
+vähimmäisversiot löytyvät [moduulin requirements.txt-tiedostosta](requirements.txt).
+Odoo 18:n ja Python 3.12:n testeissä toimi myös yhdistelmä SignXML 5.3.0,
+cryptography 50.0.2 ja pyOpenSSL 26.4.0.
 Tarkista muun Odoo-asennuksen riippuvuudet ja aja `pip check` päivityksen yhteydessä.
 Moduulin päivitys ja palvelun restart tarvitaan kerran; myöhemmät avainvaihdot
 ja noudot eivät vaadi restartia.

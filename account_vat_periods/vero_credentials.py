@@ -23,6 +23,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 from lxml import etree
 import requests
+from packaging.requirements import Requirement
 from packaging.version import InvalidVersion, Version
 
 from .vero_payload import PayloadError, _
@@ -36,40 +37,56 @@ ENDPOINTS = {
     'production': 'https://pkiws.vero.fi/2017/10/CertificateServices',
 }
 CA_DIRECTORY = Path(__file__).parent / 'data' / 'vero_ca'
+REQUIREMENTS_FILE = Path(__file__).with_name('requirements.txt')
 MAX_RESPONSE = 1024 * 1024
-# Supported library families. Keep requirements-vero.txt in sync.
-DEPENDENCY_VERSIONS = {
-    'signxml': ('4.5.1', '5'),
-    'cryptography': ('46.0.7', '47'),
-    'pyOpenSSL': ('25.3.0', '26'),
-    'lxml': ('5.2.1', '7'),
-}
 
 
 class CredentialError(PayloadError):
     """Only fixed, safe messages; never third-party exception text."""
 
 
+def _dependency_requirements():
+    """Read the module's requirements for the current Python environment."""
+    try:
+        requirements = []
+        for line in REQUIREMENTS_FILE.read_text(encoding='utf-8-sig').splitlines():
+            entry = re.sub(r'(^|\s+)#.*', '', line).strip()
+            if entry:
+                requirements.append(Requirement(entry))
+        active = [req for req in requirements if not req.marker or req.marker.evaluate()]
+        # Only named distributions can be verified from installed version metadata.
+        if requirements and all(not req.url and not req.extras for req in active):
+            return active
+    except (OSError, ValueError, KeyError):
+        pass
+    raise CredentialError(_(
+        'Cannot check Python dependencies. Ask your administrator to restore the '
+        'requirements.txt file supplied with the Vero API module.'
+    ))
+
+
 def check_dependencies():
     """Fail before consuming transfer credentials or parsing signed responses."""
     incompatible = []
-    for package, (minimum, maximum) in DEPENDENCY_VERSIONS.items():
+    for requirement in _dependency_requirements():
         try:
-            installed = metadata.version(package)
+            installed = metadata.version(requirement.name) or '-'
         except metadata.PackageNotFoundError:
             installed = '-'
         try:
-            parsed = Version(installed)
-            supported = not (parsed.is_prerelease or parsed.is_devrelease) and Version(minimum) <= parsed < Version(maximum)
+            if requirement.specifier.contains(
+                Version(installed), prereleases=bool(requirement.specifier.prereleases)
+            ):
+                continue
         except InvalidVersion:
-            supported = False
-        if not supported:
-            incompatible.append(f'{package}={installed} (>= {minimum}, < {maximum})')
+            pass
+        incompatible.append(f'{requirement.name}={installed} ({requirement.specifier or "*"})')
     if incompatible:
         raise CredentialError(_(
             'Vero API Python dependencies are missing or unsupported: %s. '
-            'Each entry shows the installed version and required range; "-" means not installed. '
-            'Ask your administrator to install requirements-vero.txt in the Python environment used by Odoo, '
+            'Each entry shows the installed version and the requirement from requirements.txt. '
+            'A dash means the package is missing. '
+            'Ask your administrator to install the listed packages in the Python environment used by Odoo, '
             'resolve any errors reported by python -m pip check, and restart Odoo. '
             'Keep the current certificate request and its files, then refresh its status.'
         ), '; '.join(incompatible))

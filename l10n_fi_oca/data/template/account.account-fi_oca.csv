@@ -465,7 +465,7 @@
 "account_3490","3490","Other income from real estate and securities","income","False","","l10n_fi.account_tag_sales","Muut kiinteistö- ja arvopaperituotot"
 "account_3500","3500","Sales discounts","income","False","","l10n_fi.account_tag_sales_adjustment_items","Myynnin alennukset"
 "account_3510","3510","Discount: intra-Community sales of goods, EMU","income","False","","l10n_fi.account_tag_sales_adjustment_items","Yhteisötavaramyynnin alennukset EMU-maat"
-"account_3520","3520","Dct: intra-Community sales of goods, other EU","income","False","",l10n_fi.account_tag_sales_adjustment_items","Yhteisötavaramyynnin alennukset muut EU-maat"
+"account_3520","3520","Dct: intra-Community sales of goods, other EU","income","False","","l10n_fi.account_tag_sales_adjustment_items","Yhteisötavaramyynnin alennukset muut EU-maat"
 "account_3530","3530","Discount: intra-Community sales of services","income","False","","l10n_fi.account_tag_sales_adjustment_items","Yhteisöpalvelumyynnin alennukset"
 "account_3550","3550","Indirect taxes","income","False","","l10n_fi.account_tag_sales_adjustment_items","Apteekkivero"
 "account_3560","3560","Other indirect taxes","income","False","","l10n_fi.account_tag_sales_adjustment_items","Muut välilliset verot"

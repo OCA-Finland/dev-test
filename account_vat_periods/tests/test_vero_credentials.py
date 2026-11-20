@@ -405,7 +405,7 @@ class TestVeroCredentials(TransactionCase):
             info = self.backend._credential_operation('status', {})
             self.assertEqual(info['enrollment']['phase'], 'blocked')
             self.assertIn('cryptography=41.0.7', info['enrollment']['message'])
-            self.assertIn('requirements-vero.txt', info['enrollment']['message'])
+            self.assertIn('requirements.txt', info['enrollment']['message'])
             call.assert_not_called()
             generate.assert_not_called()
             api_call.assert_not_called()
@@ -437,7 +437,7 @@ class TestVeroCredentials(TransactionCase):
                 c.check_dependencies()
 
     def test_dependency_error_is_localized_and_matches_requirements_file(self):
-        requirements = (Path(__file__).parents[1] / 'requirements-vero.txt').read_text()
+        requirements = (Path(__file__).parents[1] / 'requirements.txt').read_text()
         for name, (minimum, maximum) in c.DEPENDENCY_VERSIONS.items():
             self.assertIn(f'{name}>={minimum},<{maximum}', requirements.splitlines())
         with patch.object(c.metadata, 'version', return_value='3.2.2'):

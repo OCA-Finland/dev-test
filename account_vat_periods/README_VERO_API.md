@@ -197,14 +197,14 @@ Jo käytössä olevan asennuksen avainnäkymä näyttää ohjeen tilassa
 Ylläpitäjä asentaa riippuvuudet Odoon käyttämään Python-ympäristöön:
 
 ```sh
-/path/to/odoo-venv/bin/python -m pip install -r /path/to/account_vat_periods/requirements-vero.txt
+/path/to/odoo-venv/bin/python -m pip install -r /path/to/account_vat_periods/requirements.txt
 /path/to/odoo-venv/bin/python -m pip check
 ```
 
 Polut korvataan oman asennuksen poluilla. Selvitä mahdolliset muiden moduulien
 riippuvuusristiriidat, käynnistä Odoo uudelleen ja jatka alkuperäistä noutoa
 **Päivitä tila** -painikkeella. Kirjastoja ei asenneta tai päivitetä automaattisesti.
-Tuetut versiorajat ovat `requirements-vero.txt`-tiedostossa; ne rajaavat
+Tuetut versiorajat ovat `requirements.txt`-tiedostossa; ne rajaavat
 tuetut kirjastosukupolvet, eivät edellytä täsmälleen yhtä korjausversiota.
 
 ## Yhteyden käyttöönoton parannukset (18.0.1.4.1)
@@ -270,7 +270,7 @@ Odoon **Avaimet ja varmenne** -toiminnossa. Testi- ja tuotantoympäristöt on tu
 Käyttö edellyttää HTTPS:ää. Varmennetilaus ja ohjelmistorekisteröinti tehdään
 edelleen Verohallinnon palveluissa; automaattinen varmenteen uusiminen ei kuulu versioon.
 
-Palvelinriippuvuudet: PostgreSQL, OpenSSL 3 -komentorivityökalu ja `requirements-vero.txt`-tiedoston
+Palvelinriippuvuudet: PostgreSQL, OpenSSL 3 -komentorivityökalu ja `requirements.txt`-tiedoston
 Python-riippuvuudet. Kehitysympäristössä testattu:
 signxml 4.5.1, cryptography 46.0.7, pyOpenSSL 25.3.0, lxml 5.2.1.
 Tarkista muun Odoo-asennuksen riippuvuudet ja aja `pip check` päivityksen yhteydessä.

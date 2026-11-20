@@ -37,7 +37,7 @@ ENDPOINTS = {
 }
 CA_DIRECTORY = Path(__file__).parent / 'data' / 'vero_ca'
 MAX_RESPONSE = 1024 * 1024
-# Supported library families. Keep requirements-vero.txt in sync.
+# Supported library families. Keep requirements.txt in sync.
 DEPENDENCY_VERSIONS = {
     'signxml': ('4.5.1', '5'),
     'cryptography': ('46.0.7', '47'),
@@ -69,7 +69,7 @@ def check_dependencies():
         raise CredentialError(_(
             'Vero API Python dependencies are missing or unsupported: %s. '
             'Each entry shows the installed version and required range; "-" means not installed. '
-            'Ask your administrator to install requirements-vero.txt in the Python environment used by Odoo, '
+            'Ask your administrator to install requirements.txt in the Python environment used by Odoo, '
             'resolve any errors reported by python -m pip check, and restart Odoo. '
             'Keep the current certificate request and its files, then refresh its status.'
         ), '; '.join(incompatible))

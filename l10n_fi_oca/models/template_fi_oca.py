@@ -7,7 +7,7 @@ class AccountChartTemplate(models.AbstractModel):
     _inherit = 'account.chart.template'
 
     @template('fi_oca')
-    def _get_fi_template_data(self):
+    def _get_fi_oca_template_data(self):
         return {
             'name': 'OCA',
             'code_digits': '4',
@@ -17,8 +17,8 @@ class AccountChartTemplate(models.AbstractModel):
             'property_account_income_categ_id': 'account_3000',
             }
 
-    @template('fi', 'res.company')
-    def _get_fi_res_company(self):
+    @template('fi_oca', 'res.company')
+    def _get_fi_oca_res_company(self):
         return {
             self.env.company.id: {
                 'account_fiscal_country_id': 'base.fi',

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_nordea_oauth_wizard_form" model="ir.ui.view">
+        <field name="name">nordea.oauth.wizard.form</field>
+        <field name="model">nordea.oauth.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Nordea Authorization">
+                <field name="connection_id" invisible="1"/>
+                <field name="state"         invisible="1"/>
+                <field name="authorize_url" invisible="1"/>
+
+                <!-- ── Authorization request: Build URL ──────────────────────────── -->
+                <group invisible="state != 'get_url'"
+                       string="Authorization request — Configure and get authorization URL">
+                    <group>
+                        <field name="country"/>
+                        <field name="redirect_uri"
+                               placeholder="https://your-app.example.com/callback"/>
+                        <field name="duration"/>
+                    </group>
+                    <group string="Scopes">
+                        <field name="scope_accounts_basic"/>
+                        <field name="scope_accounts_balances"/>
+                        <field name="scope_accounts_details"/>
+                        <field name="scope_accounts_transactions"/>
+                        <field name="scope_payments_multiple"/>
+                    </group>
+                </group>
+
+                <!-- ── Authorization code exchange: Paste code ─────────────────────────── -->
+                <group invisible="state != 'exchange'"
+                       string="Authorization code exchange — Complete authorization in browser">
+                    <div colspan="2" class="alert alert-info" role="alert">
+                        <p>
+                            <strong>Open the URL below in your browser.</strong>
+                            Log in with your Nordea credentials and authorize
+                            access. You will be redirected to your redirect URI
+                            with a <code>code</code> parameter in the URL.
+                        </p>
+                        <p>
+                            Copy the value of <code>code</code> from the
+                            redirect URL and paste it into the field below.
+                        </p>
+                    </div>
+                    <group>
+                        <field name="authorize_url"
+                               string="Authorization URL"
+                               readonly="1"
+                               widget="url"/>
+                        <field name="auth_code"
+                               string="Authorization Code"
+                               placeholder="Paste the code= value from the redirect URL here"/>
+                    </group>
+                </group>
+
+                <footer>
+                    <!-- Authorization request footer -->
+                    <button name="action_build_auth_authorize_url"
+                            type="object"
+                            string="Get Authorization URL"
+                            class="btn-primary"
+                            invisible="state != 'get_url'"/>
+
+                    <!-- Authorization code exchange footer -->
+                    <button name="action_auth_token_exchange_code"
+                            type="object"
+                            string="Authorize"
+                            class="btn-primary"
+                            invisible="state != 'exchange'"/>
+
+                    <button string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

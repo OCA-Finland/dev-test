@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── List view ─────────────────────────────────────────────────── -->
+    <record id="view_online_banking_connection_tree" model="ir.ui.view">
+        <field name="name">online.banking.connection.tree</field>
+        <field name="model">online.banking.connection</field>
+        <field name="arch" type="xml">
+            <list string="Online Banking Connections">
+                <field name="name"/>
+                <field name="api_backend"/>
+                <field name="status"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ── Form view ─────────────────────────────────────────────────── -->
+    <record id="view_online_banking_connection_form" model="ir.ui.view">
+        <field name="name">online.banking.connection.form</field>
+        <field name="model">online.banking.connection</field>
+        <field name="arch" type="xml">
+            <form string="Online Banking Connection">
+                <field name="id" invisible="1"/>
+                <field name="backend_family" invisible="1"/>
+
+                <header>
+                    <button name="action_test_connection" type="object"
+                            string="Test Connection" class="oe_highlight"/>
+                    <button name="action_fetch_accounts" type="object"
+                            string="Fetch Accounts"
+                            invisible="backend_family == 'nordea_corporate_access'"/>
+                    <field name="status" widget="statusbar"
+                           statusbar_visible="pending,active,expired"/>
+                </header>
+
+                <sheet>
+                    <!-- Credential expiry warning banner -->
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not credentials_expiry_warning">
+                        <i class="fa fa-exclamation-triangle me-1" title="Warning"/>
+                        <field name="credentials_expiry_warning" readonly="1"/>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. My Business Account"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="api_backend" readonly="status in ['active', 'expired']"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="last_auth_attempt" readonly="1"/>
+                            <field name="account_info_last_synced_at" readonly="1"
+                                   invisible="backend_family == 'nordea_corporate_access'"/>
+                            <field name="account_info_next_run" readonly="1"
+                                   invisible="not id or backend_family == 'nordea_corporate_access'"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+
+                        <!-- ── API Credentials (both backends) ───────── -->
+                        <page string="API Credentials" name="api_credentials">
+                            <group string="Credential Status">
+                                <field name="client_id_set" string="Client ID" readonly="1"
+                                    invisible="backend_family == 'nordea_corporate_access'"/>
+                                <field name="client_secret_set" string="Client Secret" readonly="1"
+                                    invisible="backend_family == 'nordea_corporate_access'"/>
+                                <!-- OP only -->
+                                <field name="op_mtls_cert_set" string="mTLS Certificate" readonly="1"
+                                invisible="backend_family != 'op_corporate'"/>
+                                <field name="op_mtls_key_set" string="mTLS Private Key" readonly="1"
+                                    invisible="backend_family != 'op_corporate'"/>
+                                <!-- Nordea only -->
+                                <field name="refresh_token_set"
+                                        string="OAuth2 Refresh Token" readonly="1"
+                                        invisible="backend_family != 'nordea_business'"/>
+                                <!-- NCA only -->
+                                <field name="nca_cert_set" string="Certificate" readonly="1"
+                                    invisible="backend_family != 'nordea_corporate_access'"/>
+                                <field name="nca_key_set" string="Private Key" readonly="1"
+                                    invisible="backend_family != 'nordea_corporate_access'"/>
+                                <field name="nca_signer_id_set" string="Signer ID" readonly="1"
+                                    invisible="backend_family != 'nordea_corporate_access'"/>
+                                <field name="nca_sender_id_set" string="Sender ID" readonly="1"
+                                    invisible="backend_family != 'nordea_corporate_access'"/>
+                            </group>
+                            <group string="Actions">
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button name="action_set_client_id" type="object"
+                                            string="Set/Update Client ID"
+                                            class="btn btn-sm btn-secondary"
+                                            invisible="not id or backend_family == 'nordea_corporate_access'"/>
+                                    <button name="action_set_secret" type="object"
+                                            string="Set/Update Secret"
+                                            class="btn btn-sm btn-secondary"
+                                            invisible="not id or backend_family == 'nordea_corporate_access'"/>
+                                    <!-- OP only -->
+                                    <button name="action_set_cert_pem" type="object"
+                                            string="Set/Update Certificate"
+                                            class="btn btn-sm btn-secondary"
+                                            invisible="not id or backend_family != 'op_corporate'"/>
+                                    <button name="action_set_key_pem" type="object"
+                                            string="Set/Update Key"
+                                            class="btn btn-sm btn-secondary"
+                                            invisible="not id or backend_family != 'op_corporate'"/>
+                                    <!-- NCA only -->
+                                    <button name="action_set_nca_cert_pem" type="object"
+                                            string="Set/Update Certificate"
+                                            class="btn btn-sm btn-secondary"
+                                            invisible="not id or backend_family != 'nordea_corporate_access'"/>
+                                    <button name="action_set_nca_key_pem" type="object"
+                                            string="Set/Update Key"
+                                            class="btn btn-sm btn-secondary"
+                                            invisible="not id or backend_family != 'nordea_corporate_access'"/>
+                                    <button name="action_set_nca_signer_id" type="object"
+                                            string="Set/Update Signer ID"
+                                            class="btn btn-sm btn-secondary"
+                                            invisible="not id or backend_family != 'nordea_corporate_access'"/>
+                                    <button name="action_set_nca_sender_id" type="object"
+                                            string="Set/Update Sender ID"
+                                            class="btn btn-sm btn-secondary"
+                                            invisible="not id or backend_family != 'nordea_corporate_access'"/>
+                                    <span class="text-muted"
+                                          invisible="id">(Save record first)</span>
+                                </div>
+                                <!-- OP only -->
+                                <div colspan="2"
+                                    invisible="backend_family != 'op_corporate' or (not op_mtls_cert_set and not op_mtls_key_set)">
+                                    <button name="action_clear_pem_credentials"
+                                            string="Clear Certificate and Key"
+                                            type="object"
+                                            class="oe_link text-danger"
+                                            icon="fa-trash"
+                                            confirm="Are you sure you want to clear the certificate and key? This action cannot be undone."/>
+                                </div>
+                                <!-- NCA only -->
+                                <div colspan="2"
+                                    invisible="backend_family != 'nordea_corporate_access' or (not nca_cert_set and not nca_key_set)">
+                                    <button name="action_clear_nca_pem_credentials"
+                                            string="Clear Certificate and Key"
+                                            type="object"
+                                            class="oe_link text-danger"
+                                            icon="fa-trash"
+                                            confirm="Are you sure you want to clear the certificate and key? This action cannot be undone."/>
+                                </div>
+                            </group>
+                        </page>
+
+                        <!-- ── OP Payment Signing ──────────────── -->
+                        <page string="Payment Signing" name="payment_signing"
+                              invisible="backend_family != 'op_corporate'">
+                            <group>
+                                <group string="Signing Credentials">
+                                    <label for="op_payment_signing_key_set" string="Signing Key (PEM)"/>
+                                    <div>
+                                        <field name="op_payment_signing_key_set" readonly="1" nolabel="1"/>
+                                        <button name="action_set_signing_key"
+                                                type="object" string="Set/Update"
+                                                class="oe_link ps-2"
+                                                invisible="not id"/>
+                                    </div>
+                                    <label for="op_payment_signing_kid_set"
+                                           string="Signing KID"/>
+                                    <div>
+                                        <field name="op_payment_signing_kid_set"
+                                               readonly="1" nolabel="1"/>
+                                        <button name="action_set_signing_kid"
+                                                type="object" string="Set/Update"
+                                                class="oe_link ps-2"
+                                                invisible="not id"/>
+                                    </div>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- ── Bank Accounts (both backends) ─────────── -->
+                        <page string="Bank Accounts" name="bank_accounts">
+                            <field name="bank_account_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="iban"/>
+                                    <field name="balance"/>
+                                    <field name="currency_id"/>
+                                    <field name="product"/>
+                                    <field name="partner_bank_id"/>
+                                    <button name="action_link_partner_bank"
+                                            type="object"
+                                            string="Link Bank Account"
+                                            icon="fa-link"
+                                            invisible="partner_bank_id != False"/>
+                                </list>
+                                <form string="Bank Account">
+                                    <sheet>
+                                        <group>
+                                            <group>
+                                                <field name="connection_id" readonly="1"/>
+                                                <field name="name" readonly="1"/>
+                                                <field name="iban" readonly="1"/>
+                                                <field name="bic" readonly="1"/>
+                                                <field name="currency_id" readonly="1"/>
+                                                <field name="product" readonly="1"/>
+                                            </group>
+                                            <group>
+                                                <field name="balance" readonly="1"/>
+                                                <field name="partner_bank_id" readonly="1"/>
+                                            </group>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+
+                        <!-- ── Nordea Authorization ─────── -->
+                        <page string="Authorization" name="nordea_authorization"
+                              invisible="backend_family != 'nordea_business'">
+                            <group>
+                                <group string="OAuth2 Status">
+                                    <field name="refresh_token_set"
+                                           string="Refresh Token" readonly="1"/>
+                                </group>
+                                <group string="Actions">
+                                    <div>
+                                        <button name="action_authorize_nordea"
+                                                type="object"
+                                                string="Authorize with Nordea"
+                                                class="btn btn-primary"
+                                                invisible="not id"/>
+                                        <span class="text-muted ps-2"
+                                              invisible="id">(Save record first)</span>
+                                    </div>
+                                    <div class="text-muted mt-2" colspan="2">
+                                        <p>
+                                            Click "Authorize with Nordea" to start
+                                            the OAuth2 flow. You will receive a URL
+                                            to open in your browser to log in and
+                                            grant access.
+                                        </p>
+                                        <p>
+                                            The refresh token is valid for up to
+                                            180 days. You will be warned here
+                                            before it expires.
+                                        </p>
+                                    </div>
+                                </group>
+                            </group>
+                        </page>
+                        <!-- ── Nordea Corporate Access Accounts ─────── -->
+                        <page string="Accounts" name="nordea_corporate_access_accounts"
+                            invisible="backend_family != 'nordea_corporate_access'">
+                            <group>
+                                <div>
+                                    <button name="action_add_nca_account"
+                                            type="object"
+                                            string="Add Account"
+                                            class="btn btn-primary"
+                                            invisible="not id"/>
+                                    <span class="text-muted ps-2"
+                                        invisible="id">(Save record first)</span>
+                                </div>
+                                <div class="text-muted mt-2">
+                                    <p>
+                                        Nordea Corporate Access has no account-list feed —
+                                        register each account's IBAN manually. Currency and
+                                        balance are filled in automatically from daily
+                                        statements once available.
+                                    </p>
+                                </div>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Action Window ─────────────────────────────────────────────── -->
+    <record id="action_online_banking_connection"
+            model="ir.actions.act_window">
+        <field name="name">Online Banking Connections</field>
+        <field name="res_model">online.banking.connection</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new connection to your online banking service.
+            </p>
+        </field>
+    </record>
+
+    <!-- ── Menu Item ─────────────────────────────────────────────────── -->
+    <menuitem id="menu_online_banking_connection_list"
+              name="Online Connections"
+              parent="account.account_banks_menu"
+              action="action_online_banking_connection"
+              sequence="16"/>
+
+</odoo>

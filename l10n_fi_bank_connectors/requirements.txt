@@ -1,0 +1,8 @@
+# Do not bump. The base odoo:17 image's pyOpenSSL is version-coupled to
+# cryptography. Bumping cryptography breaks Odoo's ir_mail_server.py. 
+cryptography==3.4.8
+# Do not bump. 3.2.0 is compatible with the pinned cryptography version above.
+signxml==3.2.0
+lxml>=4.9.0
+lxml_html_clean
+requests>=2.28.0

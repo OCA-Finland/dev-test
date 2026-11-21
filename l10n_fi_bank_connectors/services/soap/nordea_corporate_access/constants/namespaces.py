@@ -1,0 +1,12 @@
+XMLDATA_NAMESPACE = "http://bxd.fi/xmldata/"
+NS_SOAPENV = "http://schemas.xmlsoap.org/soap/envelope/"
+NS_MODEL = "http://model.bxd.fi"
+NS_SERVICE = "http://bxd.fi/CorporateFileService"
+NS_WSSE = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"
+NS_WSU = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+
+NS_PREFIX_WSSE = "wsse"
+NS_PREFIX_WSU = "wsu"
+NS_PREFIX_SOAPENV = "soapenv"
+NS_PREFIX_MODEL = "ns1"
+NS_PREFIX_XMLDATA = "bxd"

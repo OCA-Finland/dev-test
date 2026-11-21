@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="view_vismasign_partner_invite_wizard_form" model="ir.ui.view">
+        <field name="name">vismasign.partner.invite.wizard.form</field>
+        <field name="model">vismasign.partner.invite.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Send partner invite (Business ID)">
+                <group>
+                    <field name="backend_id" readonly="1" />
+                </group>
+
+                <group string="Company">
+                    <field name="business_id" placeholder="1234567-1" />
+                    <field name="organization_name" placeholder="Esimerkki Oy" />
+                </group>
+
+                <group string="Address (required if organization must be created)">
+                    <field name="postal_address" placeholder="Katu 1" />
+                    <field name="postal_code" placeholder="00100" />
+                    <field name="municipality" placeholder="Helsinki" />
+                </group>
+
+                <group string="Admin (required if organization must be created)">
+                    <field name="admin_identifier" placeholder="010101-123N" />
+                    <field name="admin_first_name" placeholder="Matti" />
+                    <field name="admin_last_name" placeholder="Meikäläinen" />
+                    <field name="admin_email" placeholder="matti@example.fi" />
+                </group>
+
+                <group string="Invite">
+                    <field name="lang" />
+                    <field name="message" nolabel="1" />
+                </group>
+
+                <footer>
+                    <button
+                        name="action_send"
+                        type="object"
+                        string="Send"
+                        class="btn-primary"
+                    />
+                    <button string="Close" special="cancel" class="btn-secondary" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

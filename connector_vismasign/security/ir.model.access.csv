@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_vismasign_backend,vismasign.backend,model_vismasign_backend,connector.group_connector_manager,1,1,1,1
+access_vismasign_binding,vismasign.binding,model_vismasign_binding,connector.group_connector_manager,1,1,1,1
+access_vismasign_partner_onboard_wizard,vismasign.partner.onboard.wizard,model_vismasign_partner_onboard_wizard,connector.group_connector_manager,1,1,1,1
+access_vismasign_partner_onboard_wizard_line,vismasign.partner.onboard.wizard.line,model_vismasign_partner_onboard_wizard_line,connector.group_connector_manager,1,1,1,1
+access_vismasign_partner_invite_wizard,vismasign.partner.invite.wizard,model_vismasign_partner_invite_wizard,connector.group_connector_manager,1,1,1,1

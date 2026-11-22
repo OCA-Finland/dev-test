@@ -421,6 +421,10 @@
         <field name="name">Result: Other incidental expenses other</field>
         <field name="applicability">accounts</field>
     </record>
+    <record id="account_tag_other_additional_expenses_production" model="account.account.tag">
+        <field name="name">Result: Other side costs production</field>
+        <field name="applicability">accounts</field>
+    </record>
     <record id="account_tag_depreciation_according_to_plan" model="account.account.tag">
         <field name="name">Result: Depreciation according to the plan</field>
         <field name="applicability">accounts</field>

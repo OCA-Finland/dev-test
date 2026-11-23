@@ -19,6 +19,7 @@
         'views/wizards/online_banking_credential_wizard_views.xml',
         'views/wizards/nordea_oauth_wizard_views.xml',
         'views/wizards/link_partner_bank_wizard_views.xml',
+        'views/wizards/online_banking_account_wizard_views.xml',
     ],
     'post_init_hook': 'post_init_hook',
     'uninstall_hook': 'uninstall_hook',

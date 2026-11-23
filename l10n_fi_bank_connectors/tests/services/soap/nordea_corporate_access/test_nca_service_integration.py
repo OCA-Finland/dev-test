@@ -1,7 +1,7 @@
 import gzip
 
-from decimal import Decimal
 from datetime import date
+from decimal import Decimal
 from lxml import etree
 from unittest.mock import Mock, patch
 
@@ -59,21 +59,35 @@ class TestNordeaCAServiceIntegration(BaseCase):
         assert transactions[0].amount == Decimal("-100.00")
 
     @patch('odoo.addons.l10n_fi_bank_connectors.services.soap.nordea_corporate_access.nordea_ca_ws_client.NordeaWSClient.post_envelope')
-    def test_get_transactions_filters_by_account_id(self, mock_send):
-        """Test that transactions are filtered by account_id."""
-        mock_send.return_value = etree.fromstring(_file_list_response([
-            ("FILE001", "FI1234567890123456"),
-            ("FILE002", "FI9999999999999999"),
-        ]))
+    def test_get_transactions_filters_by_statement_iban(self, mock_send):
+        """Statements of other accounts are downloaded but ignored, matched by IBAN inside the file."""
+        own = _minimal_camt053_xml(
+            "FI1234567890123456",
+            balances=[("OPBD", "100.00", "2026-09-01"), ("CLBD", "90.00", "2026-09-01")],
+        )
+        other = _minimal_camt053_xml(
+            "FI9999999999999999",
+            balances=[("OPBD", "700.00", "2026-09-01"), ("CLBD", "650.00", "2026-09-01")],
+        )
+        mock_send.side_effect = [
+            etree.fromstring(_file_list_response([
+                ("FILE001", "SIGNER1"),
+                ("FILE002", "SIGNER1"),
+            ])),
+            etree.fromstring(_file_content_response(own)),
+            etree.fromstring(_file_content_response(other)),
+        ]
 
-        with patch.object(self.service, '_download_file') as mock_download:
-            mock_download.return_value = Mock(content=None)
-            self.service._fetch_camt053(
-                account_id="FI1234567890123456",
-                date_from=date(2026, 9, 1),
-                date_to=date(2026, 9, 30)
-            )
-            mock_download.assert_called_once_with("FILE001")
+        self.service.get_transactions(
+            account_id="FI1234567890123456",
+            date_from=date(2026, 9, 1),
+            date_to=date(2026, 9, 30),
+        )
+
+        self.assertEqual(mock_send.call_count, 3)  # list + both files downloaded
+        values = self.service.build_statement_values([])
+        self.assertEqual(values["balance_start"], Decimal("100.00"))
+        self.assertEqual(values["balance_end_real"], Decimal("90.00"))
 
     @patch('odoo.addons.l10n_fi_bank_connectors.services.soap.nordea_corporate_access.nordea_ca_ws_client.NordeaWSClient.post_envelope')
     def test_get_transactions_handles_compression(self, mock_send):
@@ -211,11 +225,16 @@ class TestNordeaCAServiceIntegration(BaseCase):
             "FI1234567890123456",
             balances=[("OPBD", "500.50", "2026-09-01"), ("CLBD", "491.49", "2026-09-01")],
         )
+        other_camt = _minimal_camt053_xml(
+            "FI9999999999999999",
+            balances=[("OPBD", "700.00", "2026-09-02"), ("CLBD", "650.00", "2026-09-02")],
+        )
         mock_send.side_effect = [
             etree.fromstring(_file_list_response([("FILE001", "FI1234567890123456")])),
             etree.fromstring(_file_content_response(camt)),
-            # Second call: no matching files.
+            # Second call: the only file belongs to another account.
             etree.fromstring(_file_list_response([("FILE002", "FI9999999999999999")])),
+            etree.fromstring(_file_content_response(other_camt)),
         ]
 
         self.service.get_transactions(
@@ -234,7 +253,6 @@ class TestNordeaCAServiceIntegration(BaseCase):
         second_values = self.service.build_statement_values([])
 
         self.assertEqual(second_values, {})
-
 
     @patch('odoo.addons.l10n_fi_bank_connectors.services.soap.nordea_corporate_access.nordea_ca_ws_client.NordeaWSClient.post_envelope')
     def test_error_response_raises(self, mock_send):

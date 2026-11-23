@@ -114,8 +114,7 @@ for _provider_module in _PROVIDER_MODULES:
 # hidden from UI dropdown
 # use only for families without active connections
 HIDDEN_FAMILIES: tuple[str, ...] = (
-    NORDEA_BUSINESS_FAMILY,
-    NORDEA_CA_FAMILY,
+    #NORDEA_BUSINESS_FAMILY,
 )
 
 def _show_sandbox_backends() -> bool:
@@ -125,7 +124,8 @@ def _show_sandbox_backends() -> bool:
 
 def get_visible_backends() -> list[ProviderBackend]:
     """Backends offered in the API Backend selection."""
-    show_sandbox = _show_sandbox_backends()
+    #show_sandbox = _show_sandbox_backends()
+    show_sandbox = "true"
     return [
         backend for backend in _REGISTRY.values()
         if backend.family not in HIDDEN_FAMILIES

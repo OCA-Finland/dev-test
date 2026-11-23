@@ -1,3 +1,4 @@
+<odoo>
 <record id="view_online_banking_account_wizard_form" model="ir.ui.view">
     <field name="name">online.banking.account.wizard.form</field>
     <field name="model">online.banking.account.wizard</field>
@@ -16,3 +17,4 @@
         </form>
     </field>
 </record>
+</odoo>

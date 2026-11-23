@@ -37,6 +37,7 @@ class ProviderBackend:
 
 class BankingServiceBase(ABC):
     TRANSACTION_HISTORY_LIMIT_DAYS: int | None = None       # how many days back an API keeps transaction records
+    max_transaction_pages: int | None = None                # page cap for paginated APIs; None = no pagination / no cap
     TRANSACTION_LOOKBACK_DAYS: int = 0                      # how many days back we keep pulling transactions
     APPLY_LOOKBACK_TO_MANUAL_PULLS: bool = True             # this is an ugly temporary solution
 

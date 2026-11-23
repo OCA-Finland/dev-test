@@ -6,8 +6,8 @@ from odoo.exceptions import UserError
 from odoo.tests.common import TransactionCase
 
 from ...services.constants.connection import ConnectionStatus
-from ...services.error_handling.error_types import AccountRefreshNotSupported
 from ...services.dtos import AccountDTO
+from ...services.error_handling.error_types import AccountRefreshNotSupported
 from ...services.soap.nordea_corporate_access.nordea_ca_dtos import ApplicationResponseDTO
 from ..test_utils import patch_factory, make_connection
 

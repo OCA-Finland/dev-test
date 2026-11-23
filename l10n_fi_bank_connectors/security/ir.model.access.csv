@@ -23,3 +23,6 @@ access_online_bank_payment_log_user,online.bank.payment.log.user,model_online_ba
 access_online_bank_payment_raw_response_system,online.bank.payment.raw.response.system,model_online_bank_payment_raw_response,base.group_system,1,1,1,1
 access_online_bank_payment_raw_response_manager,online.bank.payment.raw.response.manager,model_online_bank_payment_raw_response,account.group_account_manager,1,1,1,1
 access_online_bank_payment_raw_response_user,online.bank.payment.raw.response.user,model_online_bank_payment_raw_response,account.group_account_user,1,0,0,0
+access_online_banking_account_wizard_system,online.banking.account.wizard.system,model_online_banking_account_wizard,base.group_system,1,1,1,1
+access_online_banking_account_wizard_manager,online.banking.account.wizard.manager,model_online_banking_account_wizard,account.group_account_manager,1,1,1,1
+access_online_banking_account_wizard_user,online.banking.account.wizard.user,model_online_banking_account_wizard,account.group_account_user,1,1,1,1

@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from dataclasses import dataclass
+from os import getenv
 from typing import Callable
 
 from odoo.tools import config
@@ -118,14 +119,15 @@ HIDDEN_FAMILIES: tuple[str, ...] = (
 )
 
 def _show_sandbox_backends() -> bool:
-    """Read the sandbox visibility switch from odoo.conf. Absent means hidden."""
+    """Read sandbox visibility, defaulting to visible when both sources are unset."""
     raw = config.get(SHOW_SANDBOX_CONFIG_KEY)
+    if raw is None:
+        raw = getenv(f"ODOO_{SHOW_SANDBOX_CONFIG_KEY.upper()}", "true")
     return str(raw).strip().lower() in ("true", "1", "yes")
 
 def get_visible_backends() -> list[ProviderBackend]:
     """Backends offered in the API Backend selection."""
-    #show_sandbox = _show_sandbox_backends()
-    show_sandbox = "true"
+    show_sandbox = _show_sandbox_backends()
     return [
         backend for backend in _REGISTRY.values()
         if backend.family not in HIDDEN_FAMILIES

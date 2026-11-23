@@ -1,3 +1,5 @@
+import os
+
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.fernet import Fernet, InvalidToken
@@ -55,13 +57,21 @@ def _make_rsa_private_key_pem() -> str:
 
 class TestHttpSigning(TransactionCase):
     
-    def test_encrypt_decrypt(self):
-        """Encrypt then decrypt and return the original value."""
+    def test_encrypt_decrypt_with_configured_key(self):
+        """Round-trip with the configured key even if the environment key is invalid."""
         key = _make_key()
-        with _patched_key(key):
+        with _patched_key(key), patch.dict(
+            os.environ, {"ODOO_BANKING_ENCRYPTION_KEY": "invalid"}
+        ):
             ciphertext = encrypt_fernet("super-secret")
             result = decrypt_fernet(ciphertext)
         self.assertEqual(result, "super-secret")
+
+    def test_key_falls_back_to_environment(self):
+        key = _make_key()
+        with _patched_key(None), patch.dict(os.environ, {"ODOO_BANKING_ENCRYPTION_KEY": key}):
+            ciphertext = encrypt_fernet("secret")
+        self.assertEqual(Fernet(key.encode()).decrypt(ciphertext.encode()), b"secret")
 
     def test_invalid_key_raises_error(self):
         """Decrypting with an invalid key raises an error."""
@@ -73,8 +83,8 @@ class TestHttpSigning(TransactionCase):
                 decrypt_fernet(ciphertext)
                 
     def test_missing_key_raises_error(self):
-        """Missing key in odoo.conf raises an error."""
-        with _patched_key(None):
+        """Missing key in both sources raises an error."""
+        with _patched_key(None), patch.dict(os.environ, {}, clear=True):
             with self.assertRaises(ValueError) as ctx:
                 encrypt_fernet("secret")
         self.assertIn(CONFIG_KEY, str(ctx.exception))

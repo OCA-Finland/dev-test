@@ -37,7 +37,7 @@
 
     <function model="account.chart.template" name="try_loading">
         <value eval="[]"/>
-        <value>fi</value>
+        <value>fi_oca</value>
         <value model="res.company" eval="obj().env.ref('base.demo_company_fi')"/>
         <value name="install_demo" eval="True"/>
     </function>

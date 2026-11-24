@@ -13,6 +13,7 @@ class PaymentReferenceTest(AccountTestInvoicingCommon):
 
     @classmethod
     @AccountTestInvoicingCommon.setup_country('fi')
+    @AccountTestInvoicingCommon.setup_chart_template('fi_oca')
     def setUpClass(cls):
         super().setUpClass()
 

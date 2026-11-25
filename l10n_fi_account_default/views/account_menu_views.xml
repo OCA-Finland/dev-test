@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+    <record id="action_journal_entries_by_date" model="ir.actions.act_window">
+        <field name="name">Journal</field>
+        <field name="res_model">account.move.line</field>
+        <field name="view_mode">list,pivot</field>
+        <field name="domain">[('parent_state', '=', 'posted')]</field>
+        <field name="context">{'group_by': ['date:day']}</field>
+    </record>
+
+    <record id="action_general_ledger_by_account" model="ir.actions.act_window">
+        <field name="name">General Ledger</field>
+        <field name="res_model">account.move.line</field>
+        <field name="view_mode">list,pivot</field>
+        <field name="domain">[('parent_state', '=', 'posted')]</field>
+        <field name="context">{'group_by': ['account_id']}</field>
+    </record>
+
+    <menuitem
+        id="menu_journal_and_general_ledger"
+        name="Journal and General Ledger"
+        parent="account.menu_finance_entries"
+        sequence="14"
+    />
+
+    <menuitem
+        id="menu_journal_entries_by_date"
+        name="Journal"
+        parent="menu_journal_and_general_ledger"
+        action="action_journal_entries_by_date"
+        sequence="10"
+    />
+
+    <menuitem
+        id="menu_general_ledger_by_account"
+        name="General Ledger"
+        parent="menu_journal_and_general_ledger"
+        action="action_general_ledger_by_account"
+        sequence="20"
+    />
+</odoo>

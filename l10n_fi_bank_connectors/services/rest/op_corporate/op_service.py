@@ -14,7 +14,6 @@ from .op_pis import OPPIS
 
 
 class OPCorporateService(OPHTTPClient, OPMappers, OPAIS, OPPIS, HTTPPaginatedTransactions):
-    TRANSACTION_HISTORY_LIMIT_DAYS = OP_TRANSACTION_HISTORY_LIMIT_DAYS
     TRANSACTION_LOOKBACK_DAYS = OP_TRANSACTION_LOOKBACK_DAYS
     
     def __init__(self, env, client_id, client_secret, cert_pem, key_pem,
@@ -41,6 +40,14 @@ class OPCorporateService(OPHTTPClient, OPMappers, OPAIS, OPPIS, HTTPPaginatedTra
         if connection and connection.api_backend == BACKEND_SANDBOX.key:
             return TRANSACTION_MAX_PAGES
         return None
+
+    @property
+    def TRANSACTION_HISTORY_LIMIT_DAYS(self) -> int | None:
+        # set only for production (OP sandbox does not enforce the retention limit)
+        connection = self._auth.connection
+        if connection and connection.api_backend == BACKEND_SANDBOX.key:
+            return None
+        return OP_TRANSACTION_HISTORY_LIMIT_DAYS
 
     @property
     def provider_name(self) -> str:

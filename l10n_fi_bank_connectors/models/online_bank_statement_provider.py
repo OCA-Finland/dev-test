@@ -1,8 +1,12 @@
 import logging
 
+from datetime import datetime, timedelta, timezone
+from markupsafe import Markup
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
+from ..services.rest.op_corporate.constants.op_auth_config import BACKEND_SANDBOX
 from ..services.service_factory import BankingServiceFactory, _REGISTRY
 from ..utils.clock import utc_today
 from ..utils.statement_provider import normalize_dates, prepare_transactions_for_statements
@@ -13,8 +17,7 @@ _logger = logging.getLogger(__name__)
 class OnlineBankStatementProvider(models.Model):
     _inherit = 'online.bank.statement.provider'
 
-
-    # connections
+    #connections
     connection_id = fields.Many2one(
         'online.banking.connection',
         string='Banking Connection',
@@ -63,7 +66,7 @@ class OnlineBankStatementProvider(models.Model):
             ))
         return services
 
-# statements
+    # statements
     def _obtain_statement_data(self, date_since, date_until):
         """Fetch transactions from the bank, filter them and convert to statement lines."""
         self.ensure_one()
@@ -79,7 +82,12 @@ class OnlineBankStatementProvider(models.Model):
         try:
             with BankingServiceFactory.from_record_ctx(connection) as service:
                 date_since = self._enforce_minimum_lookback(service, date_since)
-                date_since = self._enforce_history_limit(service, date_since)
+
+                if self.env.context.get("scheduled"):
+                    date_since = self._clamp_to_history_limit(service, date_since)
+                else:
+                    self._validate_history_limit(service, date_since)
+
                 if date_since > request_date_until:
                     _logger.warning(
                         "Skipping fetch for %s: date_since (%s) > date_until (%s)",
@@ -90,6 +98,7 @@ class OnlineBankStatementProvider(models.Model):
                 transaction_dtos_filtered = service.filter_transactions(
                     transaction_dtos, original_date_since, statement_date_until
                 )
+                self._post_pull_stats(connection, service, original_date_since, statement_date_until)
 
                 statement_values = service.build_statement_values(transaction_dtos_filtered)
                 statement_values = self._compute_balance_values(
@@ -114,6 +123,80 @@ class OnlineBankStatementProvider(models.Model):
         _logger.info("Built %s statement lines for %s", len(lines), banking_account.iban)
         return lines, statement_values
 
+    def _post_pull_stats(self, connection, service, period_from, period_until):
+        """Sandbox + manual pulls only: collect this period's pull diagnostics for the final post."""
+        if self.env.context.get("scheduled") or connection.api_backend != BACKEND_SANDBOX.key:
+            return
+        collector = self.env.context.get("pull_stats_collector")
+        stats = getattr(service, "pull_stats", None)
+        if collector is None or not stats:
+            return
+        entry = {k: v for k, v in stats.items() if k not in ("archive_ids", "object_ids")}
+        entry.update(period_from=period_from, period_until=period_until)
+        collector.setdefault(self.id, []).append(entry)
+
+    def _pull(self, *args, **kwargs):
+        if self.env.context.get("scheduled"):
+            return super()._pull(*args, **kwargs)
+        collector = {}
+        try:
+            return super(OnlineBankStatementProvider, self.with_context(pull_stats_collector=collector))._pull(*args, **kwargs)
+        finally:
+            self._post_collected_stats(collector)
+
+
+    def _post_collected_stats(self, collector):
+        """One chatter message per provider: header with exact values only, then a table with one row per period."""
+        def ms_utc(ms):
+            return (datetime(1970, 1, 1, tzinfo=timezone.utc) + timedelta(milliseconds=ms)).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+
+        def span(mins, maxs):
+            mins = [v for v in mins if v is not None]
+            maxs = [v for v in maxs if v is not None]
+            return f"{min(mins)} / {max(maxs)}" if mins and maxs else "n/a"
+
+        for provider in self.browse(list(collector)):
+            entries = collector[provider.id]
+            req_from = min((e["request_from"][1] for e in entries if e.get("request_from")), default="n/a")
+            req_to = max((e["request_to"][1] for e in entries if e.get("request_to")), default="n/a")
+            raw_min = min((e["raw_ts_min"] for e in entries if e["raw_ts_min"] is not None), default=None)
+            raw_max = max((e["raw_ts_max"] for e in entries if e["raw_ts_max"] is not None), default=None)
+            raw_line = (
+                f"{ms_utc(raw_min)} .. {ms_utc(raw_max)} UTC"
+                if raw_min is not None and raw_max is not None else "n/a"
+            )
+            pulled_range = span([e.get("pulled_booking_min") for e in entries], [e.get("pulled_booking_max") for e in entries])
+            header = [
+                ("Periods", len(entries)),
+                ("Request parameters (fromTimestamp / toTimestamp)", f"{req_from} / {req_to}"),
+                ("Timestamp range", raw_line),
+                ("Booking_date range", pulled_range),
+                ("Total kept", sum(e.get("kept", 0) for e in entries)),
+            ]
+
+            lines = Markup("")
+            for e in entries:
+                items = []
+                #window = f"{e['request_from'][1]} → {e['request_to'][1]}" if e.get("request_from") and e.get("request_to") else "n/a"
+                #if window not in ("n/a", f"{req_from} → {req_to}"):
+                #    items.append(("Request window (UTC)", window))
+                items.append(("archiveId missing (rows)", e["archive_missing"]))
+                items.append(("objectId missing (rows)", e["object_missing"]))
+                items.append(("archiveId duplicated", f"{e.get('archive_dup_ids', 0)} ids / {e.get('archive_dup_rows', 0)} rows"))
+                items.append(("objectId duplicated", f"{e.get('object_dup_ids', 0)} ids / {e.get('object_dup_rows', 0)} rows"))
+
+                lines += Markup("• <b>%s / %s</b><br/>") % (e["period_from"], e["period_until"])
+                lines += Markup("").join(
+                    Markup("&nbsp;&nbsp;&nbsp;&nbsp;◦ %s: %s<br/>") % (label, value) for label, value in items
+                )
+
+            body = Markup("<b>OP sandbox pull stats</b><br/>") + Markup("").join(
+                Markup("• %s: <b>%s</b><br/>") % (label, value) for label, value in header
+            )
+            body += Markup(
+                "<br/><b>Per period</b><br/>"
+            ) + lines
+            provider.message_post(body=body, message_type="notification", subtype_xmlid="mail.mt_note")
 
     def _compute_balance_values(self, service, banking_account, original_date_since, date_until, statement_values):
         """Merge balance_end_real/balance_start into statement_values, if applicable."""

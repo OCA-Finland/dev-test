@@ -38,7 +38,8 @@ class OPMappers:
             partner_name = raw.get("debtorName")
 
         return OPTransactionDTO(
-            transaction_id=raw.get("objectId") or raw.get("archiveId"),
+            #transaction_id=raw.get("objectId") or raw.get("archiveId"),
+            transaction_id=raw.get("archiveId") or raw.get("objectId"),
             booking_date=parse_date(raw.get("bookingDate")),
             value_date=parse_date(raw.get("valueDate")),
             transaction_type=None,      # OP API does not provide the field

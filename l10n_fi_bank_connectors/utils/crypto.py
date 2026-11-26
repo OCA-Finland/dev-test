@@ -1,5 +1,4 @@
 import logging
-from os import getenv
 
 from cryptography import x509
 from cryptography.fernet import Fernet, InvalidToken
@@ -18,10 +17,8 @@ _logger = logging.getLogger(__name__)
 
 # fernet
 def _get_fernet() -> Fernet:
-    """Build the Fernet cipher from Odoo config or the process environment."""
+    """Retrieve the Fernet cipher instance from Odoo config."""
     raw = config.get(CONFIG_KEY)
-    if raw is None:
-        raw = getenv(f"ODOO_{CONFIG_KEY.upper()}")
     if not raw:
         raise ValueError(f"Missing '{CONFIG_KEY}'.")
     try:

@@ -71,33 +71,6 @@ class OnlineBankStatementProviderFetching(models.Model):
             raise UserError(
                 _("Failed to fetch transactions for account %s: %s") % (banking_account.name, str(exc))
             ) from exc
-            
-    def _enforce_history_limit(self, service, date_since: date) -> date:
-        """Clamp date_since to the API's transaction history retention window."""
-        limit_days: int | None = service.TRANSACTION_HISTORY_LIMIT_DAYS
-        if limit_days is None:
-            return date_since
-        
-        earliest_allowed = utc_today() - relativedelta(days=limit_days)
-        if date_since >= earliest_allowed:
-            return date_since
-        
-        is_scheduled = self.env.context.get('scheduled')
-        if is_scheduled:
-            _logger.warning(
-                "Clamping date_since from %s to %s for provider '%s' "
-                "(%s history limit: %d days)",
-                date_since, earliest_allowed, self.name,
-                service.__class__.__name__, limit_days,
-            )
-            return earliest_allowed
-        
-        raise UserError(_(
-        "The start date cannot be more than %(days)d days in the past. "
-        "%(backend)s does not retain transaction history older than %(days)d days.",
-        days=limit_days,
-        backend=service.__class__.__name__,
-        ))
 
     def _enforce_minimum_lookback(self, service, date_since: date) -> date:
         """Widen date_since to the connector's minimum lookback window on scheduled pulls."""
@@ -120,3 +93,35 @@ class OnlineBankStatementProviderFetching(models.Model):
             service.__class__.__name__, lookback_days,
         )
         return earliest_allowed
+
+    def _history_limit_start(self, service) -> date | None:
+        """Return the earliest date the API still serves, or None if the API has no history limit."""
+        limit_days = service.TRANSACTION_HISTORY_LIMIT_DAYS
+        if limit_days is None:
+            return None
+        return utc_today() - relativedelta(days=limit_days)
+
+    def _clamp_to_history_limit(self, service, date_since: date) -> date:
+        """Scheduled pulls: move date_since forward to the earliest date the API still serves."""
+        earliest_allowed = self._history_limit_start(service)
+        if earliest_allowed is None or date_since >= earliest_allowed:
+            return date_since
+        _logger.warning(
+            "Clamping date_since from %s to %s for provider '%s' "
+            "(%s history limit: %d days)",
+            date_since, earliest_allowed, self.name,
+            service.__class__.__name__, service.TRANSACTION_HISTORY_LIMIT_DAYS,
+        )
+        return earliest_allowed
+
+    def _validate_history_limit(self, service, date_since: date) -> None:
+        """Manual pulls: raise UserError if date_since is older than the API's history limit."""
+        earliest_allowed = self._history_limit_start(service)
+        if earliest_allowed is None or date_since >= earliest_allowed:
+            return
+        raise UserError(_(
+            "The start date cannot be more than %(days)d days in the past. "
+            "%(backend)s does not retain transaction history older than %(days)d days.",
+            days=service.TRANSACTION_HISTORY_LIMIT_DAYS,
+            backend=service.__class__.__name__,
+        ))

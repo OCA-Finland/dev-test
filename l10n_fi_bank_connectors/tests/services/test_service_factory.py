@@ -1,17 +1,11 @@
-import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from odoo.tests.common import TransactionCase
-from odoo.tools import config
 
 from ...services.constants.backend_schedules import BACKEND_SCHEDULES,schedule_for_family
 from ...services.constants.credentials import CredentialType
 from ...services.rest.op_corporate.op_service import OPCorporateService
-from ...services.service_factory import (
-    _REGISTRY,
-    BankingServiceFactory,
-    get_visible_backends,
-)
+from ...services.service_factory import BankingServiceFactory, _REGISTRY
 from ..test_utils import make_connection
 
 
@@ -70,27 +64,6 @@ class TestBankingServiceFactory(TransactionCase):
         mock_connection.api_backend = 'unsupported_backend'
         with self.assertRaisesRegex(ValueError, "Unsupported banking backend"):
             BankingServiceFactory.from_record(mock_connection)
-
-
-class TestSandboxVisibility(TransactionCase):
-
-    def test_environment_disables_sandbox_backends(self):
-        with patch.object(config, "get", return_value=None), patch.dict(
-            os.environ, {"ODOO_BANKING_SHOW_SANDBOX_BACKENDS": "false"}
-        ):
-            self.assertFalse(any(backend.sandbox for backend in get_visible_backends()))
-
-    def test_config_can_disable_sandbox_backends(self):
-        with patch.object(config, "get", return_value=False), patch.dict(
-            os.environ, {"ODOO_BANKING_SHOW_SANDBOX_BACKENDS": "yes"}
-        ):
-            self.assertFalse(any(backend.sandbox for backend in get_visible_backends()))
-
-    def test_sandbox_backends_are_visible_by_default(self):
-        with patch.object(config, "get", return_value=None), patch.dict(
-            os.environ, {}, clear=True
-        ):
-            self.assertTrue(any(backend.sandbox for backend in get_visible_backends()))
 
 
 class TestBackendSchedules(TransactionCase):

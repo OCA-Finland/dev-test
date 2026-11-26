@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+    <data>
+        <!-- Header (title) -->
+        <template id="custom_header_quotation_title" inherit_id="web.external_layout_standard">
+            <xpath expr="//div[@name='logo_wrapper']" position="after">
+                <div style="position: absolute; left: 0; right: 0; width: 100%; text-align: center; pointer-events: none;">
+                    <span t-if="doc and doc._name == 'sale.order'" style="font-size: 32px; font-weight: 400; color: #495057;">
+                        <t t-if="env.context.get('proforma', False) or is_pro_forma">Pro-Forma</t>
+                        <t t-elif="doc.state in ['draft','sent']">Quotation</t>
+                        <t t-else="">Order</t>
+                    </span>
+                </div>
+            </xpath>
+        </template>
+    
+        <!-- Quotation -->
+        <template id="report_saleorder_document_inherit_report_sale_community" inherit_id="sale.report_saleorder_document">
+            <xpath expr="//t[@t-set='address']" position="after">
+                <t t-set="address">
+                    <address class="mb-0" t-field="doc.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                    <div t-if="doc.partner_id.vat" class="mt-1" id="partner_vat_address_not_same_as_shipping">
+                        <t t-if="doc.company_id.account_fiscal_country_id.vat_label" t-out="doc.company_id.account_fiscal_country_id.vat_label" id="inv_tax_id_label"/>
+                        <t t-else="">Tax ID</t>: <span t-field="doc.partner_id.vat"/>
+                    </div>
+                    <t t-if="doc.partner_shipping_id == doc.partner_invoice_id and doc.partner_invoice_id != doc.partner_id or doc.partner_shipping_id != doc.partner_invoice_id">
+                        <strong t-if="doc.partner_shipping_id == doc.partner_invoice_id" class="mt-2 d-block">Invoicing and Shipping Address:</strong>
+                        <strong t-if="doc.partner_shipping_id != doc.partner_invoice_id" class="mt-2 d-block">Invoicing Address:</strong>
+                        <address class="mb-0" t-field="doc.partner_invoice_id" t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                        <t t-if="doc.partner_shipping_id != doc.partner_invoice_id">
+                            <strong class="mt-2 d-block">Shipping Address:</strong>
+                            <address class="mb-0" t-field="doc.partner_shipping_id" t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                        </t>
+                    </t>
+                </t>
+            </xpath>
+            
+            <xpath expr="//t[@t-set='address']" position="after">
+                <t t-set="header_block">
+                </t>
+            </xpath>
+            
+            <xpath expr="//div[@id='informations']" position="before">
+                <t t-set="information_block">
+                    <table class="table o_main_table table-bordered">
+                        <tbody class="information_tbody">
+                            <tr t-if="doc.name">
+                                <td name="td_sale_number" class="text-left">
+                                    <strong t-if="doc.state in ['draft','sent']">Quotation Number:</strong>
+                                    <strong t-else="">Order Number:</strong>
+                                </td>
+                                <td name="td_sale_number_value" class="text-right"><p class="m-0" t-field="doc.name"/></td>
+                            </tr>
+                            <tr t-if="doc.date_order and doc.state in ['draft','sent']">
+                                <td name="td_quotation_date" class="text-left">
+                                    <strong> Quotation Date:</strong>
+                                </td>
+                                <td name="td_order_date_value" class="text-right">
+                                    <p class="m-0" t-field="doc.date_order" t-options='{"widget": "date"}'/>
+                                </td>
+                            </tr>
+                            <tr t-if="doc.date_order and doc.state not in ['draft','sent']">
+                                <td name="td_order_date" class="text-left">
+                                    <strong> Order Date:</strong>
+                                </td>
+                                <td name="td_order_date_value" class="text-right">
+                                    <p class="m-0" t-field="doc.date_order" t-options='{"widget": "date"}'/>
+                                </td>
+                            </tr>    
+                            <tr t-if="doc.validity_date and doc.state in ['draft','sent']">
+                                <td name="td_validity_date" class="text-left">
+                                    <strong> Validity Date:</strong>
+                                </td>
+                                <td name="td_validity_date_value" class="text-right">
+                                    <p class="m-0" t-field="doc.validity_date" t-options='{"widget": "date"}'/>
+                                </td>
+                            </tr>
+                            <tr t-if="doc.payment_term_id">
+                                <td name="td_payment_term" class="text-left">
+                                    <strong> Payment Term:</strong>
+                                </td>
+                                <td name="td_payment_term_value" class="text-right">
+                                    <p class="m-0" t-field="doc.payment_term_id"/>
+                                </td>
+                            </tr>
+                            <tr t-if="doc.user_id">
+                                <td name="td_salesperson" class="text-left">
+                                    <strong> Salesperson:</strong>
+                                </td>
+                                <td name="td_salesperson_value" class="text-right">
+                                    <p class="m-0" t-field="doc.user_id"/>
+                                </td>
+                            </tr>
+                            <tr t-if="doc.create_uid">
+                                <td name="td_order_handler" class="text-left">
+                                    <strong> Order handler:</strong>
+                                </td>
+                                <td name="td_order_handler_value" class="text-right">
+                                    <p class="m-0" t-field="doc.create_uid"/>
+                                </td>
+                            </tr>
+                            <tr t-if="'client_order_ref' in doc and doc.client_order_ref">
+                                <td name="td_your_reference" class="text-left">
+                                    <strong> Your reference:</strong>
+                                </td>
+                                <td name="td_your_reference_value" class="text-right">
+                                    <p class="m-0" t-field="doc.client_order_ref"/>
+                                </td>
+                            </tr>
+                            <tr t-if="doc.name">
+                                <td name="td_our_reference" class="text-left">
+                                    <strong> Our reference:</strong>
+                                </td>
+                                <td name="td_our_reference_value" class="text-right">
+                                    <p class="m-0" t-field="doc.name"/>
+                                </td>
+                            </tr>
+                            <tr t-if="'client_delivery_ref' in doc and doc.client_delivery_ref">
+                                <td name="td_client_delivery_ref" class="text-left">
+                                    <strong>Stock Reference:</strong>
+                                </td>
+                                <td name="td_client_delivery_ref_value" class="text-right">
+                                    <p class="m-0" t-field="doc.client_delivery_ref"/>
+                                </td>
+                            </tr>
+                            <tr t-if="'carrier_id' in doc and doc.carrier_id">
+                                <td name="td_carrier_id" class="text-left">
+                                    <strong>Delivery method:</strong>
+                                </td>
+                                <td name="td_carrier_id_value" class="text-right">
+                                    <p class="m-0" t-field="doc.carrier_id"/>
+                                </td>
+                            </tr>
+                            <tr t-if="'incoterm' in doc and doc.incoterm">
+                                <td name="td_incoterm" class="text-left">
+                                    <strong>Incoterm:</strong>
+                                </td>
+                                <td name="td_incoterm_value" class="text-right">
+                                    <span class="m-0" t-field="doc.incoterm.code"/>
+                                    <t t-if="'warehouse_id' in doc and doc.warehouse_id and doc.incoterm.code == 'FCA'">
+                                        <span class="m-0" t-field="doc.warehouse_id"/>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr t-if="'commitment_date' in doc and doc.commitment_date">
+                                <td name="td_commitment_day" class="text-left">
+                                    <strong>Commitment date:</strong>
+                                </td>
+                                <td name="td_commitment_day_value" class="text-right">
+                                    <p class="m-0" t-field="doc.commitment_date" t-options='{"widget": "date"}'/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+            </xpath>
+
+            <xpath expr="//div[hasclass('page')]" position="inside">
+                <style type="text/css">
+                    .information_tbody td { padding: 3px 5px !important; font-size: 0.85em !important; }
+                    div[name="address"], #partner_vat_address_not_same_as_shipping { font-size: 1em !important; line-height: 1.3 !important; }
+                    .page h2 { margin-top: 5px !important; margin-bottom: 10px !important; font-size: 1.6em !important; }
+                    table.o_main_table { margin-top: 40px !important; }
+                </style>
+            </xpath>
+
+            <!-- <xpath expr="//div[@id='informations']" position="replace">
+                <div id="informations" invisible="1">
+                    <div name="expiration_date"/>
+                </div>
+            </xpath> -->
+
+            <xpath expr="//div[@id='informations']" position="attributes">
+                <attribute name="t-attf-class" separator=" " add="d-none"/>
+            </xpath>
+        
+            <!-- <xpath expr="//p[@t-if='not is_html_empty(doc.payment_term_id.note)']" position="replace">
+                <div id="payment_term_note_anchor" invisible="1">
+                    <p t-if="not is_html_empty(doc.payment_term_id.note)"/>
+                </div>
+            </xpath> -->
+
+            <xpath expr="//p[@t-if='not is_html_empty(doc.payment_term_id.note)']" position="attributes">
+                <attribute name="t-attf-class" separator=" " add="d-none"/>
+            </xpath>
+
+            <xpath expr="//t[@t-set='layout_document_title']" position="after">
+                <t t-set="layout_document_title">
+                </t>
+            </xpath>
+
+            <xpath expr="//p[@id='fiscal_position_remark']" position="attributes">
+                <attribute name="t-if">False</attribute>
+            </xpath>
+        </template>
+    </data>
+</odoo>

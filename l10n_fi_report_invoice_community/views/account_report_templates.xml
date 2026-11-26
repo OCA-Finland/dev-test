@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Header (title) -->
+        <template id="custom_header_invoice_title" inherit_id="web.external_layout_standard">
+            <xpath expr="//div[@name='logo_wrapper']" position="after">
+                <div style="position: absolute; left: 0; right: 0; width: 100%; text-align: center; pointer-events: none;">
+                    <span t-if="o and o._name == 'account.move'" style="font-size: 32px; font-weight: 400; color: #495057;">
+                        <t t-if="o.move_type == 'out_refund'">Refund Invoice</t>
+                        <t t-else="">Invoice</t>
+                    </span>
+                </div>
+            </xpath>
+        </template>
+
+        <!-- Footer (Bank Account) -->
+         <template id="custom_footer_invoice_bank" inherit_id="web.external_layout_standard">
+            <xpath expr="//div[contains(@t-attf-class, 'footer')]" position="inside">
+                <div t-if="o and o._name == 'account.move'" style="position: absolute; top: 5px; left: 0; right: 0; text-align: center; font-size: 14px; color: #495057; white-space: nowrap; z-index: 9999;">
+                    <span t-if="o.partner_bank_id">
+                        <strong>IBAN:</strong> <t t-esc="o.partner_bank_id.sanitized_acc_number"/>
+                    </span>
+                    <span t-elif="company.partner_id.bank_ids">
+                        <strong>IBAN:</strong> <t t-esc="company.partner_id.bank_ids[0].sanitized_acc_number"/>
+                    </span>
+                </div>
+            </xpath>
+        </template>
+
+        <!-- Invoice -->
+        <template id="report_invoice_document_inherit_report_invoice_community" inherit_id="account.report_invoice_document">
+            <xpath expr="//t[@t-set='address']" position="after">
+                <t t-set="address">
+                    <address class="mb-0" t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                    <div t-if="o.partner_id.vat" class="mt-1" id="partner_vat_address_not_same_as_shipping">
+                        <t t-if="o.company_id.account_fiscal_country_id.vat_label" t-out="o.company_id.account_fiscal_country_id.vat_label" id="inv_tax_id_label"/>
+                        <t t-else="">Tax ID</t>: <span t-field="o.partner_id.vat"/>
+                    </div>
+                </t>
+            </xpath>
+
+            <xpath expr="//t[@t-set='address']" position="after">
+                <t t-set="header_block">
+                    <div class="oe_structure"/>
+                </t>
+            </xpath>
+
+            <xpath expr="//div[@id='informations']" position="before">
+                <t t-set="information_block">
+                    <table class="table o_main_table table-bordered">
+                        <tbody class="information_tbody">
+                            <tr t-if="o.name and o.name != '/'">
+                                <td name="td_inv_number" class="text-left"><strong>Invoice Number:</strong></td>
+                                <td name="td_inv_number_value" class="text-right"><p class="m-0" t-field="o.name"/></td>
+                            </tr>
+                            <tr t-if="'payment_reference' in o and o.payment_reference">
+                                <td name="td_payment_reference" class="text-left"><strong>Payment Reference:</strong></td>
+                                <td name="td_payment_reference_value" class="text-right"><p class="m-0" t-field="o.payment_reference"/></td>
+                            </tr>
+                            <tr t-if="o.invoice_date">
+                                <td name="td_invoice_date" class="text-left"><strong>Invoice Date:</strong></td>
+                                <td name="td_invoice_date_value" class="text-right"><p class="m-0" t-field="o.invoice_date" t-options='{"widget": "date"}'/></td>
+                            </tr>
+                            <tr t-if="o.invoice_date_due and o.move_type == 'out_invoice' and o.state == 'posted'">
+                                <td name="td_due_date" class="text-left"><strong>Due Date:</strong></td>
+                                <td name="td_due_date_value" class="text-right"><p class="m-0" t-field="o.invoice_date_due" t-options='{"widget": "date"}'/></td>
+                            </tr>
+                            <tr t-if="o.invoice_payment_term_id">
+                                <td name="td_payment_term" class="text-left"><strong>Payment Term:</strong></td>
+                                <td name="td_payment_term_value" class="text-right"><p class="m-0" t-field="o.invoice_payment_term_id"/></td>
+                            </tr>
+                            <tr t-if="o.invoice_user_id">
+                                <td name="td_salesperson" class="text-left"><strong>Salesperson:</strong></td>
+                                <td name="td_salesperson_value" class="text-right"><p class="m-0" t-field="o.invoice_user_id"/></td>
+                            </tr>
+                            <tr t-if="o.create_uid">
+                                <td name="td_order_handler" class="text-left"><strong>Handler:</strong></td>
+                                <td name="td_order_handler_value" class="text-right"><p class="m-0" t-field="o.create_uid"/></td>
+                            </tr>
+                            <tr t-if="o.ref">
+                                <td name="td_your_reference" class="text-left"><strong>Your reference:</strong></td>
+                                <td name="td_your_reference_value" class="text-right"><p class="m-0" t-field="o.ref"/></td>
+                            </tr>
+                            <tr t-if="'invoice_origin' in o and o.invoice_origin">
+                                <td name="td_our_reference" class="text-left"><strong>Our reference:</strong></td>
+                                <td name="td_our_reference_value" class="text-right"><p class="m-0" t-field="o.invoice_origin"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+            </xpath>
+
+            <!-- <xpath expr="//div[@id='informations']" position="replace">
+                <div id="informations" invisible="1"></div>
+            </xpath> -->
+
+            <xpath expr="//div[@id='informations']" position="attributes">
+                <attribute name="t-attf-class">d-none</attribute> 
+            </xpath>
+
+            <xpath expr="//span[@id='payment_terms_note_id']" position="attributes">
+                <attribute name="t-if">False</attribute>
+            </xpath>
+
+            <xpath expr="//p[@name='payment_communication']" position="attributes">
+                <attribute name="t-if">False</attribute>
+            </xpath>
+            
+            <xpath expr="//t[@t-set='layout_document_title']" position="after">
+                <t t-set="layout_document_title">
+                </t>
+            </xpath>
+
+            <xpath expr="//div[hasclass('page')]" position="inside">
+                <t t-set="report_invoice_community_action" t-value="env['ir.actions.report'].sudo().search([('model', '=', o._name)], limit=1)"/>
+                <style type="text/css">
+                    .page h2 { margin-top: 5px !important; margin-bottom: 10px !important; font-size: 1.6em !important;}
+                    .information_tbody td { padding: 3px 5px !important; font-size: 0.85em !important;}
+                    div[name="address"], #partner_vat_address_not_same_as_shipping { font-size: 1em !important; line-height: 1.3 !important;}
+                    table[name="invoice_line_table"] { margin-top: 40px !important; }
+                </style>
+                <t t-if="report_invoice_community_action.show_bank_transfer_form">
+                    <style type="text/css">
+                        .page { min-height: 210mm !important; position: relative !important; margin-bottom: 0 !important; }
+                        .bank-transfer-wrap { position: absolute !important; bottom: 0 !important; left: 0 !important; right: 0 !important; border-top: 1px dashed gray; padding-top: 5px; page-break-inside: avoid !important; overflow-x: hidden !important; box-sizing: border-box !important; }
+                        .bank-transfer-label { font-size: 10px; text-align: right; line-height: 12px; padding: 2px; font-weight: bold; }
+                        .bank-transfer-value { line-height: 1.2em; }
+                        .border-right { border-right: 2px solid black; }
+                        .border-left { border-left: 2px solid black; }
+                        .border-bottom { border-bottom: 2px solid black; }
+                        .small-row &gt; div { height: 1.8em; }
+                        .medium-row &gt; div { height: 3.5em; }
+                        .payment-terms-slip { font-size: 0.7em; line-height: 1.0em; padding-top: 0px; position: relative; top: -8px; }
+                    </style>
+                    <div class="bank-transfer-spacer mt-5" style="height: 105mm; page-break-inside: avoid;">
+                    </div>
+                    <div class="bank-transfer-wrap">
+                        <div class="row mb-3" style="font-size: 0.85em;">
+                            <div class="col-6">
+                                <div t-field="o.company_id.partner_id" t-options='{"widget": "contact", "fields": ["name", "address"], "no_marker": True}'/>
+                            </div>
+                            <div class="col-6 text-end">
+                                <span>Business ID:</span><span t-field="o.company_id.company_registry"/>
+                            </div>
+                        </div>
+                        <div class="row row-eq-height border-bottom" style="border-top: 2px solid black;">
+                            <div class="col-7 border-right">
+                                <div class="row row-eq-height border-bottom medium-row">
+                                    <div class="col-3 bank-transfer-label">Recipient's<br/>account number</div>
+                                    <div class="col-9 border-left">
+                                        <strong>IBAN: </strong> <span t-if="o.partner_bank_id" t-field="o.partner_bank_id.sanitized_acc_number"/>
+                                        <span t-else="">(Account Number missing)</span>
+                                        <br/>
+                                        <strong>BIC: </strong> <span t-if="o.partner_bank_id.bank_id" t-field="o.partner_bank_id.bank_id.bic"/>
+                                    </div>
+                                </div>
+                                <div class="row row-eq-height border-bottom" style="height: 3.2em;">
+                                    <div class="col-3 bank-transfer-label">Recipient</div>
+                                    <div class="col-9 border-left">
+                                        <span style="font-size: 0.85em; padding-left: 5px;">
+                                            <span t-field="o.company_id.name"/>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="row row-eq-height" style="height: 4em;">
+                                    <div class="col-3 bank-transfer-label">Debtor</div>
+                                    <div class="col-9 border-left">
+                                        <span style="font-size: 0.85em; padding-left: 5px;">
+                                            <span t-field="o.partner_id.name"/>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="row row-eq-height border-bottom small-row">
+                                    <div class="col-3 bank-transfer-label" style="position: relative; top: -4px;">Signature</div>
+                                    <div class="col-9 border-left position-relative">
+                                        <div style="position: absolute; bottom: 8px; left: 10px; right: 10px; border-bottom: 1px solid black;"/>
+                                    </div>
+                                </div>
+                                <div class="row row-eq-height small-row">
+                                    <div class="col-3 bank-transfer-label" style="position: relative; top: -2px;">From account No.</div>
+                                    <div class="col-9 border-left"/>
+                                </div>
+                            </div>
+                            <div class="col-5">
+                                <div class="row border-bottom medium-row">
+                                    <div class="col-12 text-end pt-2">
+                                        </div>
+                                </div>
+                                <div class="row border-bottom" style="height: 7.2em;">
+                                    <div class="col-12 ps-1 pt-1">
+                                        <span style="font-size: 0.8em;">Invoice number: </span><br/>
+                                        <span style="font-size: 0.85em; padding-left: 5px;"><span t-field="o.name"/></span>
+                                    </div>
+                                </div>
+                                <div class="row row-eq-height border-bottom small-row">
+                                    <div class="col-3 bank-transfer-label">Reference No.</div>
+                                    <div class="col-10 border-left">
+                                        <span style="font-size: 0.85em; padding-left: 5px;"><span t-field="o.payment_reference"/></span>
+                                    </div>
+                                </div>
+                                <div class="row row-eq-height small-row">
+                                    <div class="col-3 bank-transfer-label">Date Due</div>
+                                    <div class="col-4 border-left">
+                                        <span style="font-size: 0.85em; padding-left: 5px;"><span t-field="o.invoice_date_due"/></span>
+                                    </div>
+                                    <div class="col-6 border-left" style="padding-left: 5px;">
+                                        <div class="col-3 bank-transfer-label">Euro</div>
+                                        <span style="font-size: 0.85em; float: right; padding-right: 25px; position: relative; top: -8px;">
+                                            <span t-field="o.amount_total"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-9 text-start ps-1">
+                                <t t-if="report_invoice_community_action.show_bank_transfer_barcode">
+                                    <t t-if="o.bank_barcode">
+                                        <img t-att-src="'/report/barcode/Code128/%s?width=500&amp;height=40' % o.bank_barcode.replace(' ', '')" style="max-width: 100%; height: auto;"/>
+                                        <div class="mt-1" style="font-family: monospace; letter-spacing: 1px; font-size: 12px; margin-left: 43px; white-space: nowrap;">
+                                            <t t-esc="o.bank_barcode"/>
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <p class="text-muted mt-4">(No virtual barcode is available. Check the bank_barcode calculation.)</p>
+                                    </t>
+                                </t>
+                            </div>
+                            <div class="col-3 payment-terms-slip text-muted">
+                                <div class="m-0">The payment will be issued to the recipient under the terms of payment service and only to the account number specified by the debtor.</div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </xpath>
+        </template>
+    </data>
+</odoo>

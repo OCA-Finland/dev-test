@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+    <template id="custom_header_payslip_title" inherit_id="web.external_layout_standard">
+        <xpath expr="//div[@name='logo_wrapper']" position="after">
+            <div style="position: absolute; left: 0; right: 0; width: 100%; text-align: center; pointer-events: none;">
+                <span t-if="doc and doc._name == 'hr.payslip'"
+                    style="font-size: 32px; font-weight: 400; color: #495057;">
+                    Payslip
+                </span>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="custom_footer_payslip_vat" inherit_id="web.external_layout_standard">
+        <xpath expr="//div[contains(@t-attf-class, 'footer')]" position="inside">
+            <div t-if="doc and doc._name == 'hr.payslip' and company.vat" style="text-align: center; font-size: 12px; color: #495057; margin-top: 4px;">
+                VAT:
+                <span t-field="company.vat"/>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="report_payslip_fi">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="doc" t-value="o"/>
+                <t t-set="tax_card"
+                t-value="env['hr.taxcards'].sudo().search([
+                        ('employee_id', '=', o.employee_id.id),
+                        ('date', '&lt;=', o.date_to)
+                ], order='date desc', limit=1)"/>
+                <t t-set="address">
+                    <div class="mb-0">
+                        <div t-if="o.employee_id.name">
+                            <span t-field="o.employee_id.name"/>
+                        </div>
+                        <div t-if="o.employee_id.private_street">
+                            <span t-field="o.employee_id.private_street"/>
+                        </div>
+                        <div t-if="o.employee_id.private_street2">
+                            <span t-field="o.employee_id.private_street2"/>
+                        </div>
+                        <div t-if="o.employee_id.private_zip or o.employee_id.private_city">
+                            <span t-if="o.employee_id.private_zip" t-field="o.employee_id.private_zip"/>
+                            <span t-if="o.employee_id.private_city" t-field="o.employee_id.private_city"/>
+                        </div>
+                        <div t-if="o.employee_id.private_country_id">
+                            <span t-field="o.employee_id.private_country_id"/>
+                        </div>
+                        <div class="payslip_fi_private_contact" t-if="o.employee_id.private_email or o.employee_id.work_email or o.employee_id.private_phone or o.employee_id.work_phone or o.employee_id.mobile_phone">
+                            <div t-if="o.employee_id.private_email or o.employee_id.work_email">
+                                <span t-out="o.employee_id.private_email or o.employee_id.work_email"/>
+                            </div>
+                            <div t-if="o.employee_id.private_phone or o.employee_id.work_phone or o.employee_id.mobile_phone">
+                                <span t-out="o.employee_id.private_phone or o.employee_id.work_phone or o.employee_id.mobile_phone"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <t t-set="information_block">
+                    <table class="table o_main_table table-bordered payslip_fi_info_table">
+                        <tbody class="information_tbody">
+                            <tr t-if="o.employee_id">
+                                <td class="text-left">
+                                    <strong>Name</strong>
+                                </td>
+                                <td class="text-end text-right">
+                                    <p class="m-0" t-field="o.employee_id"/>
+                                </td>
+                            </tr>
+                            <tr t-if="o.employee_id.identification_id">
+                                <td class="text-left">
+                                    <strong>Identification No</strong>
+                                </td>
+                                <td class="text-end text-right">
+                                    <p class="m-0" t-field="o.employee_id.identification_id"/>
+                                </td>
+                            </tr>
+                            <tr t-if="o.employee_id.birthday">
+                                <td class="text-left">
+                                    <strong>Birthday</strong>
+                                </td>
+                                <td class="text-end text-right">
+                                    <p class="m-0" t-field="o.employee_id.birthday" t-options='{"widget": "date"}'/>
+                                </td>
+                            </tr>
+                            <tr t-if="o.employee_id.job_id">
+                                <td class="text-left">
+                                    <strong>Designation</strong>
+                                </td>
+                                <td class="text-end text-right">
+                                    <p class="m-0" t-field="o.employee_id.job_id"/>
+                                </td>
+                            </tr>
+                            <tr t-if="o.employee_id.bank_account_id">
+                                <td class="text-left">
+                                    <strong>Bank Account</strong>
+                                </td>
+                                <td class="text-end text-right">
+                                    <p class="m-0" t-field="o.employee_id.bank_account_id"/>
+                                </td>
+                            </tr>
+                            <tr t-if="tax_card and tax_card.date">
+                                <td class="text-left">
+                                    <strong>Tax card valid from</strong>
+                                </td>
+                                <td class="text-end text-right">
+                                    <p class="m-0" t-field="tax_card.date" t-options='{"widget": "date"}'/>
+                                </td>
+                            </tr>
+                            <tr t-if="tax_card and tax_card.tax_percentage">
+                                <td class="text-left">
+                                    <strong>Tax rate</strong>
+                                </td>
+                                <td class="text-end text-right">
+                                    <p class="m-0">
+                                        <span t-field="tax_card.tax_percentage"/> %
+                                    </p>
+                                </td>
+                            </tr>
+                            <tr t-if="tax_card and tax_card.additional_percentage">
+                                <td class="text-left">
+                                    <strong>Additional tax rate</strong>
+                                </td>
+                                <td class="text-end text-right">
+                                    <p class="m-0">
+                                        <span t-field="tax_card.additional_percentage"/> %
+                                    </p>
+                                </td>
+                            </tr>
+                            <tr t-if="tax_card and tax_card.income_limit">
+                                <td class="text-left">
+                                    <strong>Income limit</strong>
+                                </td>
+                                <td class="text-end text-right">
+                                    <p class="m-0">
+                                        <span t-field="tax_card.income_limit"
+                                            t-options='{
+                                                "widget": "monetary",
+                                                "display_currency": o.company_id.currency_id
+                                            }'/>
+                                    </p>
+                                </td>
+                            </tr>
+                            <tr t-if="o.number">
+                                <td class="text-left">
+                                    <strong>Reference</strong>
+                                </td>
+                                <td class="text-end text-right">
+                                    <p class="m-0" t-field="o.number"/>
+                                </td>
+                            </tr>
+                            <!-- <tr t-if="o.date_from">
+                                <td class="text-left">
+                                    <strong>Date from</strong>
+                                </td>
+                                <td class="text-end text-right">
+                                    <p class="m-0" t-field="o.date_from" t-options='{"widget": "date"}'/>
+                                </td>
+                            </tr>
+                            <tr t-if="o.date_to">
+                                <td class="text-left">
+                                    <strong>Date to</strong>
+                                </td>
+                                <td class="text-end text-right">
+                                    <p class="m-0" t-field="o.date_to" t-options='{"widget": "date"}'/>
+                                </td>
+                            </tr> -->
+                            <tr t-if="o.date_from or o.date_to">
+                                <td class="text-left">
+                                    <strong>Period</strong>
+                                </td>
+                                <td class="text-end text-right">
+                                    <p class="m-0">
+                                        <span t-if="o.date_from" t-field="o.date_from" t-options='{"widget": "date"}'/>
+                                        <span t-if="o.date_from and o.date_to"> - </span>
+                                        <span t-if="o.date_to" t-field="o.date_to" t-options='{"widget": "date"}'/>
+                                    </p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <style type="text/css">
+                            .payslip_fi_info_table {
+                                width: 100% !important;
+                                margin-top: 0 !important;
+                                margin-bottom: 0 !important;
+                            }
+                            .information_tbody td {
+                                padding: 3px 5px !important;
+                                font-size: 0.85em !important;
+                                vertical-align: top !important;
+                            }
+                            .payslip_fi_info_table td:first-child {
+                                width: 50% !important;
+                                white-space: nowrap !important;
+                            }
+                            .payslip_fi_info_table td:last-child {
+                                width: 50% !important;
+                                white-space: nowrap !important;
+                            }
+                            div[name="address"] {
+                                font-size: 1em !important;
+                                line-height: 1.3 !important;
+                            }
+                            .payslip_fi_private_address {
+                                font-size: 1em !important;
+                                line-height: 1.3 !important;
+                            }
+                            .payslip_fi_private_contact {
+                                margin-top: 6px !important;
+                            }
+                            .payslip_fi_lines {
+                                margin-top: 8px !important;
+                                border: 0 !important;
+                                border-collapse: collapse !important;
+                            }
+                            .payslip_fi_lines,
+                            .payslip_fi_lines thead,
+                            .payslip_fi_lines tbody,
+                            .payslip_fi_lines tr,
+                            .payslip_fi_lines th,
+                            .payslip_fi_lines td,
+                            .payslip_fi_lines &gt; :not(caption) &gt; * &gt; * {
+                                border: 0 !important;
+                                border-top: 0 !important;
+                                border-bottom: 0 !important;
+                                box-shadow: none !important;
+                            }
+                            .payslip_fi_lines th {
+                                font-size: 0.85em !important;
+                                font-weight: 600 !important;
+                            }
+                            .payslip_fi_lines td {
+                                font-size: 0.85em !important;
+                                padding: 4px 6px !important;
+                            }
+                            .payslip_fi_lines th:nth-child(1),
+                            .payslip_fi_lines td:nth-child(1),
+                            .payslip_fi_lines th:nth-child(3),
+                            .payslip_fi_lines td:nth-child(3),
+                            .payslip_fi_lines th:nth-child(4),
+                            .payslip_fi_lines td:nth-child(4),
+                            .payslip_fi_lines th:nth-child(5),
+                            .payslip_fi_lines td:nth-child(5) {
+                                text-align: center !important;
+                            }
+                            .payslip_fi_lines th:nth-child(2),
+                            .payslip_fi_lines td:nth-child(2) {
+                                text-align: left !important;
+                            }
+                            .payslip_fi_signature {
+                                margin-top: 35px !important;
+                                text-align: right !important;
+                            }
+                            .payslip_fi_section_title {
+                                margin-top: 28px !important;
+                                margin-bottom: 8px !important;
+                                font-size: 1em !important;
+                                font-weight: 600 !important;
+                                color: #495057 !important;
+                            }
+                            .payslip_fi_ytd {
+                                margin-top: 0 !important;
+                                border: 0 !important;
+                                border-collapse: collapse !important;
+                            }
+                            .payslip_fi_ytd,
+                            .payslip_fi_ytd tbody,
+                            .payslip_fi_ytd tr,
+                            .payslip_fi_ytd th,
+                            .payslip_fi_ytd td,
+                            .payslip_fi_ytd &gt; :not(caption) &gt; * &gt; * {
+                                border: 0 !important;
+                                border-top: 0 !important;
+                                border-bottom: 0 !important;
+                                box-shadow: none !important;
+                            }
+                            .payslip_fi_ytd th,
+                            .payslip_fi_ytd td {
+                                font-size: 0.85em !important;
+                                padding: 4px 6px !important;
+                            }
+                            .payslip_fi_ytd {
+                                width: auto !important;
+                                max-width: none !important;
+                                display: inline-table !important;
+                                table-layout: auto !important;
+                            }
+                            .payslip_fi_ytd td {
+                                width: auto !important;
+                                white-space: nowrap !important;
+                            }
+                            .payslip_fi_ytd td:first-child {
+                                text-align: left !important;
+                                padding-right: 16px !important;
+                            }
+                            .payslip_fi_ytd td:last-child {
+                                text-align: left !important;
+                                padding-left: 0 !important;
+                            }
+                        </style>
+
+                        <!-- Payslip lines -->
+                        <h3 class="payslip_fi_section_title">Payslip Lines</h3>
+                        <table class="table table-sm o_main_table payslip_fi_lines">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Name</th>
+                                    <th>Quantity / Rate</th>
+                                    <th>Amount</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.line_ids.filtered(lambda l: l.appears_on_payslip and l.amount != 0)"
+                                    t-as="line">
+                                    <td>
+                                        <span t-field="line.code"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="line.name"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="line.quantity"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="line.amount"
+                                              t-options='{
+                                                "widget": "monetary",
+                                                "display_currency": o.company_id.currency_id
+                                              }'/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="line.total"
+                                              t-options='{
+                                                "widget": "monetary",
+                                                "display_currency": o.company_id.currency_id
+                                              }'/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <!-- Summary -->
+                        <h3 class="payslip_fi_section_title">Year-to-Date Summary</h3>
+                        <table class="table table-sm payslip_fi_ytd">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <strong>Wages paid year-to-date</strong>
+                                    </td>
+                                    <td>
+                                        12,345.67 €
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Total taxable income year-to-date</strong>
+                                    </td>
+                                    <td>
+                                        13,580.23 €
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Withholding taxes year-to-date</strong>
+                                    </td>
+                                    <td>
+                                        2,345.67 €
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Benefits calculated year-to-date</strong>
+                                    </td>
+                                    <td>
+                                        1,234.56 €
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Daily allowances year-to-date</strong>
+                                    </td>
+                                    <td>
+                                        456.78 €
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

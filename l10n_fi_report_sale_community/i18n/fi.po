@@ -1,0 +1,121 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* l10n_fi_report_sale_community
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0-20260217\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-27 09:48+0000\n"
+"PO-Revision-Date: 2026-03-27 09:48+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.report_saleorder_document_inherit_report_sale_community
+msgid "<strong class=\"mt-2 d-block\">Shipping Address:</strong>"
+msgstr "<strong class=\"mt-2 d-block\">Toimitusosoite:</strong>"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.report_saleorder_document_inherit_report_sale_community
+msgid "<strong> Order Date:</strong>"
+msgstr "<strong> Tilauksen päivämäärä:</strong>"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.report_saleorder_document_inherit_report_sale_community
+msgid "<strong> Order handler:</strong>"
+msgstr "<strong> Tilauksen käsittelijä:</strong>"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.report_saleorder_document_inherit_report_sale_community
+msgid "<strong> Our reference:</strong>"
+msgstr "<strong> Meidän viitteemme:</strong>"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.report_saleorder_document_inherit_report_sale_community
+msgid "<strong> Payment Term:</strong>"
+msgstr "<strong> Maksuehto:</strong>"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.report_saleorder_document_inherit_report_sale_community
+msgid "<strong> Quotation Date:</strong>"
+msgstr "<strong> Tarjouksen päivämäärä:</strong>"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.report_saleorder_document_inherit_report_sale_community
+msgid "<strong> Salesperson:</strong>"
+msgstr "<strong> Myyjä:</strong>"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.report_saleorder_document_inherit_report_sale_community
+msgid "<strong> Validity Date:</strong>"
+msgstr "<strong> Voimassaoloaika:</strong>"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.report_saleorder_document_inherit_report_sale_community
+msgid "<strong> Your reference:</strong>"
+msgstr "<strong> Teidän viitteenne:</strong>"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.report_saleorder_document_inherit_report_sale_community
+msgid "<strong>Commitment date:</strong>"
+msgstr "<strong>Luvattu toimituspäivä:</strong>"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.report_saleorder_document_inherit_report_sale_community
+msgid "<strong>Delivery method:</strong>"
+msgstr "<strong>Toimitustapa:</strong>"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.report_saleorder_document_inherit_report_sale_community
+msgid "<strong>Incoterm:</strong>"
+msgstr "<strong>Toimituslauseke:</strong>"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.report_saleorder_document_inherit_report_sale_community
+msgid "<strong>Stock Reference:</strong>"
+msgstr "<strong>Asiakkaan toimitusviite:</strong>"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.report_saleorder_document_inherit_report_sale_community
+msgid "Invoicing Address:"
+msgstr "Laskutusosoite:"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.report_saleorder_document_inherit_report_sale_community
+msgid "Invoicing and Shipping Address:"
+msgstr "Laskutus- ja toimitusosoite:"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.custom_header_quotation_title
+msgid "Order"
+msgstr "Tilaus"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.report_saleorder_document_inherit_report_sale_community
+msgid "Order Number:"
+msgstr "Tilausnumero:"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.custom_header_quotation_title
+msgid "Pro-Forma"
+msgstr ""
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.custom_header_quotation_title
+msgid "Quotation"
+msgstr "Tarjous"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.report_saleorder_document_inherit_report_sale_community
+msgid "Quotation Number:"
+msgstr "Tarjousnumero:"
+
+#. module: l10n_fi_report_sale_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_sale_community.report_saleorder_document_inherit_report_sale_community
+msgid "Tax ID"
+msgstr "Verotunniste"

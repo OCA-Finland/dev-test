@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Address layout -->
+        <template id="address_layout_inherit_report_core_community" inherit_id="web.address_layout">
+            <xpath expr="//t[@t-name='web.address_layout']" position="replace">
+                <t t-name="web.address_layout">
+                    <t t-set="colclass" t-value="('col-sm-5' if report_type == 'html' else 'col-5') + ' ml-auto'"/>
+                    <t t-if="address">
+                        <div class="address row">
+                            <t t-if="address">
+                                <t t-set="colclass" t-value="'col-5 offset-1'"/>
+                                <div name="address" class="col-6">
+                                    <t t-out="address"/>
+                                </div>
+                            </t>
+                            <div name="information_block" t-att-class="colclass">
+                                <t t-if="information_block" t-out="information_block"/>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </xpath>
+        </template>
+
+        <!-- Header -->
+        <template id="external_layout_standard_inherit_report_core_community" inherit_id="web.external_layout_standard">
+            <xpath expr="//div[contains(@t-attf-class, 'article')]" position="attributes">
+                <attribute name="class" add="pt-0" remove="pt-5" separator=" "/>
+            </xpath>
+            <xpath expr="//div[@name='company_address']" position="attributes">
+                <attribute name="t-attf-class" separator=" " add="d-none"/>
+            </xpath>
+            <xpath expr="//img[@t-if='company.logo']/parent::div" position="replace">
+                <t t-set="watermark_active" t-value="False"/>
+                <t t-if="docs">
+                    <t t-set="report_action" t-value="env['ir.actions.report'].sudo().search([
+                    ('model', '=', docs[0]._name), 
+                    '|', 
+                    ('use_company_watermark', '=', True), 
+                    ('pdf_watermark', '!=', False)
+                    ], limit=1)"/>
+                    <t t-if="report_action">
+                        <t t-set="watermark_active" t-value="True"/>
+                    </t>
+                </t>
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div name="logo_wrapper" class="d-flex align-items-center">
+                        <img t-if="company.logo and not watermark_active" t-att-src="image_data_uri(company.logo)" style="max-height: 85px; " alt="Logo"/>
+                    </div>
+                    <div class="text-end text-right" t-if="not watermark_active">
+                        <div t-field="company.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}' name="company_address"/>
+                    </div>
+                </div>
+            </xpath>
+        </template>
+    </data>
+</odoo>

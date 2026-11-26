@@ -1,0 +1,210 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* l10n_fi_report_invoice_community
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0-20260217\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-27 09:48+0000\n"
+"PO-Revision-Date: 2026-03-27 09:48+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "(Account Number missing)"
+msgstr "(Tilinumero puuttuu)"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "(No virtual barcode is available. Check the bank_barcode calculation.)"
+msgstr ""
+"(Virtuaalista viivakoodia ei ole saatavilla. Tarkista kentän bank_barcode "
+"laskenta.)"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid ""
+"<br/>\n"
+"                                        <strong>BIC: </strong>"
+msgstr ""
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "<span style=\"font-size: 0.8em;\">Invoice number: </span><br/>"
+msgstr ""
+"<span style=\"font-size: 0.8em;\">Laskun numero / Fakturanummer: "
+"</span><br/>"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "<span>Business ID:</span>"
+msgstr "<span>Y-tunnus / FO-nummer:</span>"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "<strong>Due Date:</strong>"
+msgstr "<strong>Eräpäivä:</strong>"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "<strong>Handler:</strong>"
+msgstr "<strong>Käsittelijä:</strong>"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "<strong>IBAN: </strong>"
+msgstr ""
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.custom_footer_invoice_bank
+msgid "<strong>IBAN:</strong>"
+msgstr ""
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "<strong>Invoice Date:</strong>"
+msgstr "<strong>Laskun päiväys:</strong>"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "<strong>Invoice Number:</strong>"
+msgstr "<strong>Laskunumero:</strong>"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "<strong>Our reference:</strong>"
+msgstr "<strong>Meidän viitteemme:</strong>"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "<strong>Payment Reference:</strong>"
+msgstr "<strong>Maksun viite:</strong>"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "<strong>Payment Term:</strong>"
+msgstr "<strong>Maksuehto:</strong>"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "<strong>Salesperson:</strong>"
+msgstr "<strong>Myyjä:</strong>"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "<strong>Your reference:</strong>"
+msgstr "<strong>Teidän viitteenne:</strong>"
+
+#. module: l10n_fi_report_invoice_community
+#: model:ir.model.fields,field_description:l10n_fi_report_invoice_community.field_account_bank_statement_line__bank_barcode
+#: model:ir.model.fields,field_description:l10n_fi_report_invoice_community.field_account_move__bank_barcode
+msgid "Bank Barcode"
+msgstr "Pankin viivakoodi"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.act_report_xml_view_inherit_report_invoice_community_settings
+msgid "Bank Transfer Form Settings"
+msgstr "Pankkisiirtolomakkeen asetukset"
+
+#. module: l10n_fi_report_invoice_community
+#: model:ir.model.fields,help:l10n_fi_report_invoice_community.field_ir_actions_report__show_bank_transfer_form
+msgid ""
+"Check this to display the bank transfer form at the bottom of the document."
+msgstr "Valitse tämä näyttääksesi pankkisiirtolomake asiakirjan alaosassa."
+
+#. module: l10n_fi_report_invoice_community
+#: model:ir.model.fields,help:l10n_fi_report_invoice_community.field_ir_actions_report__show_bank_transfer_barcode
+msgid "Check this to display the barcode inside the bank transfer form."
+msgstr "Valitse tämä käyttääksesi viivakoodia pankkisiirtolomakkeessa."
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "Date Due"
+msgstr "Eräpäivä<br/>Förf.dag"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "Debtor"
+msgstr "Maksaja<br/>Betalare"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "Euro"
+msgstr ""
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "From account No."
+msgstr "Tililtä nro.<br/>Från konto nr."
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.custom_header_invoice_title
+msgid "Invoice"
+msgstr "Lasku"
+
+#. module: l10n_fi_report_invoice_community
+#: model:ir.model,name:l10n_fi_report_invoice_community.model_account_move
+msgid "Journal Entry"
+msgstr "Päiväkirjan kirjaus"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "Recipient"
+msgstr "Saaja<br/>Mottagare"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "Recipient's<br/>account number"
+msgstr "Saajan tilinumero<br/>Mottagarens kontonummer"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "Reference No."
+msgstr "Viitenumero<br/>Ref.nr"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.custom_header_invoice_title
+msgid "Refund Invoice"
+msgstr "Hyvityslasku"
+
+#. module: l10n_fi_report_invoice_community
+#: model:ir.model,name:l10n_fi_report_invoice_community.model_ir_actions_report
+msgid "Report Action"
+msgstr "Raporttin"
+
+#. module: l10n_fi_report_invoice_community
+#: model:ir.model.fields,field_description:l10n_fi_report_invoice_community.field_ir_actions_report__show_bank_transfer_form
+msgid "Show Bank Transfer Form"
+msgstr "Näytä pankkisiirtolomake"
+
+#. module: l10n_fi_report_invoice_community
+#: model:ir.model.fields,field_description:l10n_fi_report_invoice_community.field_ir_actions_report__show_bank_transfer_barcode
+msgid "Show Virtual Barcode"
+msgstr "Näytä viivakoodi"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "Signature"
+msgstr "Allekirjoitus<br/>Underskrift"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid "Tax ID"
+msgstr "Verotunniste"
+
+#. module: l10n_fi_report_invoice_community
+#: model_terms:ir.ui.view,arch_db:l10n_fi_report_invoice_community.report_invoice_document_inherit_report_invoice_community
+msgid ""
+"The payment will be issued to the recipient under the terms of payment "
+"service and only to the account number specified by the debtor."
+msgstr ""
+"Maksu välitetään saajalle maksujenvälityksen ehtojen mukaisesti ja vain "
+"maksajan tilinumeron perusteella.<br/>Betalningen förmedlas till mottagaren "
+"enligt villkoren för betalningsförmedling och endast till det kontonummer "
+"som betalaren angivit."

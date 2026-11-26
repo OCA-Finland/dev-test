@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo noupdate="0">
+    <record id="action_fi_report_payslip" model="ir.actions.report">
+        <field name="name">Payslip FI</field>
+        <field name="model">hr.payslip</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">l10n_fi_report_payslip_community.report_payslip_fi</field>
+        <field name="report_file">l10n_fi_report_payslip_community.report_payslip_fi</field>
+        <field name="binding_model_id" ref="payroll.model_hr_payslip"/>
+        <field name="binding_type">report</field>
+        <field name="binding_view_types">form,list</field>
+        <field name="print_report_name">'Payslip FI - %s' % (object.employee_id.name or object.name or '')</field>
+    </record>
+
+    <!-- Vanhan piilotus, kun olemme valmiita -->
+    <!-- <record id="payroll.report_payslip" model="ir.actions.report">
+        <field name="binding_model_id" eval="False"/>
+    </record> -->
+
+    <!-- TAI -->
+
+    <!-- Vanhan vaihto uuteen -->
+    <!-- <record id="payroll.report_payslip" model="ir.actions.report">
+        <field name="report_name">l10n_fi_report_payslip_community.report_payslip_fi</field>
+        <field name="report_file">l10n_fi_report_payslip_community.report_payslip_fi</field>
+    </record> -->
+</odoo>
